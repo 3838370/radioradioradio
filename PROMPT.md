@@ -60,12 +60,14 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 (The previous IDM bank, BoC / SAW / Autechre / drill, is archived in `Temp\patterns-idm-v2`.)
 
 ## Running it
-- Start the local server, which turns browser caching off so code changes always show up on reload:
+- Start a local server from this folder. The helper scripts (kept outside the repository, in the
+  project's `Scripts` folder) include `serve.py`, which turns browser caching off so code changes
+  always show up on reload and serves `.js` as JavaScript:
   ```bash
-  python "C:\Users\pedro\Documents\Claude\2026-11 Radio AI\Scripts\serve.py"
+  python Scripts/serve.py
   ```
-  Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files (use Ctrl+Shift+R), and on Windows it may serve `.js` as plain text, which the browser refuses for modules; `serve.py` sends the right type.
-- `test.html` on the same server runs the checks. `python Scripts\testar.py` runs them in a headless Chrome; `python Scripts\testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.
+  Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files (use Ctrl+Shift+R), and on Windows it may serve `.js` as plain text, which the browser refuses for modules.
+- `test.html` on the same server runs the checks. `python Scripts/testar.py` runs them in a headless Chrome; `python Scripts/testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.
 - **URL flags:** `?fast=1` (each genre lasts about 1 minute and the pace is divided by 8), `?seed=123` (repeatable choices).
 - **Controls:**
   - **Pace:** how often something changes (every 4–64 bars).
