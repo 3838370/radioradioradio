@@ -5,29 +5,30 @@ RA.Harmony = class Harmony {
   static MODES = ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'];
 
   static MODES_FOR = {
-    fog: ['aeolian', 'dorian'],
+    saw: ['aeolian', 'lydian', 'dorian'],
+    acid: ['phrygian', 'aeolian', 'dorian'],
+    drill: ['aeolian', 'dorian', 'lydian'],
+    boc: ['mixolydian', 'dorian', 'lydian', 'aeolian'],
+    minimal: ['dorian', 'aeolian', 'mixolydian'],
     dub: ['dorian', 'aeolian'],
-    deep: ['lydian', 'dorian', 'mixolydian'],
     space: ['lydian', 'dorian', 'aeolian'],
-    atmos: ['dorian', 'aeolian'],
-    rave: ['aeolian', 'dorian'],
     dark: ['phrygian', 'locrian', 'aeolian'],
-    industrial: ['phrygian', 'aeolian'],
     ae: ['phrygian', 'locrian', 'dorian'],
   };
 
-  // fog and dub barely move (one chord for minutes); space wanders; atmos has jazzy ii-i
-  // motion. The composer changes progression now and then within a mood (reharm()).
+  // dub and minimal barely move (one chord for minutes); acid sits on one or two chords;
+  // saw and drill have slow, melancholy turns; boc leans on the flat seventh (mixolydian).
+  // The composer changes progression now and then within a genre (reharm()).
   static PROGRESSIONS = {
-    fog: [[0], [0, 0, 5, 5], [0, 0, 0, 3], [0, 5], [0, 0, 3, 3], [0, 6], [0, 0, 0, 4], [0, 3, 0, 5], [5, 0], [0, 0, 6, 0]],
-    dub: [[0], [0, 0, 0, 3], [0, 0, 5, 0], [0, 3], [0, 0, 0, 6], [0, 5], [0, 0, 3, 5], [3, 0], [0, 6, 0, 0], [0, 4, 0, 0]],
-    deep: [[0, 4], [0, 5, 3, 4], [0, 3, 4, 3], [0, 0, 5, 4], [0, 1, 4, 0], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5, 1, 4], [3, 4, 0, 0], [0, 6, 5, 4]],
+    saw: [[0, 4], [0, 5, 3, 4], [0, 3, 4, 3], [0, 0, 5, 4], [0, 1, 4, 0], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5, 1, 4], [3, 4, 0, 0], [0, 6, 5, 4], [0, 2]],
+    acid: [[0], [0, 1], [0, 0, 0, 6], [0, 6], [0, 0, 1, 0], [0, 4], [0, 0, 5, 1], [0, 3]],
+    drill: [[0, 5, 3, 4], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5], [3, 4, 0, 0], [0, 6, 5, 4], [5, 4, 3, 4], [0, 1, 5, 4]],
+    boc: [[0, 4], [0, 6], [0, 3, 4], [0, 6, 5, 4], [0, 0, 6, 6], [3, 0], [0, 4, 3, 6], [5, 4, 0, 0], [0, 2, 6, 4], [0, 6, 3, 4]],
+    minimal: [[0], [0, 3], [0, 0, 0, 5], [0, 0, 6, 0], [0, 5], [0, 0, 3, 0], [3, 0], [0, 4, 0, 0]],
+    dub: [[0], [0, 0, 0, 3], [0, 0, 5, 0], [0, 3], [0, 0, 0, 6], [0, 5], [0, 0, 3, 5], [3, 0], [0, 6, 0, 0], [0, 4, 0, 0], [0, 0, 5, 5], [0, 0, 3, 3]],
     space: [[0, 4], [0, 1, 0, 4], [0, 5, 3, 4], [0, 2, 3, 1], [0, 3], [0, 1], [3, 0], [0, 5, 4, 3], [0, 2], [0, 4, 5, 3], [1, 0, 3, 0], [0, 6]],
-    atmos: [[0, 3], [0, 5, 3, 4], [1, 0], [0, 2, 3, 4], [1, 4, 0, 0], [0, 5, 1, 4], [3, 4, 0, 5], [0, 6, 5, 4], [1, 4, 2, 5], [0, 3, 6, 2]],
-    rave: [[0, 5, 3, 4], [0, 3, 4, 5], [0, 0, 5, 6], [0, 5, 6, 4], [0, 3, 6, 4], [5, 6, 0, 0], [0, 4, 5, 3], [0, 6, 5, 6], [3, 4, 5, 5]],
     dark: [[0, 1], [0, 0, 1, 0], [0, 5, 1, 0], [0], [0, 6], [0, 1, 6, 0], [0, 0, 4, 1], [0, 3, 1, 0], [0, 5, 4, 1]],
-    industrial: [[0], [0, 0, 1, 0], [0, 0, 0, 6], [0, 1], [0, 6, 0, 1], [0, 0, 5, 1], [0, 4, 0, 1], [0, 0, 3, 0]],
-    ae: [[0], [0, 1], [0, 4, 1], [0, 3, 6], [0, 6, 1, 5], [1, 0, 5], [0, 2, 1], [0, 5, 2, 6]],
+    ae: [[0], [0, 1], [0, 4, 1], [0, 3, 6], [0, 6, 1, 5], [1, 0, 5], [0, 2, 1], [0, 5, 2, 6], [0, 0, 1, 0], [0, 6, 0, 1]],
   };
 
   // Key moves for a modulation: up a fourth or fifth, a tone, a minor third.

@@ -3,7 +3,7 @@
 // minor-9th chords, string pads and flute-like lines. ~170 BPM.
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
-  { id: 'atmos_amen_roll', role: 'drums', flavours: { atmos: 1 }, energy: [0.4, 1], code: `
+  { id: 'atmos_amen_roll', role: 'drums', flavours: { drill: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 9000, rev: 0.12, crush: 0.1 })
 loop('amen', (i) => {
   const fill = ring(8, 9, 10, 11)
@@ -15,23 +15,7 @@ loop('amen', (i) => {
   }
 })` },
 
-  { id: 'atmos_two_step', role: 'drums', flavours: { atmos: 0.9 }, energy: [0.3, 1], code: `
-fx({ lpf: 10000, rev: 0.15 })
-loop('kick', (i) => {
-  s('bd', { n: 3, amp: 0.9 })
-  sleep(2.5)
-  s('bd', { n: 3, amp: 0.7 })
-  sleep(1.5)
-})
-loop('snare', (i) => {
-  sleep(1)
-  s('sn', { n: 20, amp: 0.5 })
-  sleep(2)
-  s('sn', { n: 20, amp: 0.5 })
-  sleep(1)
-})` },
-
-  { id: 'atmos_halftime_break', role: 'drums', flavours: { atmos: 0.8, deep: 0.3 }, energy: [0.2, 0.7], code: `
+  { id: 'atmos_halftime_break', role: 'drums', flavours: { drill: 1 }, energy: [0.2, 0.7], code: `
 fx({ lpf: 6000, rev: 0.25, crush: 0.2 })
 loop('break', (i) => {
   for (let k = 0; k < 8; k++) {
@@ -40,7 +24,7 @@ loop('break', (i) => {
   }
 })` },
 
-  { id: 'atmos_ride_hats', role: 'perc', flavours: { atmos: 1 }, energy: [0.4, 1], code: `
+  { id: 'atmos_ride_hats', role: 'perc', flavours: { minimal: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 11000, rev: 0.15 })
 loop('hats', (i) => {
   const vel = ring(0.12, 0.05, 0.08, 0.05)
@@ -54,7 +38,7 @@ loop('ride', (i) => {
   sleep(1)
 })` },
 
-  { id: 'atmos_shaker', role: 'perc', flavours: { atmos: 0.8, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'atmos_shaker', role: 'perc', flavours: { minimal: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 8000, delay: 0.1 })
 loop('shaker', (i) => {
   const vel = ring(0.09, 0.04, 0.06, 0.04)
@@ -64,14 +48,7 @@ loop('shaker', (i) => {
   }
 })` },
 
-  { id: 'atmos_reese', role: 'bass', flavours: { atmos: 1 }, energy: [0.4, 1], code: `
-fx({ lpf: 900, wobble: 0.1 })
-loop('reese', (i) => {
-  synth('reese', ROOT, { dur: 3.5, amp: 0.45, cutoff: 300 + 300 * ENERGY })
-  sleep(4)
-})` },
-
-  { id: 'atmos_sub_line', role: 'bass', flavours: { atmos: 0.9, deep: 0.2 }, energy: [0.2, 1], code: `
+  { id: 'atmos_sub_line', role: 'bass', flavours: { drill: 1 }, energy: [0.2, 1], code: `
 fx({ lpf: 600 })
 loop('sub', (i) => {
   synth('sub', ROOT, { dur: 1.2, amp: 0.5 })
@@ -82,7 +59,7 @@ loop('sub', (i) => {
   sleep(1.5)
 })` },
 
-  { id: 'atmos_rhodes', role: 'keys', flavours: { atmos: 1, deep: 0.4 }, energy: [0.2, 1], code: `
+  { id: 'atmos_rhodes', role: 'keys', flavours: { boc: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.4, delay: 0.25, lpf: 3500, wobble: 0.15 })
 loop('rhodes', (i) => {
   synth('epiano', harm(1, '9'), { dur: 2, amp: 0.28 })
@@ -91,14 +68,14 @@ loop('rhodes', (i) => {
   sleep(1.25)
 })` },
 
-  { id: 'atmos_string_pad', role: 'keys', flavours: { atmos: 0.9, deep: 0.5 }, energy: [0, 1], code: `
+  { id: 'atmos_string_pad', role: 'keys', flavours: { saw: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.55, lpf: 2200, wobble: 0.15 })
 loop('strings', (i) => {
   synth('strings', harm(1, '9'), { dur: 13, attack: 3, release: 4, amp: 0.45 })
   sleep(16)
 })` },
 
-  { id: 'atmos_flute', role: 'lead', flavours: { atmos: 0.8, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'atmos_flute', role: 'lead', flavours: { boc: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.5, delay: 0.35, lpf: 3200 })
 loop('flute', (i) => {
   for (const n of phrase('f', { beats: 8, density: 0.15, octave: 2, rest: 0.35 })) {
@@ -107,7 +84,7 @@ loop('flute', (i) => {
   }
 })` },
 
-  { id: 'atmos_piano', role: 'keys', flavours: { atmos: 0.8, space: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'atmos_piano', role: 'keys', flavours: { saw: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.45, delay: 0.25, lpf: 5000 })
 loop('piano', (i) => {
   const voicing = harm(1, vary('ext', ['7', '9'], 8))
@@ -121,7 +98,7 @@ loop('piano', (i) => {
   sleep(4 - t)
 })` },
 
-  { id: 'atmos_bell_arp', role: 'lead', flavours: { atmos: 0.7, deep: 0.4 }, energy: [0.4, 1], code: `
+  { id: 'atmos_bell_arp', role: 'lead', flavours: { saw: 1 }, energy: [0.4, 1], code: `
 fx({ rev: 0.45, delay: 0.3, lpf: 6000 })
 loop('arp', (i) => {
   const notes = ring(...harm(2, '9'))
@@ -131,7 +108,7 @@ loop('arp', (i) => {
   }
 })` },
 
-  { id: 'atmos_space_sweep', role: 'texture', flavours: { atmos: 0.9, deep: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'atmos_space_sweep', role: 'texture', flavours: { space: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.45 })
 loop('sweep', (i) => {
   fx({ lpf: 500 })
@@ -142,7 +119,7 @@ loop('sweep', (i) => {
   }
 })` },
 
-  { id: 'atmos_voice_air', role: 'texture', flavours: { atmos: 0.8 }, energy: [0, 1], code: `
+  { id: 'atmos_voice_air', role: 'texture', flavours: { space: 1 }, energy: [0, 1], code: `
 fx({ lpf: 3000, rev: 0.65, delay: 0.3, wobble: 0.3 })
 loop('voice', (i) => {
   sleep(12)

@@ -1,21 +1,38 @@
-// Mood: a slow drift between flavours, in a random order (CYCLE is just the list):
-//   fog    submerged ambient techno (Gas): muffled 4/4 kick under looping strings and horns
-//   dub    dub techno: chord stabs dissolving into long delays, rolling filters
-//   deep   deep ambient / downtempo (late-90s ambient electronica): pads, drones, soft grooves
-//   space  drifting space ambient with Selected Ambient Works-style melodies, pianos and
-//          Future Sound of London-style collage
-//   atmos  atmospheric / intelligent drum & bass: rolling breaks, reese bass, jazzy chords
-//   rave   excited: breakbeats, hoovers, supersaw stabs, rave voices
-//   dark   slow, scary: horror pads, half-time weight, noise and drones
-//   industrial  machines, metal, distorted bass, people and city sounds, a synthesized metro
-//   ae     Autechre-like (AE_LIVE): shifting polyrhythms, harsh FM, rhythms that fall apart
-// Each leg lasts 8-20 minutes: the first ~60% stays on one flavour, the rest crossfades
-// into the next. Each mood has its own tempo. Also produces `intensity` (ENERGY in code).
+// Mood: a slow drift between the IDM genres, in a random order (CYCLE is just the list):
+//   saw      Aphex Twin's ambient side (Selected Ambient Works 85-92 and II, the Drukqs
+//            prepared pianos): FM pads, loose 808, ostinatos, tape
+//   acid     Aphex Twin's acid and braindance (Analord, the Richard D. James Album): raw 303,
+//            808/909, odd-interval motifs
+//   drill    drill'n'bass (Drukqs, Come to Daddy): amen chopped at speed under slow, sad melodies
+//   boc      Boards of Canada: slow hip-hop breaks, detuned drifting synths, tape, voices
+//   minimal  Efdemin: dry 4/4, shuffled hats, bell and organ cells in different cycle lengths
+//   dub      dub techno and Gas: chord stabs into long delays, muffled kick, hiss
+//   space    drifting space ambient (Aethereon) and FSOL collage
+//   dark     slow tension: half-time weight, drones, low brass, detuned pianos
+//   ae       Autechre (AE_LIVE 2016-2018): generated, shifting rhythms, harsh FM, no tonic
+// Each leg lasts 8-20 minutes: the first ~60% stays on one genre, the rest crossfades into
+// the next. Each has its own tempo. Also produces `intensity` (ENERGY in code).
 RA.Mood = class Mood {
-  static CYCLE = ['deep', 'space', 'atmos', 'rave', 'dark', 'industrial', 'ae', 'fog', 'dub'];
-  static LABELS = { fog: 'fog', dub: 'dub', deep: 'deep', space: 'space', atmos: 'atmos', rave: 'rave', dark: 'dark', industrial: 'indust', ae: 'ae' };
-  static BASE_INTENSITY = { fog: 0.45, dub: 0.5, deep: 0.4, space: 0.3, atmos: 0.75, rave: 0.85, dark: 0.35, industrial: 0.7, ae: 0.6 };
-  static TEMPO = { fog: 116, dub: 122, deep: 100, space: 86, atmos: 170, rave: 148, dark: 76, industrial: 128, ae: 112 };
+  static CYCLE = ['saw', 'acid', 'drill', 'boc', 'minimal', 'dub', 'space', 'dark', 'ae'];
+  static LABELS = { saw: 'saw', acid: 'acid', drill: 'drill', boc: 'boc', minimal: 'minimal', dub: 'dub', space: 'space', dark: 'dark', ae: 'ae' };
+  static BASE_INTENSITY = { saw: 0.35, acid: 0.75, drill: 0.85, boc: 0.45, minimal: 0.6, dub: 0.5, space: 0.3, dark: 0.35, ae: 0.65 };
+  static TEMPO = { saw: 96, acid: 132, drill: 168, boc: 90, minimal: 122, dub: 120, space: 84, dark: 76, ae: 118 };
+
+  // The genres of earlier versions, and where they went (saved choices and your patterns).
+  static OLD = { fog: ['dub'], deep: ['saw', 'boc'], atmos: ['boc', 'drill'], rave: ['acid'], industrial: ['ae', 'dark'] };
+
+  static migrate(names) {
+    return [...new Set((names || []).flatMap((f) => Mood.OLD[f] || [f]).filter((f) => Mood.CYCLE.includes(f)))];
+  }
+
+  // Flavour weights of an older pattern ({ fog: 1, deep: 0.3 }) in today's genres.
+  static migrateFlavours(flavours) {
+    const out = {};
+    for (const [f, v] of Object.entries(flavours || {})) {
+      for (const g of Mood.OLD[f] || [f]) if (Mood.CYCLE.includes(g)) out[g] = Math.max(out[g] || 0, v);
+    }
+    return out;
+  }
 
   // The order is not fixed: at every leg the next mood is drawn at random from those not
   // heard recently. Each leg has a random length, and each visit its own tempo (±7%).
@@ -44,23 +61,24 @@ RA.Mood = class Mood {
 
   newTempoFactor() { return this.rng.float(0.93, 1.07); }
 
-  // Where the journey tends to go next: after the excited moods it falls into darkness and
-  // machines; after the dark it surfaces somewhere calm, or straight back into a rave.
-  // Weights only: any mood can still follow any other.
+  // Where the journey tends to go next: Aphex's sides lead into each other (ambient into
+  // acid, acid into drill), drill falls into darkness or Autechre, the dark surfaces in
+  // space or Boards of Canada, minimal and dub hand over to each other.
+  // Weights only: any genre can still follow any other.
   static TENDS = {
-    rave: { dark: 3, industrial: 3, ae: 2 },
-    atmos: { rave: 2, dark: 2, industrial: 2 },
-    dark: { industrial: 2, space: 2, rave: 2, deep: 1.5 },
-    industrial: { ae: 2.5, dark: 2, rave: 1.5 },
-    ae: { dark: 2, industrial: 2, space: 1.5 },
-    deep: { atmos: 2, dub: 1.5, rave: 1.5 },
-    space: { deep: 1.5, atmos: 1.5, ae: 1.5 },
-    fog: { dub: 2, industrial: 1.5, dark: 1.5 },
-    dub: { fog: 1.5, deep: 1.5, rave: 1.5 },
+    saw: { acid: 2, boc: 2, space: 1.5 },
+    acid: { drill: 2.5, ae: 2, minimal: 1.5 },
+    drill: { dark: 2.5, ae: 2, saw: 1.5 },
+    boc: { saw: 2, dub: 1.5, space: 1.5 },
+    minimal: { dub: 2.5, acid: 1.5, ae: 1.5 },
+    dub: { minimal: 2, boc: 1.5, space: 1.5 },
+    space: { saw: 2, dark: 1.5, boc: 1.5 },
+    dark: { ae: 2, space: 2, saw: 1.5 },
+    ae: { dark: 2, drill: 2, minimal: 1.5 },
   };
 
   static cleanStyles(styles) {
-    const list = (styles || []).filter((f) => Mood.CYCLE.includes(f));
+    const list = Mood.migrate(styles);
     return list.length ? list : Mood.CYCLE.slice();
   }
 

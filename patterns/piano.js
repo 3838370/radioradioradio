@@ -3,7 +3,7 @@
 // the darker moods get the broken and toy pianos.
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
-  { id: 'pno_saw_melody', role: 'lead', flavours: { space: 1, deep: 0.6, fog: 0.3 }, energy: [0, 0.9], code: `
+  { id: 'pno_saw_melody', role: 'lead', flavours: { saw: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.45, delay: 0.25, lpf: 5000, wobble: 0.15 })
 loop('melody', (i) => {
   for (const n of phrase('m', { beats: 8, density: vary('dens', [0.2, 0.35, 0.5], 16), octave: 2, rest: 0.25, evolve: 2 })) {
@@ -13,7 +13,7 @@ loop('melody', (i) => {
   }
 })` },
 
-  { id: 'pno_two_hands', role: 'keys', flavours: { deep: 1, space: 0.7, dub: 0.3 }, energy: [0.1, 0.9], code: `
+  { id: 'pno_two_hands', role: 'keys', flavours: { saw: 1 }, energy: [0.1, 0.9], code: `
 fx({ rev: 0.4, delay: 0.15, lpf: 4200 })
 loop('left', (i) => {
   const shape = vary('shape', ['block', 'broken', 'alberti'], 16)
@@ -29,7 +29,7 @@ loop('right', (i) => {
   }
 })` },
 
-  { id: 'pno_rhodes_jazz', role: 'keys', flavours: { atmos: 1, deep: 0.6, dub: 0.4 }, energy: [0.2, 1], code: `
+  { id: 'pno_rhodes_jazz', role: 'keys', flavours: { boc: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.3, delay: 0.2, wobble: 0.1 })
 loop('rhodes', (i) => {
   const hits = spread(vary('h', [3, 5], 8), 8, vary('rot', [0, 2, 3], 4))
@@ -39,7 +39,7 @@ loop('rhodes', (i) => {
   }
 })` },
 
-  { id: 'pno_rhodes_lead', role: 'lead', flavours: { atmos: 0.8, dub: 0.5, deep: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'pno_rhodes_lead', role: 'lead', flavours: { boc: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.35, delay: 0.4 })
 loop('lead', (i) => {
   for (const n of phrase('l', { beats: 4, density: vary('d', [0.4, 0.6], 16), octave: 2, rest: 0.2 })) {
@@ -48,7 +48,7 @@ loop('lead', (i) => {
   }
 })` },
 
-  { id: 'pno_felt_night', role: 'lead', flavours: { fog: 1, space: 0.6, dark: 0.3 }, energy: [0, 0.6], code: `
+  { id: 'pno_felt_night', role: 'lead', flavours: { saw: 1 }, energy: [0, 0.6], code: `
 fx({ rev: 0.6, delay: 0.3, lpf: 2600, wobble: 0.3 })
 loop('felt', (i) => {
   for (const n of phrase('f', { beats: 8, density: 0.15, octave: 1, rest: 0.4, evolve: 3 })) {
@@ -57,7 +57,7 @@ loop('felt', (i) => {
   }
 })` },
 
-  { id: 'pno_broken_dread', role: 'lead', flavours: { dark: 1, industrial: 0.4, ae: 0.3 }, energy: [0, 0.8], code: `
+  { id: 'pno_broken_dread', role: 'lead', flavours: { dark: 1, saw: 0.7 }, energy: [0, 0.8], code: `
 fx({ rev: 0.55, delay: 0.35, lpf: 3000, wobble: 0.45 })
 loop('dread', (i) => {
   for (const n of phrase('d', { beats: 8, density: vary('d', [0.1, 0.25], 16), octave: 1, rest: 0.45 })) {
@@ -68,7 +68,7 @@ loop('dread', (i) => {
   if (one_in(4)) synth('broken_piano', KEY - 24, { vel: 1.1, dur: 4 }) // a low bass string, struck hard
 })` },
 
-  { id: 'pno_toy_music_box', role: 'perc', flavours: { dark: 0.8, space: 0.5, ae: 0.4 }, energy: [0, 0.7], code: `
+  { id: 'pno_toy_music_box', role: 'perc', flavours: { saw: 1, boc: 0.7 }, energy: [0, 0.7], code: `
 fx({ rev: 0.5, delay: 0.45, wobble: 0.35 })
 loop('box', (i) => {
   const notes = modal(3, 1)
@@ -79,17 +79,7 @@ loop('box', (i) => {
   }
 })` },
 
-  { id: 'pno_rave_house', role: 'keys', flavours: { rave: 1, atmos: 0.4 }, energy: [0.5, 1], code: `
-fx({ rev: 0.2, delay: 0.15, lpf: 7000 })
-loop('house', (i) => {
-  const pat = vary('p', [[0, 3, 6, 10, 12], [0, 2, 6, 8, 12, 14], [2, 6, 10, 14]], 8)
-  for (let k = 0; k < 16; k++) {
-    if (pat.includes(k)) synth('grand', harm(1, vary('ext', ['7', '9'], 4)), { vel: k % 4 === 0 ? 1 : 0.8, dur: 0.15 })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pno_ae_scatter', role: 'lead', flavours: { ae: 1, space: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'pno_ae_scatter', role: 'lead', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.35, delay: 0.3 })
 loop('scatter', (i) => {
   for (const n of phrase('s', { beats: vary('len', [5, 6, 7], 8), density: 0.75, octave: vary('o', [1, 2, 3], 4), rest: 0.3, evolve: 1 })) {
@@ -98,7 +88,7 @@ loop('scatter', (i) => {
   }
 })` },
 
-  { id: 'pno_dub_chords', role: 'keys', flavours: { dub: 1, fog: 0.5 }, energy: [0.1, 0.9], code: `
+  { id: 'pno_dub_chords', role: 'keys', flavours: { dub: 1 }, energy: [0.1, 0.9], code: `
 fx({ rev: 0.35, delay: 0.55, lpf: 2400 })
 loop('chords', (i) => {
   const hits = spread(vary('h', [2, 3], 8), 8, vary('rot', [1, 3, 5], 8))

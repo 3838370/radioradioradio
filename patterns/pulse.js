@@ -7,7 +7,7 @@
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   // ───── drums ─────
-  { id: 'pl_jungle', role: 'drums', flavours: { atmos: 1, rave: 0.6 }, energy: [0.5, 1], code: `
+  { id: 'pl_jungle', role: 'drums', flavours: { drill: 1 }, energy: [0.5, 1], code: `
 fx({ lpf: 11000, crush: 0.1, rev: 0.1 })
 loop('kit', (i) => {
   const b = beat('j', { style: 'jungle', density: 0.4 + 0.5 * ENERGY })
@@ -21,7 +21,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'pl_electro', role: 'drums', flavours: { rave: 0.8, industrial: 0.6, deep: 0.3 }, energy: [0.4, 1], code: `
+  { id: 'pl_electro', role: 'drums', flavours: { acid: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 12000, rev: 0.12 })
 loop('808', (i) => {
   const b = beat('e', { style: 'electro', density: 0.4 + 0.4 * ENERGY })
@@ -35,48 +35,7 @@ loop('808', (i) => {
   }
 })` },
 
-  { id: 'pl_footwork', role: 'drums', flavours: { atmos: 0.8, ae: 0.5, rave: 0.4 }, energy: [0.4, 1], code: `
-fx({ lpf: 10000, rev: 0.12, delay: 0.1 })
-loop('juke', (i) => {
-  const b = beat('fw', { style: 'footwork', density: 0.5 })
-  for (let k = 0; k < b.length; k++) {
-    const st = b[k]
-    if (st.k) synth('kick_hard', KEY - 24, { amp: 0.8 * st.v })
-    if (st.s) s('realclaps', { n: 1, amp: 0.4 * st.v })
-    if (st.h) s('hh27', { n: 2, amp: 0.15 * st.v, pan: -0.2 })
-    if (st.p) s(vary('vox', ['yeah', 'hmm', 'mouth'], 16), { n: rrand_i(0, 5), amp: 0.2, cut: 0.15 })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pl_garage', role: 'drums', flavours: { dub: 0.6, deep: 0.6, atmos: 0.4 }, energy: [0.3, 0.9], code: `
-fx({ lpf: 9000, rev: 0.15 })
-loop('2step', (i) => {
-  const b = beat('g', { style: 'garage', density: 0.5 })
-  for (let k = 0; k < b.length; k++) {
-    const st = b[k]
-    if (st.k) s('house', { n: 0, amp: 0.8 * st.v })
-    if (st.s) s('realclaps', { n: 3, amp: 0.35 * st.v })
-    if (st.h) s('hh27', { n: 6, amp: 0.18 * st.v, pan: 0.2 })
-    if (st.p) s('tok', { n: 1, amp: 0.15 })
-    sleep(swing(0.25, k, 0.16))
-  }
-})` },
-
-  { id: 'pl_gabber', role: 'drums', flavours: { industrial: 0.8, rave: 0.6 }, energy: [0.75, 1], code: `
-fx({ lpf: 9000, rev: 0.08, crush: 0.05 })
-loop('gabba', (i) => {
-  const b = beat('gb', { style: 'gabber', density: 0.6 })
-  for (let k = 0; k < b.length; k++) {
-    const st = b[k]
-    if (st.k) synth('kick_gabber', KEY - 24, { amp: 0.75 * st.v })
-    if (st.h) s('hh27', { n: 4, amp: 0.25 * st.v })
-    if (st.p) s('industrial', { n: rrand_i(0, 9), amp: 0.15, pan: rrand(-0.6, 0.6) })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pl_seven', role: 'drums', odd: true, flavours: { ae: 1, industrial: 0.4, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'pl_seven', role: 'drums', odd: true, flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 9000, rev: 0.15 })
 loop('seven', (i) => {
   const b = beat('7', { style: vary('meter', ['seven', 'five', 'eleven'], 32), density: 0.5 })
@@ -96,7 +55,7 @@ loop('odd', (i) => {
   const b = beat('o', { style: 'ae_odd', density: 0.6 })
   for (let k = 0; k < b.length; k++) {
     const st = b[k]
-    if (st.k) synth('donk', KEY + choose([0, 3, 7]), { amp: 0.6 * st.v })
+    if (st.k) synth('dx_marimba', KEY + choose([0, 3, 7]), { amp: 0.6 * st.v })
     if (st.s) synth('glitch_blip', KEY + 36, { amp: 0.5 * st.v, pan: rrand(-0.7, 0.7) })
     if (st.h) s('glitch', { n: rrand_i(0, 7), amp: 0.12 * st.v, rate: rrand(0.8, 2) })
     sleep(vary('grain', [0.25, 0.1875, 1 / 6], 8))
@@ -104,7 +63,7 @@ loop('odd', (i) => {
 })` },
 
   // ───── hard synths ─────
-  { id: 'pl_acid', role: 'bass', flavours: { rave: 1, industrial: 0.6, ae: 0.3 }, energy: [0.4, 1], code: `
+  { id: 'pl_acid', role: 'bass', flavours: { acid: 1 }, energy: [0.4, 1], code: `
 fx({ rev: 0.1, delay: 0.25 })
 loop('303', (i) => {
   const notes = ring(0, 0, 12, 0, 3, 0, 7, 10, 0, 12, 0, 5, 0, 3, 15, 0)
@@ -116,24 +75,7 @@ loop('303', (i) => {
   }
 })` },
 
-  { id: 'pl_reese_roll', role: 'bass', flavours: { atmos: 1, dark: 0.4 }, energy: [0.4, 1], code: `
-fx({ lpf: 2000, rev: 0.1 })
-loop('reese', (i) => {
-  synth('reese_hard', ROOT - 12, { dur: vary('len', [1.5, 3, 3.5], 4), amp: 0.5 })
-  sleep(4)
-})` },
-
-  { id: 'pl_wobble', role: 'bass', flavours: { industrial: 0.8, rave: 0.5, dark: 0.3 }, energy: [0.5, 1], code: `
-fx({ lpf: 4000 })
-loop('wob', (i) => {
-  const hits = spread(vary('h', [3, 5], 8), 8)
-  for (let k = 0; k < 8; k++) {
-    if (hits[k]) synth('wobble_bass', ROOT - 12, { dur: 0.35, amp: 0.55 })
-    sleep(0.5)
-  }
-})` },
-
-  { id: 'pl_fm_bass', role: 'bass', flavours: { ae: 0.9, industrial: 0.6, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'pl_fm_bass', role: 'bass', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.1, delay: 0.15 })
 loop('fm', (i) => {
   const hits = spread(vary('h', [5, 7, 9], 8), 16, vary('rot', [0, 3, 7], 4))
@@ -143,56 +85,7 @@ loop('fm', (i) => {
   }
 })` },
 
-  { id: 'pl_hard_sub', role: 'bass', flavours: { rave: 0.6, industrial: 0.6, atmos: 0.5, dark: 0.4 }, energy: [0.4, 1], code: `
-fx({ lpf: 900 })
-loop('sub', (i) => {
-  const hits = vary('pat', [[0, 10], [0, 6, 12], [2, 10, 14], [0, 3, 8, 11]], 8)
-  for (let k = 0; k < 16; k++) {
-    if (hits.includes(k)) synth('hard_sub', ROOT - 12, { amp: 0.6, dur: 0.4 })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pl_brass_stabs', role: 'keys', flavours: { rave: 1, atmos: 0.3 }, energy: [0.5, 1], code: `
-fx({ rev: 0.25, delay: 0.3 })
-loop('stabs', (i) => {
-  const pat = spread(vary('h', [3, 5], 8), 16, vary('rot', [2, 3, 6], 8))
-  for (let k = 0; k < 16; k++) {
-    if (pat[k]) synth(vary('v', ['brass_stab', 'rave_organ', 'rave_stab'], 16), harm(1, vary('e', ['', '7'], 8)), { vel: k % 4 === 0 ? 1 : 0.75 })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pl_donk_riff', role: 'lead', flavours: { rave: 0.8, ae: 0.5 }, energy: [0.4, 1], code: `
-fx({ rev: 0.2, delay: 0.35 })
-loop('donk', (i) => {
-  for (const n of phrase('d', { beats: 4, density: 0.85, octave: 1, rest: 0.1 })) {
-    if (n.note) synth('donk', n.note, { amp: 0.5 * n.vel })
-    sleep(n.dur)
-  }
-})` },
-
-  { id: 'pl_screamer', role: 'lead', flavours: { rave: 0.9, industrial: 0.5 }, energy: [0.7, 1], code: `
-fx({ rev: 0.3, delay: 0.3, lpf: 6000 })
-loop('scream', (i) => {
-  for (const n of phrase('s', { beats: 8, density: 0.3, octave: 2, rest: 0.2 })) {
-    if (n.note) synth('screamer', n.note, { amp: 0.45 * n.vel, dur: n.dur * 0.6 })
-    sleep(n.dur)
-  }
-})` },
-
-  { id: 'pl_pluck_seq', role: 'lead', flavours: { deep: 0.7, atmos: 0.6, rave: 0.5 }, energy: [0.3, 1], code: `
-fx({ rev: 0.3, delay: 0.4 })
-loop('pluck', (i) => {
-  const notes = modal(2, 2)
-  const order = ring(0, 4, 2, 7, 4, 9, 2, 5)
-  for (let k = 0; k < 16; k++) {
-    if (!one_in(4)) synth('pluck_hard', notes[order.tick() % notes.length], { vel: k % 3 === 0 ? 1 : 0.6, cutoff: walk('c', 400, 1600, 0.1) })
-    sleep(0.25)
-  }
-})` },
-
-  { id: 'pl_fm_metal_hits', role: 'perc', flavours: { ae: 1, industrial: 0.8 }, energy: [0.3, 1], code: `
+  { id: 'pl_fm_metal_hits', role: 'perc', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.3, delay: 0.25, crush: 0.15 })
 loop('metal', (i) => {
   const steps = vary('steps', [12, 16, 20], 16)
@@ -203,27 +96,9 @@ loop('metal', (i) => {
   }
 })` },
 
-  { id: 'pl_riser_drop', role: 'texture', flavours: { rave: 0.8, atmos: 0.5, industrial: 0.4 }, energy: [0.6, 1], code: `
-fx({ rev: 0.4, delay: 0.2 })
-loop('rise', (i) => {
-  if (one_in(2)) {
-    synth('riser', KEY, { attack: 14, dur: 1.5, amp: 0.4 })
-    sleep(16)
-    synth('sub_drop', ROOT - 12, { amp: 0.6 })
-    pad(choose(['stutter', 'tapestop']), 1)
-  } else sleep(16)
-})` },
-
   // ───── the city ─────
-  { id: 'pl_city_crowd', role: 'texture', flavours: { industrial: 1, dub: 0.3, fog: 0.3 }, energy: [0, 0.8], code: `
-fx({ rev: 0.4, lpf: 5000 })
-loop('crowd', (i) => {
-  synth('crowd', KEY + choose([0, 5, 12]), { dur: 12, amp: 0.35, pan: rrand(-0.5, 0.5) })
-  if (one_in(2)) s(vary('talk', ['speech', 'speechless', 'numbers'], 16), { n: rrand_i(0, 7), amp: 0.15, rate: rrand(0.85, 1.05), pan: rrand(-0.7, 0.7) })
-  sleep(8)
-})` },
 
-  { id: 'pl_city_metro', role: 'texture', flavours: { industrial: 1, dark: 0.5 }, energy: [0, 1], code: `
+  { id: 'pl_city_metro', role: 'texture', flavours: { dark: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.45, delay: 0.2 })
 loop('station', (i) => {
   synth('metro_chime', KEY + 19, { amp: 0.5 })
@@ -238,7 +113,7 @@ loop('station', (i) => {
   sleep(8)
 })` },
 
-  { id: 'pl_city_street', role: 'texture', flavours: { industrial: 0.8, dub: 0.4, deep: 0.3 }, energy: [0, 0.7], code: `
+  { id: 'pl_city_street', role: 'texture', flavours: { dark: 1, boc: 0.7 }, energy: [0, 0.7], code: `
 fx({ rev: 0.35, lpf: 6000 })
 loop('street', (i) => {
   synth('traffic', KEY - 24, { dur: 14, amp: 0.4 })
@@ -249,7 +124,7 @@ loop('street', (i) => {
   sleep(8)
 })` },
 
-  { id: 'pl_factory', role: 'perc', flavours: { industrial: 1, ae: 0.4, dark: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'pl_factory', role: 'perc', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.3, delay: 0.15 })
 loop('factory', (i) => {
   const press = spread(vary('p', [2, 3], 8), 8)
@@ -261,7 +136,7 @@ loop('factory', (i) => {
   }
 })` },
 
-  { id: 'pl_dark_voices', role: 'texture', flavours: { dark: 1, ae: 0.3, industrial: 0.3 }, energy: [0, 0.7], code: `
+  { id: 'pl_dark_voices', role: 'texture', flavours: { dark: 1 }, energy: [0, 0.7], code: `
 fx({ rev: 0.6, delay: 0.3, wobble: 0.4 })
 loop('choir', (i) => {
   synth(vary('v', ['voice_oo', 'voice_ah'], 8), harm(0, ''), { dur: 6, amp: 0.25, attack: 2, release: 3 })

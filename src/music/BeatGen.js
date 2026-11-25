@@ -58,27 +58,37 @@ RA.BeatGen = class BeatGen {
       h: [0.9, 0.6, 0.9, 0.6, 0.9, 0.6, 0.9, 0.6, 0.9, 0.6, 0.9, 0.6, 0.9, 0.6, 0.9, 0.6],
       p: [0, 0, 0.3, 0, 0, 0.25, 0, 0, 0, 0, 0, 0.3, 0, 0, 0.3, 0],
     },
-    // footwork / juke (~160): kicks in threes against the bar, sparse claps
-    footwork: {
-      k: [1, 0, 0, 0.9, 0, 0, 0.9, 0, 0, 0.8, 0, 0, 0.9, 0, 0.6, 0],
-      s: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.2],
-      h: [0.6, 0.3, 0.6, 0.3, 0.6, 0.3, 0.6, 0.3, 0.6, 0.3, 0.6, 0.3, 0.6, 0.3, 0.6, 0.3],
-      p: [0, 0.25, 0, 0, 0.3, 0, 0, 0.25, 0, 0, 0.3, 0, 0, 0.25, 0, 0],
+    // drill'n'bass (Drukqs): snares everywhere, kicks that skip; patterns ratchet on top
+    drill: {
+      k: [1, 0, 0.3, 0, 0, 0.2, 0.4, 0, 0.2, 0, 0.8, 0.3, 0, 0.3, 0, 0.2],
+      s: [0, 0, 0, 0.3, 1, 0.3, 0, 0.5, 0, 0.5, 0.2, 0.4, 1, 0.4, 0.6, 0.7],
+      h: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6],
+      p: [0, 0.3, 0, 0.2, 0, 0.3, 0.2, 0, 0.3, 0, 0.2, 0, 0.3, 0, 0.2, 0.3],
     },
-    // two-step garage: a skipping kick, snares on 2 and 4, shuffled hats
-    garage: {
-      k: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.8, 0.3, 0, 0, 0, 0],
+    // braindance (Richard D. James Album, Analord): syncopated 808, hats rolling
+    braindance: {
+      k: [1, 0, 0, 0.4, 0, 0, 0.7, 0, 0, 0.3, 1, 0, 0, 0.5, 0, 0.3],
+      s: [0, 0, 0, 0, 1, 0, 0, 0.2, 0, 0, 0, 0.3, 1, 0, 0.4, 0.2],
+      h: [0.9, 0.5, 0.9, 0.6, 0.9, 0.5, 0.9, 0.7, 0.9, 0.5, 0.9, 0.6, 0.9, 0.5, 0.9, 0.8],
+      p: [0, 0.3, 0, 0, 0.2, 0, 0.3, 0, 0, 0.3, 0, 0.2, 0, 0, 0.4, 0],
+    },
+    // Boards of Canada: slow boom-bap, a lazy kick, the snare on 2 and 4
+    boc_hiphop: {
+      k: [1, 0, 0, 0, 0, 0, 0, 0.5, 0, 0.3, 0.9, 0, 0, 0, 0, 0.2],
       s: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0.15],
-      h: [0, 0, 0.9, 0.3, 0, 0, 0.9, 0.4, 0, 0, 0.9, 0.3, 0, 0, 0.9, 0.4],
-      p: [0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0.3],
+      h: [0.8, 0, 0.5, 0, 0.8, 0, 0.5, 0.2, 0.8, 0, 0.5, 0, 0.8, 0, 0.5, 0.3],
+      p: [0, 0, 0, 0.2, 0, 0, 0.15, 0, 0, 0, 0, 0.2, 0, 0, 0, 0],
     },
-    // gabber / hardcore: a kick on every beat, offbeat hats, nothing gentle
-    gabber: {
-      k: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.2],
-      s: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1],
-      h: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-      p: [0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.3],
+    // Efdemin / minimal: dry 4/4, shuffled hats, offbeat percussion, no fills
+    efdemin: {
+      nofill: true,
+      k: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      s: [0, 0, 0, 0, 0.25, 0, 0, 0.1, 0, 0, 0, 0, 0.25, 0, 0, 0.1],
+      h: [0.15, 0.3, 0.85, 0.3, 0.15, 0.3, 0.85, 0.3, 0.15, 0.3, 0.85, 0.3, 0.15, 0.3, 0.85, 0.35],
+      p: [0, 0, 0.3, 0, 0, 0.4, 0, 0.2, 0, 0, 0.3, 0, 0, 0.4, 0, 0.2],
     },
+    // Autechre live: a table of 12-20 steps whose odds keep shifting bar by bar
+    ae_live: null,
     // 7/8 (2+2+3 eighths)
     seven: {
       groups: [4, 4, 6],
@@ -195,7 +205,7 @@ RA.BeatGen = class BeatGen {
       this.accent = t.groups ? BeatGen.accents(t.groups) : BeatGen.ACCENT;
       return t;
     }
-    const n = this.style === 'ae_odd' ? this.rng.int(11, 19) : 16;
+    const n = this.style === 'ae_odd' ? this.rng.int(11, 19) : this.style === 'ae_live' ? this.rng.int(12, 20) : 16;
     const rand = (lo, hi) => Array.from({ length: n }, () => (this.rng.chance(0.45) ? this.rng.float(lo, hi) : 0));
     const k = rand(0.3, 0.9);
     k[0] = 1;
@@ -231,8 +241,16 @@ RA.BeatGen = class BeatGen {
       const i = this.rng.int(1, this.length - 1);
       this.grid[i] = this.sampleStep(i);
     }
+    // ae_live: every bar the odds of a few steps drift, so the groove mutates as it plays
+    if (this.style === 'ae_live') {
+      for (let c = this.rng.int(1, 3); c > 0; c--) {
+        const inst = this.rng.pick(['k', 's', 'h', 'p']);
+        const i = this.rng.int(1, this.length - 1);
+        this.table[inst][i] = RA.MathUtil.clamp(this.table[inst][i] + this.rng.float(-0.35, 0.35), 0, 0.95);
+      }
+    }
     if (this.bars % 16 === 0 && this.rng.chance(0.4)) {
-      if (this.style === 'ae' || this.style === 'ae_odd') this.table = this.makeTable();
+      if (this.style === 'ae' || this.style === 'ae_odd' || this.style === 'ae_live') this.table = this.makeTable();
       this.grid = this.sample();
     }
     const bar = this.grid.map((s) => Object.assign({}, s));

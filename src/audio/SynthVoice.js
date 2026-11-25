@@ -156,7 +156,8 @@ RA.SynthVoice = class SynthVoice {
       osc.type = spec.type;
       osc.frequency.value = freq * Math.pow(2, spec.octave || 0) * (spec.ratio || 1);
       const offset = voices > 1 ? (v / (voices - 1) - 0.5) * 2 * spread : 0;
-      const base = (spec.detune || 0) + drift + offset;
+      // o.detune: this note's own detune in cents (melody() drift and probability styles)
+      const base = (spec.detune || 0) + drift + offset + (+this.o.detune || 0);
       if (P.pitch) {
         osc.detune.setValueAtTime(base + P.pitch.from * 100, time);
         osc.detune.setTargetAtTime(base, time, P.pitch.time / 3);

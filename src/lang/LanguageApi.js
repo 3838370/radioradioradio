@@ -10,6 +10,7 @@
 //   vary(name, options, bars)  walk(name, lo, hi, speed)  phrase(name, opts)  pad(id, beats)
 //   beat(name, { style, density })  swing(step, k, amount)
 //   chords(name, opts)  bassline(name, opts)  collage(name, opts)  drone(name, opts)  motif(name, opts)  tape(name)
+//   melody(name, { style: 'ostinato' | 'drift' | 'probability' | 'cells', octave, beats })
 //   KEY ROOT QUAL MODE ENERGY BAR BPM
 //
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
@@ -306,6 +307,27 @@ RA.LanguageApi = class LanguageApi {
         const hits = [];
         for (let at = 0; at < 4; at += 0.25) if (self.rng.chance(0.08)) hits.push({ at, amp: self.rng.float(0.2, 0.6) });
         return { level: g.level, wow: g.wow, crackles: self.timeline(hits, 4, { amp: 0 }) };
+      },
+
+      // melody('m', { style, octave, beats, chord }) -> [{ note, notes, len, vel, detune, ratchet, dur }]
+      //   style: ostinato (Aphex: a cell that repeats and turns), drift (Boards of Canada:
+      //   long notes, out of tune), probability (Autechre: odd step sequence, notes leave the
+      //   mode), cells (Efdemin: little bell figures in different cycle lengths). See
+      //   Melodies.js. `note` is null on rests; cells may sound several `notes` at once.
+      //   chord (ostinato): follow the chord's root (true) or stay on the key (false).
+      melody(name, { style = 'ostinato', octave = 2, beats = 4, chord = true } = {}) {
+        const makers = { ostinato: () => new RA.OstinatoGen(self.rng), drift: () => new RA.DriftGen(self.rng), probability: () => new RA.ProbabilityGen(self.rng), cells: () => new RA.CellsGen(self.rng) };
+        const make = makers[style] || makers.ostinato;
+        const g = self.generator('melody:' + name, (x) => x.style === style, () => Object.assign(make(), { style }));
+        const bar = coder.bar();
+        const root = style === 'ostinato' && chord ? harmony.degreeAt(bar) : 0;
+        return g.next(beats).map((e) => {
+          let notes = [];
+          if (e.steps) notes = e.steps.map((s) => harmony.degree(s, octave));
+          else if (e.semi != null) notes = [harmony.key + 12 * octave + e.semi];
+          else if (e.step != null) notes = [harmony.degree(root + e.step, octave)];
+          return { note: notes[0] == null ? null : notes[0], notes, len: e.len || e.dur, vel: e.vel, detune: e.detune || 0, ratchet: !!e.ratchet, dur: e.dur };
+        });
       },
 
       // motif('m', { beats, density, octave }) -> [{ note, dur, vel }]: a short melody that

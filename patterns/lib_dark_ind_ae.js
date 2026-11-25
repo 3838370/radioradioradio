@@ -4,7 +4,7 @@
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   // ───── drums ─────
-  { id: 'dark_dread_kit', role: 'drums', flavours: { dark: 1, industrial: 0.6 }, energy: [0.3, 1], code: `
+  { id: 'dark_dread_kit', role: 'drums', flavours: { dark: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 3500, rev: 0.25, crush: 0.08 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'halftime_dread', density: walk('d', 0.4, 0.8, 0.1) })
@@ -18,7 +18,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'dark_ritual_drums', role: 'drums', flavours: { dark: 0.9, ae: 0.5 }, energy: [0.3, 1], odd: true, code: `
+  { id: 'dark_ritual_drums', role: 'drums', flavours: { dark: 1 }, energy: [0.3, 1], odd: true, code: `
 fx({ lpf: 4500, rev: 0.3 })
 loop('ritual', (i) => {
   const b = beat('b', { style: 'ritual', density: 0.55 })
@@ -32,7 +32,7 @@ loop('ritual', (i) => {
   }
 })` },
 
-  { id: 'ind_clubkick_four', role: 'drums', flavours: { industrial: 1, dark: 0.5 }, energy: [0.4, 1], code: `
+  { id: 'ind_clubkick_four', role: 'drums', flavours: { minimal: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 7000, crush: 0.12, rev: 0.1 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'four', density: walk('d', 0.4, 0.8, 0.1) })
@@ -46,7 +46,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'ae_break_odd', role: 'drums', flavours: { ae: 1, industrial: 0.5 }, energy: [0.3, 1], odd: true, code: `
+  { id: 'ae_break_odd', role: 'drums', flavours: { ae: 1 }, energy: [0.3, 1], odd: true, code: `
 fx({ lpf: 8000, crush: 0.15, delay: 0.1 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'ae_odd', density: 0.6 })
@@ -60,7 +60,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'dark_pulse_heart', role: 'drums', flavours: { dark: 1, ae: 0.4 }, energy: [0, 0.8], code: `
+  { id: 'dark_pulse_heart', role: 'drums', flavours: { dark: 1 }, energy: [0, 0.8], code: `
 fx({ lpf: 900, rev: 0.4 })
 loop('pulse', (i) => {
   const b = beat('b', { style: 'pulse_sparse', density: 0.35 })
@@ -73,7 +73,7 @@ loop('pulse', (i) => {
 })` },
 
   // ───── perc ─────
-  { id: 'dark_metal_scrape_hits', role: 'perc', flavours: { dark: 1, industrial: 0.7 }, energy: [0.2, 1], code: `
+  { id: 'dark_metal_scrape_hits', role: 'perc', flavours: { dark: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.45, delay: 0.25, lpf: 5000 })
 loop('scrape', (i) => {
   const wait = vary('w', [1, 2, 3], 8)
@@ -82,7 +82,7 @@ loop('scrape', (i) => {
   sleep(4 - wait)
 })` },
 
-  { id: 'ind_anvil_grid', role: 'perc', flavours: { industrial: 1, dark: 0.5, ae: 0.4 }, energy: [0.3, 1], code: `
+  { id: 'ind_anvil_grid', role: 'perc', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.2, delay: 0.15, lpf: 7000 })
 loop('anvil', (i) => {
   const hits = spread(vary('h', [3, 5, 7], 8), 16, vary('r', [0, 2, 5], 8))
@@ -92,7 +92,7 @@ loop('anvil', (i) => {
   }
 })` },
 
-  { id: 'ae_glitch_scatter', role: 'perc', flavours: { ae: 1, industrial: 0.5 }, energy: [0.25, 1], code: `
+  { id: 'ae_glitch_scatter', role: 'perc', flavours: { ae: 1 }, energy: [0.25, 1], code: `
 fx({ crush: 0.2, delay: 0.15, lpf: 9000 })
 loop('glitch', (i) => {
   const odds = vary('odds', [3, 4, 6], 4)
@@ -102,7 +102,7 @@ loop('glitch', (i) => {
   }
 })` },
 
-  { id: 'dark_tabla_low', role: 'perc', flavours: { dark: 0.9, ae: 0.5 }, energy: [0.1, 1], code: `
+  { id: 'dark_tabla_low', role: 'perc', flavours: { dark: 1 }, energy: [0.1, 1], code: `
 fx({ rev: 0.4, lpf: 2500 })
 loop('tabla', (i) => {
   const hits = spread(vary('h', [3, 5], 8), 16, vary('r', [2, 7], 8))
@@ -112,7 +112,7 @@ loop('tabla', (i) => {
   }
 })` },
 
-  { id: 'dark_clock_tick', role: 'perc', flavours: { dark: 0.9, industrial: 0.5 }, energy: [0, 0.9], code: `
+  { id: 'dark_clock_tick', role: 'perc', flavours: { dark: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.35, lpf: 3000, delay: 0.2 })
 loop('tick', (i) => {
   for (let k = 0; k < 4; k++) {
@@ -122,7 +122,7 @@ loop('tick', (i) => {
 })` },
 
   // ───── bass ─────
-  { id: 'dark_dread_sub_line', role: 'bass', flavours: { dark: 1, industrial: 0.6, ae: 0.3 }, energy: [0.25, 1], code: `
+  { id: 'dark_dread_sub_line', role: 'bass', flavours: { dark: 1 }, energy: [0.25, 1], code: `
 fx({ lpf: 450, crush: 0.06 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: vary('st', ['sub', 'dub'], 16) })) {
@@ -131,7 +131,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'ae_fm_bass_line', role: 'bass', flavours: { ae: 1, industrial: 0.5 }, energy: [0.35, 1], code: `
+  { id: 'ae_fm_bass_line', role: 'bass', flavours: { ae: 1 }, energy: [0.35, 1], code: `
 fx({ lpf: 2500, crush: 0.1 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: 'acid' })) {
@@ -140,7 +140,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'ae_sh_bass_808', role: 'bass', flavours: { ae: 0.9, dark: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'ae_sh_bass_808', role: 'bass', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 900, delay: 0.08 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: '808' })) {
@@ -149,7 +149,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'ae_dx_bass_stutter', role: 'bass', flavours: { ae: 0.9, industrial: 0.4 }, energy: [0.4, 1], code: `
+  { id: 'ae_dx_bass_stutter', role: 'bass', flavours: { ae: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 1600, crush: 0.12 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: 'pedal' })) {
@@ -158,7 +158,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'dark_low_brass_bass', role: 'bass', flavours: { dark: 0.9, ae: 0.5, fog: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'dark_low_brass_bass', role: 'bass', flavours: { dark: 1 }, energy: [0.2, 1], code: `
 fx({ lpf: 700, rev: 0.25 })
 loop('brass', (i) => {
   for (const b of bassline('b', { style: 'sub' })) {
@@ -168,7 +168,7 @@ loop('brass', (i) => {
 })` },
 
   // ───── keys ─────
-  { id: 'ind_tension_strings', role: 'keys', flavours: { industrial: 1, dark: 0.7 }, energy: [0.3, 1], code: `
+  { id: 'ind_tension_strings', role: 'keys', flavours: { dark: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.35, lpf: 2500 })
 loop('strings', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['cluster', 'm7'], 16), rhythm: 'long', octave: 1 })) {
@@ -177,7 +177,7 @@ loop('strings', (i) => {
   }
 })` },
 
-  { id: 'ind_dread_pad', role: 'keys', flavours: { industrial: 0.9, dark: 0.8 }, energy: [0, 1], code: `
+  { id: 'ind_dread_pad', role: 'keys', flavours: { dark: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.4, lpf: 1200, crush: 0.05 })
 loop('pad', (i) => {
   for (const c of chords('c', { voicing: 'fifths', rhythm: 'long', octave: 0 })) {
@@ -186,7 +186,7 @@ loop('pad', (i) => {
   }
 })` },
 
-  { id: 'ae_glass_quartal', role: 'keys', flavours: { ae: 1, industrial: 0.5 }, energy: [0.2, 1], code: `
+  { id: 'ae_glass_quartal', role: 'keys', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ delay: 0.3, rev: 0.3 })
 loop('glass', (i) => {
   for (const c of chords('c', { voicing: 'quartal', rhythm: 'stab', octave: 2, density: 0.7 })) {
@@ -195,7 +195,7 @@ loop('glass', (i) => {
   }
 })` },
 
-  { id: 'ae_pwm_cluster', role: 'keys', flavours: { ae: 1, dark: 0.4 }, energy: [0.15, 1], code: `
+  { id: 'ae_pwm_cluster', role: 'keys', flavours: { ae: 1 }, energy: [0.15, 1], code: `
 fx({ lpf: 2200, rev: 0.25, crush: 0.08 })
 loop('cluster', (i) => {
   for (const c of chords('c', { voicing: 'cluster', rhythm: 'push', octave: 1, density: 0.5 })) {
@@ -204,7 +204,7 @@ loop('cluster', (i) => {
   }
 })` },
 
-  { id: 'ind_low_brass_stabs', role: 'keys', flavours: { industrial: 1, ae: 0.5 }, energy: [0.4, 1], code: `
+  { id: 'ind_low_brass_stabs', role: 'keys', flavours: { dark: 1, ae: 0.7 }, energy: [0.4, 1], code: `
 fx({ lpf: 2000, crush: 0.1, delay: 0.15 })
 loop('stabs', (i) => {
   for (const c of chords('c', { voicing: 'fifths', rhythm: 'stab', octave: 1, density: 0.6 })) {
@@ -213,7 +213,7 @@ loop('stabs', (i) => {
   }
 })` },
 
-  { id: 'ae_marimba_push', role: 'keys', flavours: { ae: 0.9, industrial: 0.5 }, energy: [0.25, 1], code: `
+  { id: 'ae_marimba_push', role: 'keys', flavours: { ae: 1 }, energy: [0.25, 1], code: `
 fx({ delay: 0.25, rev: 0.2 })
 loop('marimba', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['m7', 'sus4'], 8), rhythm: 'push', octave: 2, density: 0.8 })) {
@@ -223,7 +223,7 @@ loop('marimba', (i) => {
 })` },
 
   // ───── lead ─────
-  { id: 'dark_formant_motif', role: 'lead', flavours: { dark: 1, industrial: 0.5 }, energy: [0, 1], code: `
+  { id: 'dark_formant_motif', role: 'lead', flavours: { dark: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.5, delay: 0.3, lpf: 3000 })
 loop('voice', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.25, octave: 1 })) {
@@ -232,7 +232,7 @@ loop('voice', (i) => {
   }
 })` },
 
-  { id: 'dark_bell_dread', role: 'lead', flavours: { dark: 0.9, ae: 0.5 }, energy: [0, 1], code: `
+  { id: 'dark_bell_dread', role: 'lead', flavours: { dark: 1 }, energy: [0, 1], code: `
 fx({ delay: 0.55, rev: 0.5 })
 loop('bell', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.2, octave: 1 })) {
@@ -241,7 +241,7 @@ loop('bell', (i) => {
   }
 })` },
 
-  { id: 'ae_sh_lead_glitch', role: 'lead', flavours: { ae: 1, industrial: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'ae_sh_lead_glitch', role: 'lead', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ crush: 0.12, delay: 0.2, lpf: 6000 })
 loop('lead', (i) => {
   for (const n of motif('m', { beats: 4, density: 0.8, octave: 2 })) {
@@ -250,7 +250,7 @@ loop('lead', (i) => {
   }
 })` },
 
-  { id: 'ind_radio_lead', role: 'lead', flavours: { industrial: 1, ae: 0.5, dark: 0.4 }, energy: [0.2, 1], code: `
+  { id: 'ind_radio_lead', role: 'lead', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.3, delay: 0.25, lpf: 5000 })
 loop('radio', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.3, octave: 2 })) {
@@ -259,7 +259,7 @@ loop('radio', (i) => {
   }
 })` },
 
-  { id: 'dark_tape_ghost', role: 'lead', flavours: { dark: 0.9, space: 0.3 }, energy: [0, 0.8], code: `
+  { id: 'dark_tape_ghost', role: 'lead', flavours: { dark: 1 }, energy: [0, 0.8], code: `
 fx({ rev: 0.55, wobble: 0.35, lpf: 2200 })
 loop('ghost', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.2, octave: 1 })) {
@@ -269,7 +269,7 @@ loop('ghost', (i) => {
 })` },
 
   // ───── texture ─────
-  { id: 'dark_suspense_riser', role: 'texture', flavours: { dark: 1, industrial: 0.6 }, energy: [0, 1], code: `
+  { id: 'dark_suspense_riser', role: 'texture', flavours: { dark: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.45, lpf: 5000 })
 loop('rise', (i) => {
   synth('riser_slow', degree(0, 0), { dur: 7, amp: 0.25 })
@@ -278,7 +278,7 @@ loop('rise', (i) => {
   sleep(8)
 })` },
 
-  { id: 'ae_arcade_collage', role: 'texture', flavours: { ae: 1, industrial: 0.6 }, energy: [0.2, 1], code: `
+  { id: 'ae_arcade_collage', role: 'texture', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ crush: 0.15, delay: 0.25, rev: 0.25 })
 loop('arcade', (i) => {
   for (const e of collage('c', { pool: ['tacscan', 'subroc3d', 'invaders', 'glitch'], rate: walk('r', 0.3, 0.8, 0.1) })) {
@@ -287,14 +287,14 @@ loop('arcade', (i) => {
   }
 })` },
 
-  { id: 'ae_radio_static', role: 'texture', flavours: { ae: 1, dark: 0.4 }, energy: [0, 1], code: `
+  { id: 'ae_radio_static', role: 'texture', flavours: { ae: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.3, delay: 0.3, lpf: 6000 })
 loop('static', (i) => {
   if (one_in(2)) synth(choose(['shortwave', 'radio_tune']), degree(rrand_i(0, 6), 2), { dur: rrand(0.5, 2), amp: 0.14, pan: rrand(-0.7, 0.7) })
   sleep(2)
 })` },
 
-  { id: 'ae_diphone_cut', role: 'texture', flavours: { ae: 0.9, industrial: 0.4 }, energy: [0.2, 1], code: `
+  { id: 'ae_diphone_cut', role: 'texture', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ crush: 0.1, delay: 0.2, lpf: 5000 })
 loop('speech', (i) => {
   for (const e of collage('c', { pool: ['diphone2', 'numbers'], rate: walk('r', 0.3, 0.7, 0.1) })) {
@@ -303,7 +303,7 @@ loop('speech', (i) => {
   }
 })` },
 
-  { id: 'dark_sea_drone', role: 'texture', flavours: { dark: 0.9, ae: 0.5 }, energy: [0, 0.9], code: `
+  { id: 'dark_sea_drone', role: 'texture', flavours: { dark: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.55, lpf: 2500, wobble: 0.15 })
 loop('sea', (i) => {
   for (const e of collage('c', { pool: ['seawolf', 'crow', 'insect'], rate: walk('r', 0.1, 0.35, 0.1) })) {

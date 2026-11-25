@@ -3,28 +3,29 @@
 // another of its kit, so a pattern keeps its role but changes colour.
 RA.Families = class Families {
   static SYNTHS = {
-    pad: ['haze', 'strings', 'choir', 'warm_pad', 'juno_pad', 'string_machine', 'pwm_pad', 'dx_pad', 'space_choir', 'shimmer_pad'],
+    boc_pad: ['boc_pad', 'boc_choir', 'juno_pad', 'warm_pad'],
+    boc_lead: ['boc_lead', 'boc_flute', 'tape_warble', 'soft_saw'],
+    pad: ['haze', 'strings', 'choir', 'string_machine', 'pwm_pad', 'dx_pad', 'space_choir', 'shimmer_pad', 'efd_pad'],
     pad_dark: ['horror', 'choir_dark', 'dark_pad', 'noise_drone', 'drone', 'dread_pad', 'space_drone_slow'],
-    drone: ['space_drone_slow', 'glass_drone', 'cosmic_sweep', 'drone'],
+    drone: ['glass_drone', 'cosmic_sweep', 'space_drone_slow'],
     keys: ['keys', 'piano', 'felt', 'grand', 'rhodes', 'epiano'],
-    keys_odd: ['broken_piano', 'toy_piano', 'felt'],
-    bell: ['bell', 'glass', 'chip', 'dx_bell', 'fm_glass', 'dx_marimba'],
-    pluck: ['pluck', 'pluck_hard', 'donk', 'glitch_blip'],
-    lead: ['mono', 'pulse', 'sync_lead', 'laser', 'sh_lead', 'soft_saw', 'tape_warble'],
-    lead_harsh: ['metal_lead', 'screech', 'screamer', 'fm_metal'],
-    stab: ['stab', 'rave_stab', 'brass_stab', 'brass', 'rave_organ', 'supersaw', 'hoover', 'dx_brass'],
-    dub_chord: ['stab', 'dub_chord', 'dub_stab_m7'],
-    sub: ['sub', 'sub808', 'fm_sub', 'hard_sub', 'dub_sub', 'dx_bass'],
-    reese: ['reese', 'reese_heavy', 'reese_hard', 'growl', 'wobble_bass'],
-    acid: ['acid', 'acid_dirty', 'acid_303', 'acid_sq', 'dist_bass', 'fm_bass', 'sh_bass'],
-    dread: ['dread_sub', 'hard_sub', 'low_brass'],
+    prepared: ['prepared_piano', 'prepared_mute', 'broken_piano', 'toy_piano'],
+    bell: ['bell', 'glass', 'chip', 'dx_bell', 'fm_glass', 'dx_marimba', 'efd_bell'],
+    organ: ['efd_organ', 'efd_stab', 'dub_stab_m7'],
+    pluck: ['pluck', 'glitch_blip', 'ae_blip'],
+    lead: ['mono', 'pulse', 'sync_lead', 'sh_lead', 'saw2_square', 'aphex_lead'],
+    lead_harsh: ['metal_lead', 'screech', 'fm_metal'],
+    stab: ['stab', 'brass', 'dx_brass', 'dub_chord'],
+    sub: ['sub', 'sub808', 'fm_sub', 'dub_sub', 'dx_bass', 'drill_sub'],
+    acid: ['acid', 'acid_dirty', 'acid_303', 'acid_sq', 'tb303_saw', 'tb303_square'],
+    acid_bass: ['sh_bass', 'braindance_bass'],
+    fm_bass: ['fm_bass', 'ae_bass'],
+    dread: ['dread_sub', 'low_brass'],
     tension: ['riser_slow', 'tension_string', 'metal_scrape'],
-    kick: ['kick_synth', 'kick_hard'],
-    metal: ['clank', 'anvil', 'welder', 'zap'],
-    machine: ['grind', 'machine', 'steam', 'hum'],
-    voice: ['voice_ah', 'voice_oo', 'choir', 'formant_voice'],
+    metal: ['clank', 'anvil', 'welder', 'zap', 'ae_fm_perc'],
+    machine: ['grind', 'machine', 'steam', 'hum', 'ae_grain'],
+    voice: ['voice_ah', 'voice_oo', 'formant_voice'],
     radio: ['radio_tune', 'shortwave'],
-    bed: ['hiss_bed', 'vinyl_bed'],
   };
 
   // Sample folders by kit role (Dirt-Samples).
@@ -45,15 +46,15 @@ RA.Families = class Families {
 
   // Sound pools for collage() per mood (FSOL-style collage of voices, radio, field sounds).
   static COLLAGE = {
-    deep: ['outdoor', 'birds3', 'wind', 'speech', 'bubble'],
+    saw: ['outdoor', 'birds3', 'wind', 'bubble', 'speechless'],
+    acid: ['glitch', 'diphone', 'mouth', 'numbers'],
+    drill: ['speech', 'mouth', 'glitch2', 'alphabet'],
+    boc: ['speech', 'numbers', 'kurt', 'birds3', 'outdoor', 'alphabet'],
+    minimal: ['east', 'outdoor', 'noise2', 'speechless'],
+    dub: ['speech', 'east', 'noise2', 'outdoor', 'wind'],
     space: ['cosmicg', 'space', 'speechless', 'numbers', 'bubble', 'insect', 'birds3'],
-    atmos: ['speech', 'alphabet', 'east', 'tabla', 'outdoor'],
-    fog: ['wind', 'outdoor', 'noise2'],
-    dub: ['speech', 'east', 'noise2', 'outdoor'],
-    dark: ['crow', 'insect', 'speechless', 'noise2', 'seawolf'],
-    industrial: ['industrial', 'metal', 'tacscan', 'subroc3d', 'speech'],
-    rave: ['rave', 'future', 'alphabet', 'numbers'],
-    ae: ['glitch', 'diphone2', 'tacscan', 'invaders', 'numbers'],
+    dark: ['crow', 'insect', 'speechless', 'noise2', 'seawolf', 'industrial'],
+    ae: ['glitch', 'diphone2', 'tacscan', 'invaders', 'numbers', 'sid'],
   };
 
   static synthFamily(name) {

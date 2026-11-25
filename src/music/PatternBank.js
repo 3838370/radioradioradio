@@ -1,5 +1,5 @@
 // PatternBank: the AI-written patterns, with lookup by role and fit to the current mood.
-// Pattern: { id, role, flavours: { fog?, deep?, atmos? }, energy: [min, max], code }
+// Pattern: { id, role, flavours: { saw?, boc?, ae? ... (see Mood.CYCLE) }, energy: [min, max], code }
 RA.PatternBank = class PatternBank {
   static ROLES = ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'];
 

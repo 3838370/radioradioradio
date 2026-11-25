@@ -4,7 +4,7 @@
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   // ───── drums ─────
-  { id: 'saw_808_kit', role: 'drums', flavours: { space: 1, deep: 0.8 }, energy: [0.3, 1], code: `
+  { id: 'saw_808_kit', role: 'drums', flavours: { saw: 1, acid: 0.7 }, energy: [0.3, 1], code: `
 fx({ lpf: 6000, rev: 0.2, crush: 0.05 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'saw808', density: walk('dens', 0.35, 0.75, 0.1) })
@@ -18,7 +18,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'deep_downtempo_kit', role: 'drums', flavours: { deep: 1, space: 0.6 }, energy: [0.25, 1], code: `
+  { id: 'deep_downtempo_kit', role: 'drums', flavours: { boc: 1 }, energy: [0.25, 1], code: `
 fx({ lpf: 5000, rev: 0.25 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'downtempo', density: 0.5 })
@@ -32,7 +32,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'space_drift_kit', role: 'drums', flavours: { space: 1, deep: 0.5 }, energy: [0, 0.8], code: `
+  { id: 'space_drift_kit', role: 'drums', flavours: { space: 1 }, energy: [0, 0.8], code: `
 fx({ lpf: 3500, rev: 0.5, delay: 0.3, wobble: 0.1 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'drift_free', density: walk('dens', 0.3, 0.7, 0.1) })
@@ -46,7 +46,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'space_fsol_break', role: 'drums', flavours: { space: 0.9, deep: 0.6, atmos: 0.4 }, energy: [0.35, 1], code: `
+  { id: 'space_fsol_break', role: 'drums', flavours: { boc: 1, space: 0.7 }, energy: [0.35, 1], code: `
 fx({ lpf: walk('lpf', 2500, 7000, 0.1), rev: 0.2, delay: 0.1 })
 loop('break', (i) => {
   const b = beat('b', { style: 'fsol_break', density: 0.55 })
@@ -60,7 +60,7 @@ loop('break', (i) => {
   }
 })` },
 
-  { id: 'space_pulse_kick', role: 'drums', flavours: { space: 0.9, deep: 0.5, dark: 0.3 }, energy: [0, 0.7], code: `
+  { id: 'space_pulse_kick', role: 'drums', flavours: { space: 1 }, energy: [0, 0.7], code: `
 fx({ lpf: 2000, rev: 0.45, delay: 0.25 })
 loop('pulse', (i) => {
   const b = beat('b', { style: 'pulse_sparse', density: 0.4 })
@@ -74,7 +74,7 @@ loop('pulse', (i) => {
 })` },
 
   // ───── perc ─────
-  { id: 'space_tabla_drift', role: 'perc', flavours: { space: 1, deep: 0.6, atmos: 0.3 }, energy: [0.15, 1], code: `
+  { id: 'space_tabla_drift', role: 'perc', flavours: { space: 1 }, energy: [0.15, 1], code: `
 fx({ rev: 0.35, delay: 0.2, lpf: 5000 })
 loop('tabla', (i) => {
   const hits = spread(vary('h', [5, 7, 9], 8), 16, vary('r', [0, 3, 5], 8))
@@ -84,7 +84,7 @@ loop('tabla', (i) => {
   }
 })` },
 
-  { id: 'deep_808_toms', role: 'perc', flavours: { deep: 1, space: 0.6 }, energy: [0.2, 1], code: `
+  { id: 'deep_808_toms', role: 'perc', flavours: { saw: 1, acid: 0.7 }, energy: [0.2, 1], code: `
 fx({ rev: 0.3, delay: 0.25, lpf: 4000 })
 loop('toms', (i) => {
   const hits = spread(vary('h', [3, 4, 5], 8), 16, 2)
@@ -95,7 +95,7 @@ loop('toms', (i) => {
   }
 })` },
 
-  { id: 'space_glasstap', role: 'perc', flavours: { space: 1, deep: 0.5 }, energy: [0, 0.9], code: `
+  { id: 'space_glasstap', role: 'perc', flavours: { space: 1 }, energy: [0, 0.9], code: `
 fx({ delay: 0.5, rev: 0.45, lpf: 7000 })
 loop('glass', (i) => {
   for (let k = 0; k < 8; k++) {
@@ -104,7 +104,7 @@ loop('glass', (i) => {
   }
 })` },
 
-  { id: 'deep_shaker_swing', role: 'perc', flavours: { deep: 1, space: 0.5, atmos: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'deep_shaker_swing', role: 'perc', flavours: { boc: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 6500, rev: 0.15 })
 loop('shaker', (i) => {
   for (let k = 0; k < 16; k++) {
@@ -114,7 +114,7 @@ loop('shaker', (i) => {
 })` },
 
   // ───── bass ─────
-  { id: 'space_sh_bass', role: 'bass', flavours: { space: 0.9, deep: 0.7 }, energy: [0.2, 1], code: `
+  { id: 'space_sh_bass', role: 'bass', flavours: { saw: 1 }, energy: [0.2, 1], code: `
 fx({ lpf: 800, rev: 0.1 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: vary('st', ['sub', '808'], 16) })) {
@@ -123,7 +123,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'deep_dx_walk', role: 'bass', flavours: { deep: 0.8, space: 0.6, atmos: 0.4 }, energy: [0.3, 1], code: `
+  { id: 'deep_dx_walk', role: 'bass', flavours: { boc: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 1300 })
 loop('walk', (i) => {
   for (const b of bassline('b', { style: vary('st', ['walk', 'dub', '808'], 16) })) {
@@ -132,7 +132,7 @@ loop('walk', (i) => {
   }
 })` },
 
-  { id: 'space_drone_bass', role: 'bass', flavours: { space: 1, deep: 0.6, dark: 0.4 }, energy: [0, 0.7], code: `
+  { id: 'space_drone_bass', role: 'bass', flavours: { space: 1 }, energy: [0, 0.7], code: `
 fx({ lpf: 600, rev: 0.25, wobble: 0.1 })
 loop('drone', (i) => {
   const d = drone('d', { voices: 1, octave: 0 })
@@ -141,7 +141,7 @@ loop('drone', (i) => {
 })` },
 
   // ───── keys ─────
-  { id: 'space_juno_chords', role: 'keys', flavours: { space: 0.9, deep: 0.8 }, energy: [0, 0.9], code: `
+  { id: 'space_juno_chords', role: 'keys', flavours: { boc: 1, saw: 0.7 }, energy: [0, 0.9], code: `
 fx({ rev: 0.45, lpf: 2200, wobble: 0.15, delay: 0.15 })
 loop('chords', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['add9', 'sus2', 'wide'], 16), rhythm: 'long', octave: 1 })) {
@@ -150,7 +150,7 @@ loop('chords', (i) => {
   }
 })` },
 
-  { id: 'deep_dx_chords', role: 'keys', flavours: { deep: 1, space: 0.6 }, energy: [0.15, 1], code: `
+  { id: 'deep_dx_chords', role: 'keys', flavours: { saw: 1 }, energy: [0.15, 1], code: `
 fx({ rev: 0.35, delay: 0.2, lpf: 3500 })
 loop('chords', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['m7', 'add9'], 16), rhythm: 'push', octave: 1, density: 0.6 })) {
@@ -160,7 +160,7 @@ loop('chords', (i) => {
 })` },
 
   // ───── lead ─────
-  { id: 'deep_call_response', role: 'lead', flavours: { deep: 1, space: 0.8 }, energy: [0.1, 1], code: `
+  { id: 'deep_call_response', role: 'lead', flavours: { saw: 1 }, energy: [0.1, 1], code: `
 fx({ rev: 0.4, delay: 0.3 })
 loop('talk', (i) => {
   // a call on even bars, the answer on odd bars, an octave lower, on another instrument
@@ -171,7 +171,7 @@ loop('talk', (i) => {
   }
 })` },
 
-  { id: 'space_warble_motif', role: 'lead', flavours: { space: 1, deep: 0.6 }, energy: [0, 0.9], code: `
+  { id: 'space_warble_motif', role: 'lead', flavours: { boc: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.5, delay: 0.25, wobble: 0.25 })
 loop('motif', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.3, octave: 2 })) {
@@ -181,14 +181,14 @@ loop('motif', (i) => {
 })` },
 
   // ───── texture ─────
-  { id: 'space_cosmic_bed', role: 'texture', flavours: { space: 1, deep: 0.5, dark: 0.3 }, energy: [0, 0.9], code: `
+  { id: 'space_cosmic_bed', role: 'texture', flavours: { space: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.6, lpf: 4000 })
 loop('sweep', (i) => {
   synth('cosmic_sweep', degree(choose([0, 4]), 1), { dur: 12, attack: 4, release: 4, amp: walk('a', 0.2, 0.4, 0.1) })
   sleep(16)
 })` },
 
-  { id: 'space_birds_insects', role: 'texture', flavours: { space: 0.9, deep: 0.8 }, energy: [0, 0.9], code: `
+  { id: 'space_birds_insects', role: 'texture', flavours: { boc: 1, space: 0.7 }, energy: [0, 0.9], code: `
 fx({ rev: 0.4, delay: 0.2, lpf: 7000 })
 loop('field', (i) => {
   for (const e of collage('c', { pool: ['birds3', 'insect', 'outdoor', 'birds'], rate: walk('r', 0.2, 0.6, 0.1) })) {
@@ -197,7 +197,7 @@ loop('field', (i) => {
   }
 })` },
 
-  { id: 'deep_tape_warm', role: 'texture', flavours: { deep: 0.9, space: 0.7, dub: 0.4 }, energy: [0, 1], code: `
+  { id: 'deep_tape_warm', role: 'texture', flavours: { boc: 1 }, energy: [0, 1], code: `
 fx({ lpf: 7000, wobble: 0.2 })
 loop('tape', (i) => {
   const t = tape('t')
@@ -206,7 +206,7 @@ loop('tape', (i) => {
   sleep(4)
 })` },
 
-  { id: 'space_numbers', role: 'texture', flavours: { space: 1, deep: 0.5, ae: 0.3 }, energy: [0, 1], code: `
+  { id: 'space_numbers', role: 'texture', flavours: { boc: 1, space: 0.7 }, energy: [0, 1], code: `
 fx({ delay: 0.45, rev: 0.5, lpf: 3200, crush: 0.1 })
 loop('station', (i) => {
   for (const e of collage('c', { pool: ['numbers', 'speechless', 'alphabet'], rate: walk('r', 0.1, 0.35, 0.1) })) {

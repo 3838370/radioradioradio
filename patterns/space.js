@@ -4,7 +4,7 @@
 // Melodies come from phrase(): motifs that develop in an A A' B A'' form and keep evolving.
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
-  { id: 'space_piano', role: 'lead', flavours: { space: 1, deep: 0.4 }, energy: [0, 1], code: `
+  { id: 'space_piano', role: 'lead', flavours: { saw: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.55, delay: 0.25, lpf: 5000, wobble: 0.15 })
 loop('right', (i) => {
   for (const n of phrase('right', { beats: 8, density: vary('dens', [0.3, 0.5, 0.7], 16), octave: 2 })) {
@@ -17,7 +17,7 @@ loop('left', (i) => {
   sleep(vary('lh', [4, 8], 8))
 })` },
 
-  { id: 'space_saw_lead', role: 'lead', flavours: { space: 1, deep: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'space_saw_lead', role: 'lead', flavours: { saw: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.5, delay: 0.35, wobble: 0.3 })
 loop('lead', (i) => {
   for (const n of phrase('xtal', { beats: 4, density: 0.45, octave: 2, evolve: 3 })) {
@@ -26,7 +26,7 @@ loop('lead', (i) => {
   }
 })` },
 
-  { id: 'space_felt_arp', role: 'keys', flavours: { space: 0.9, fog: 0.3 }, energy: [0, 1], code: `
+  { id: 'space_felt_arp', role: 'keys', flavours: { saw: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.5, delay: 0.3, lpf: 3500 })
 loop('arp', (i) => {
   const ch = harm(vary('oct', [1, 2], 8), vary('ext', ['7', '9'], 8))
@@ -37,7 +37,7 @@ loop('arp', (i) => {
   }
 })` },
 
-  { id: 'space_pad', role: 'keys', flavours: { space: 1, deep: 0.4 }, energy: [0, 1], code: `
+  { id: 'space_pad', role: 'keys', flavours: { space: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.6, wobble: 0.25 })
 loop('pad', (i) => {
   fx({ lpf: walk('lpf', 900, 3200, 0.2) })
@@ -45,14 +45,14 @@ loop('pad', (i) => {
   sleep(16)
 })` },
 
-  { id: 'space_drone', role: 'bass', flavours: { space: 1, deep: 0.4 }, energy: [0, 0.7], code: `
+  { id: 'space_drone', role: 'bass', flavours: { space: 1 }, energy: [0, 0.7], code: `
 fx({ lpf: 700, wobble: 0.2 })
 loop('drone', (i) => {
   synth('sub', ROOT, { dur: 13, attack: 2, release: 3, amp: 0.4 })
   sleep(16)
 })` },
 
-  { id: 'space_round_bass', role: 'bass', flavours: { space: 0.7, dub: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'space_round_bass', role: 'bass', flavours: { space: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 800 })
 loop('bass', (i) => {
   const groove = vary('groove', [[0, 2.5], [0, 1.5, 3], [0, 3]], 8)
@@ -65,7 +65,7 @@ loop('bass', (i) => {
   sleep(4 - t)
 })` },
 
-  { id: 'space_soft_beat', role: 'drums', flavours: { space: 0.8, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'space_soft_beat', role: 'drums', flavours: { space: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 6000, rev: 0.2 })
 loop('kick', (i) => {
   const kicks = vary('kicks', [[0, 2.5], [0, 1.5, 2.5], [0, 3], [0, 0.75, 2.5]], 8)
@@ -92,7 +92,7 @@ loop('hats', (i) => {
   }
 })` },
 
-  { id: 'space_bleeps', role: 'perc', flavours: { space: 0.9 }, energy: [0.1, 1], code: `
+  { id: 'space_bleeps', role: 'perc', flavours: { space: 1 }, energy: [0.1, 1], code: `
 fx({ delay: 0.4, rev: 0.5, lpf: 7000 })
 loop('bleeps', (i) => {
   const notes = modal(2, 1)
@@ -103,7 +103,7 @@ loop('bleeps', (i) => {
   }
 })` },
 
-  { id: 'space_tok', role: 'perc', flavours: { space: 0.8, dub: 0.2 }, energy: [0.2, 1], code: `
+  { id: 'space_tok', role: 'perc', flavours: { space: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.35, delay: 0.3, lpf: 5000 })
 loop('tok', (i) => {
   const hits = spread(vary('h', [3, 5], 8), 16, vary('r', [0, 3, 7], 4))
@@ -113,7 +113,7 @@ loop('tok', (i) => {
   }
 })` },
 
-  { id: 'space_collage', role: 'texture', flavours: { space: 1, deep: 0.3 }, energy: [0, 1], code: `
+  { id: 'space_collage', role: 'texture', flavours: { space: 1 }, energy: [0, 1], code: `
 fx({ rev: 0.55, delay: 0.35, lpf: 4500, wobble: 0.3 })
 loop('collage', (i) => {
   const src = vary('src', ['speech', 'space', 'birds', 'mouth', 'outdoor'], 4)
@@ -123,14 +123,14 @@ loop('collage', (i) => {
   }
 })` },
 
-  { id: 'space_air', role: 'texture', flavours: { space: 0.9, fog: 0.2 }, energy: [0, 1], code: `
+  { id: 'space_air', role: 'texture', flavours: { space: 1 }, energy: [0, 1], code: `
 fx({ lpf: 2500, rev: 0.6 })
 loop('air', (i) => {
   s('wind', { n: vary('n', [1, 3, 6, 8], 16), amp: 0.14, rate: walk('rate', 0.4, 0.8, 0.2), attack: 2, release: 3 })
   sleep(16)
 })` },
 
-  { id: 'space_pulse_arp', role: 'lead', flavours: { space: 0.6, deep: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'space_pulse_arp', role: 'lead', flavours: { space: 1 }, energy: [0.3, 1], code: `
 fx({ delay: 0.4, rev: 0.4 })
 loop('seq', (i) => {
   const notes = harm(vary('oct', [1, 2], 16), '9')

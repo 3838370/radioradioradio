@@ -19,7 +19,10 @@ RA.App = class App {
     this.instruments = new RA.InstrumentLibrary(RA.SynthPresets);
     this.instruments.load(saved.instruments);
     this.bank = new RA.PatternBank(RA.PATTERNS);
-    for (const pat of saved.userPatterns || []) if (pat && pat.code && pat.role) this.bank.upsert(pat);
+    // your saved patterns, their flavours moved to today's genres (fog → dub, deep → saw/boc...)
+    for (const pat of saved.userPatterns || []) {
+      if (pat && pat.code && pat.role) this.bank.upsert(Object.assign({}, pat, { flavours: RA.Mood.migrateFlavours(pat.flavours) }));
+    }
     this.harmony = new RA.Harmony();
     this.mood = new RA.Mood(this.rng, { legMinutes: this.fast ? [1, 1.5] : [8, 20], styles: this.settings.get('styles') });
     this.hud = new RA.Hud();
@@ -668,7 +671,7 @@ RA.App = class App {
     p.fill(T.text);
     p.text('ENDLESS JS CODED AMBIENT RADIO', cx, cy - 28);
     p.fill(T.dim);
-    p.text('FOG · DUB · DEEP · SPACE · ATMOS · RAVE · DARK · INDUSTRIAL · AE', cx, cy - 12);
+    p.text(RA.Mood.CYCLE.map((f) => RA.Mood.LABELS[f].toUpperCase()).join(' · '), cx, cy - 12);
     if (this.state === 'loading') {
       const s = this.samples;
       const blink = (performance.now() >> 9) % 2 ? '_' : ' ';

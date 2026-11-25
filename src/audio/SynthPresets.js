@@ -97,11 +97,6 @@ RA.SynthPresets = {
     osc: [{ type: 'sine', fm: { ratio: 1, index: 1.6, decay: 0.6 } }, { type: 'sine', octave: 1, level: 0.15 }],
     attack: 0.003, release: 1.6, dur: 0.5, cutoff: 3000, res: 0.5, gain: 0.3, vibrato: { rate: 5, depth: 4, delay: 0.2 }, drift: 4,
   },
-  // Two detuned saws: the rolling DnB "reese" bass.
-  reese: {
-    osc: [{ type: 'sawtooth', detune: -9, level: 0.5 }, { type: 'sawtooth', detune: 9, level: 0.5 }, { type: 'sine', octave: -1, level: 0.8 }],
-    attack: 0.01, release: 0.3, cutoff: 400, res: 2, gain: 0.3, drift: 3,
-  },
   // Short resonant analog blip for techno-ambient sequences.
   pulse: {
     osc: [{ type: 'square', level: 0.5 }, { type: 'sawtooth', detune: 5, level: 0.4 }],
@@ -117,47 +112,19 @@ RA.SynthPresets = {
     osc: [{ type: 'sine' }, { type: 'triangle', octave: 1, level: 0.1 }],
     attack: 0.002, dur: 0.3, release: 0.6, cutoff: 2000, res: 0.5, pitch: { from: 12, time: 0.05 }, drive: 0.35, gain: 0.55,
   },
-  reese_heavy: {
-    osc: [{ type: 'sawtooth', unison: { voices: 3, spread: 22 } }, { type: 'sine', octave: -1, level: 0.7 }],
-    attack: 0.01, release: 0.3, cutoff: 380, res: 3, flfo: { rate: 0.3, depth: 600 }, drive: 0.4, gain: 0.22,
-  },
   acid_dirty: {
     osc: [{ type: 'sawtooth' }],
     attack: 0.003, release: 0.06, cutoff: 300, res: 16, fenv: 7, fdecay: 0.16, drive: 0.6, gain: 0.2,
-  },
-  growl: {
-    osc: [{ type: 'sawtooth', fm: { ratio: 0.5, index: 3, decay: 0.4 } }, { type: 'square', octave: -1, level: 0.4 }],
-    attack: 0.01, release: 0.15, cutoff: 700, res: 6, flfo: { rate: 3, depth: 1200 }, drive: 0.7, gain: 0.16,
   },
   fm_bass: {
     osc: [{ type: 'sine', fm: { ratio: 1, index: 4, decay: 0.12 } }],
     attack: 0.002, dur: 0.1, release: 0.2, cutoff: 1500, res: 0.7, drive: 0.3, gain: 0.4,
   },
-  dist_bass: {
-    osc: [{ type: 'square' }, { type: 'sawtooth', detune: 8, level: 0.6 }],
-    attack: 0.003, release: 0.12, cutoff: 600, res: 4, fenv: 2.5, fdecay: 0.2, drive: 0.8, gain: 0.14,
-  },
 
   // ───── leads and stabs ─────
-  supersaw: {
-    osc: [{ type: 'sawtooth', unison: { voices: 5, spread: 28 } }],
-    attack: 0.005, release: 0.3, cutoff: 5000, res: 0.7, drive: 0.2, gain: 0.16,
-  },
-  hoover: {
-    osc: [{ type: 'sawtooth', unison: { voices: 4, spread: 35 } }, { type: 'square', octave: -1, level: 0.5 }],
-    attack: 0.02, release: 0.4, cutoff: 2500, res: 2, pitch: { from: -12, time: 0.25 }, vibrato: { rate: 5.5, depth: 25, delay: 0.2 }, drive: 0.45, gain: 0.14,
-  },
   stab: {
     osc: [{ type: 'sawtooth' }, { type: 'square', detune: -6, level: 0.5 }],
     attack: 0.003, dur: 0, release: 0.18, cutoff: 1400, res: 2, fenv: 1.5, fdecay: 0.08, drive: 0.15, gain: 0.15,
-  },
-  rave_stab: {
-    osc: [{ type: 'sawtooth', unison: { voices: 5, spread: 20 } }, { type: 'square', octave: 1, level: 0.3 }],
-    attack: 0.002, dur: 0, release: 0.25, cutoff: 3000, res: 1, fenv: 2, fdecay: 0.12, drive: 0.5, gain: 0.16,
-  },
-  laser: {
-    osc: [{ type: 'square' }, { type: 'sawtooth', detune: 12 }],
-    attack: 0.002, dur: 0.05, release: 0.2, cutoff: 4000, res: 4, pitch: { from: 24, time: 0.18 }, drive: 0.3, gain: 0.15,
   },
   sync_lead: {
     osc: [{ type: 'sawtooth' }, { type: 'square', octave: 1, detune: 7, level: 0.5 }],
@@ -232,10 +199,6 @@ RA.SynthPresets = {
     osc: [{ type: 'square', fm: { ratio: 0.5, index: 2, decay: 5 } }],
     attack: 0.02, release: 0.2, cutoff: 800, res: 6, trem: { rate: 8, depth: 0.7 }, drive: 0.4, gain: 0.2,
   },
-  siren: {
-    osc: [{ type: 'sine' }, { type: 'triangle', octave: 1, level: 0.3 }],
-    attack: 0.5, release: 1, cutoff: 3000, res: 0.5, vibrato: { rate: 0.4, depth: 700, delay: 0 }, gain: 0.2,
-  },
   // A subway train: low rumble, steel squeal of the brakes, clacks over the rail joints.
   metro_rumble: {
     osc: [{ type: 'noise' }, { type: 'sine', octave: -1, level: 0.5 }],
@@ -260,29 +223,9 @@ RA.SynthPresets = {
     osc: [{ type: 'square' }],
     attack: 0.002, dur: 0.08, release: 0.1, cutoff: 380, res: 12, fenv: 8, fdecay: 0.12, veltrack: 1, drive: 0.6, gain: 0.13,
   },
-  reese_hard: {
-    osc: [{ type: 'sawtooth', unison: { voices: 3, spread: 22 } }, { type: 'sawtooth', octave: -1, detune: 11, level: 0.6 }, { type: 'sine', octave: -1, level: 0.7 }],
-    attack: 0.01, release: 0.25, cutoff: 650, res: 3, flfo: { rate: 0.35, depth: 1100 }, drive: 0.75, gain: 0.2,
-  },
-  wobble_bass: {
-    osc: [{ type: 'sawtooth' }, { type: 'square', octave: -1, level: 0.7 }],
-    attack: 0.005, release: 0.15, cutoff: 500, res: 7, flfo: { rate: 2, depth: 2600 }, drive: 0.65, gain: 0.18,
-  },
   fm_sub: {
     osc: [{ type: 'sine', fm: { ratio: 0.5, index: 3.5, decay: 0.16 } }, { type: 'sine', octave: -1, level: 0.8 }],
     attack: 0.002, dur: 0.15, release: 0.12, cutoff: 2500, res: 0.8, drive: 0.5, gain: 0.3,
-  },
-  hard_sub: {
-    osc: [{ type: 'sine' }, { type: 'triangle', level: 0.3 }],
-    attack: 0.003, dur: 0.3, release: 0.2, cutoff: 900, res: 0.5, pitch: { from: 4, time: 0.04 }, drive: 0.7, gain: 0.42,
-  },
-  sub_drop: {
-    osc: [{ type: 'sine' }, { type: 'sine', octave: 1, level: 0.15 }],
-    attack: 0.005, dur: 1.5, release: 1, cutoff: 1200, res: 0.5, pitch: { from: 24, time: 1.4 }, drive: 0.4, gain: 0.45,
-  },
-  donk: {
-    osc: [{ type: 'sine', fm: { ratio: 2, index: 2.5, decay: 0.05 } }],
-    attack: 0.001, dur: 0.02, release: 0.12, cutoff: 3000, res: 1, pitch: { from: 12, time: 0.03 }, drive: 0.4, gain: 0.3,
   },
   fm_metal: {
     osc: [{ type: 'sine', fm: { ratio: 1.414, index: 7, decay: 0.25 } }, { type: 'sine', ratio: 3.77, level: 0.3, decay: 0.15 }],
@@ -292,44 +235,12 @@ RA.SynthPresets = {
     osc: [{ type: 'square', fm: { ratio: 8.7, index: 12, decay: 0.03 } }],
     attack: 0.001, dur: 0.01, release: 0.04, cutoff: 9000, res: 2, gain: 0.12,
   },
-  pluck_hard: {
-    osc: [{ type: 'sawtooth' }, { type: 'square', detune: 9, level: 0.5 }],
-    attack: 0.001, dur: 0.1, decay: 0.35, sustain: 0, release: 0.15, cutoff: 700, res: 5, fenv: 9, fdecay: 0.07, veltrack: 0.6, drive: 0.5, gain: 0.17,
-  },
-  brass_stab: {
-    osc: [{ type: 'sawtooth', unison: { voices: 3, spread: 14 } }, { type: 'sawtooth', octave: -1, level: 0.5 }],
-    attack: 0.025, dur: 0.15, release: 0.25, cutoff: 1400, res: 1.5, fenv: 3, fdecay: 0.25, veltrack: 0.5, drive: 0.55, gain: 0.15,
-  },
-  rave_organ: {
-    osc: [{ type: 'square' }, { type: 'square', octave: 1, level: 0.5 }, { type: 'sine', octave: -1, level: 0.6 }],
-    attack: 0.003, dur: 0.12, release: 0.1, cutoff: 2600, res: 1, drive: 0.35, gain: 0.13,
-  },
-  screamer: {
-    osc: [{ type: 'sawtooth', unison: { voices: 3, spread: 18 } }, { type: 'square', octave: 1, level: 0.4 }],
-    attack: 0.01, release: 0.3, cutoff: 1800, res: 9, flfo: { rate: 5.5, depth: 500 }, vibrato: { rate: 6, depth: 20, delay: 0.1 }, drive: 0.85, gain: 0.11,
-  },
-  riser: {
-    osc: [{ type: 'noise' }, { type: 'sawtooth', unison: { voices: 3, spread: 30 }, level: 0.4 }],
-    attack: 3, dur: 1, release: 0.3, cutoff: 9000, res: 3, fenv: 0.03, fdecay: 7, pitch: { from: -12, time: 4 }, gain: 0.12,
-  },
-  kick_hard: {
-    osc: [{ type: 'sine' }, { type: 'noise', level: 0.4, decay: 0.006 }],
-    attack: 0.001, dur: 0.12, release: 0.18, cutoff: 3000, res: 0.6, pitch: { from: 36, time: 0.06 }, drive: 0.9, gain: 0.6,
-  },
-  kick_gabber: {
-    osc: [{ type: 'sine' }, { type: 'triangle', level: 0.4 }],
-    attack: 0.001, dur: 0.18, release: 0.12, cutoff: 2600, res: 2, pitch: { from: 30, time: 0.08 }, drive: 1, gain: 0.5,
-  },
   clap_synth: {
     osc: [{ type: 'noise' }],
     attack: 0.001, dur: 0.035, release: 0.14, ftype: 'bandpass', cutoff: 1300, res: 1.6, trem: { rate: 95, depth: 0.85 }, gain: 0.9,
   },
 
   // ───── the city, synthesized ─────
-  crowd: { // a room of people talking, far away
-    osc: [{ type: 'noise' }, { type: 'sawtooth', level: 0.08 }],
-    attack: 1.5, release: 2, ftype: 'bandpass', cutoff: 750, res: 1.4, flfo: { rate: 2.7, depth: 700 }, trem: { rate: 3.3, depth: 0.6 }, vibrato: { rate: 3, depth: 300, delay: 0 }, gain: 0.5,
-  },
   voice_ah: { // a sung or spoken vowel
     osc: [{ type: 'sawtooth' }, { type: 'sawtooth', detune: 7, level: 0.6 }],
     attack: 0.08, release: 0.5, ftype: 'bandpass', cutoff: 800, res: 4, vibrato: { rate: 5, depth: 18, delay: 0.25 }, drift: 25, gain: 0.3,
@@ -533,5 +444,98 @@ RA.SynthPresets = {
   shortwave: {
     osc: [{ type: 'square' }, { type: 'noise', level: 0.3 }],
     attack: 0.05, release: 0.4, ftype: 'bandpass', cutoff: 2200, res: 5, trem: { rate: 9, depth: 0.7 }, flfo: { rate: 0.5, depth: 1500 }, gain: 0.3,
+  },
+
+  // ───── Aphex Twin: prepared piano (Drukqs), SAW II squares, raw 303, braindance ─────
+  prepared_piano: { // objects on the strings: inharmonic, metallic partials that die fast
+    osc: [
+      { type: 'triangle' }, { type: 'sine', ratio: 2.71, level: 0.5, decay: 0.4 }, { type: 'sine', ratio: 4.13, level: 0.35, decay: 0.2 },
+      { type: 'sine', ratio: 6.57, level: 0.2, decay: 0.1 }, { type: 'noise', level: 0.15, decay: 0.01 },
+    ],
+    attack: 0.001, dur: 0.3, decay: 1.8, sustain: 0, release: 0.5, cutoff: 3000, res: 0.5, veltrack: 0.6, keytrack: 0.5, gain: 0.32, drift: 4,
+  },
+  prepared_mute: { // strings damped with tape: a dull, short pluck
+    osc: [{ type: 'triangle' }, { type: 'sine', ratio: 2.01, level: 0.3, decay: 0.08 }, { type: 'noise', level: 0.12, decay: 0.008 }],
+    attack: 0.001, dur: 0.05, decay: 0.25, sustain: 0, release: 0.15, cutoff: 1500, res: 0.6, veltrack: 0.5, gain: 0.42, drift: 3,
+  },
+  saw2_square: {
+    osc: [{ type: 'square', level: 0.6 }, { type: 'square', detune: 8, octave: -1, level: 0.3 }],
+    attack: 0.02, release: 0.6, cutoff: 1400, res: 2, fenv: 1.6, fdecay: 0.4, gain: 0.16, vibrato: { rate: 5, depth: 6, delay: 0.5 }, drift: 8,
+  },
+  tb303_saw: {
+    osc: [{ type: 'sawtooth' }],
+    attack: 0.002, release: 0.05, cutoff: 300, res: 16, fenv: 6, fdecay: 0.18, drive: 0.35, gain: 0.24, drift: 2,
+  },
+  tb303_square: {
+    osc: [{ type: 'square' }],
+    attack: 0.002, release: 0.05, cutoff: 320, res: 14, fenv: 5, fdecay: 0.16, drive: 0.3, gain: 0.2, drift: 2,
+  },
+  braindance_bass: {
+    osc: [{ type: 'square' }, { type: 'sine', octave: -1, level: 0.6 }],
+    attack: 0.002, release: 0.1, cutoff: 500, res: 4, fenv: 3, fdecay: 0.1, drive: 0.2, gain: 0.35, drift: 3,
+  },
+  aphex_lead: { // detuned and a little seasick
+    osc: [{ type: 'sawtooth', detune: -12, level: 0.45 }, { type: 'sawtooth', detune: 12, level: 0.45 }, { type: 'square', octave: 1, level: 0.2 }],
+    attack: 0.01, release: 0.5, cutoff: 2200, res: 1.5, fenv: 1.4, fdecay: 0.3, gain: 0.14, vibrato: { rate: 6, depth: 15, delay: 0.2 }, drift: 14,
+  },
+
+  // ───── Boards of Canada: everything wobbles a little out of tune ─────
+  boc_pad: {
+    osc: [{ type: 'sawtooth', detune: -7, level: 0.45 }, { type: 'sawtooth', detune: 7, level: 0.45 }, { type: 'triangle', octave: -1, level: 0.5 }],
+    attack: 1.5, release: 3, cutoff: 1000, res: 0.4, vibrato: { rate: 0.35, depth: 18, delay: 0 }, gain: 0.12, drift: 16,
+  },
+  boc_lead: {
+    osc: [{ type: 'triangle' }, { type: 'sine', octave: 1, level: 0.2 }],
+    attack: 0.08, release: 1, cutoff: 1800, res: 0.6, vibrato: { rate: 0.5, depth: 22, delay: 0 }, gain: 0.2, drift: 18,
+  },
+  boc_flute: {
+    osc: [{ type: 'sine' }, { type: 'noise', level: 0.06 }],
+    attack: 0.12, release: 0.6, cutoff: 2600, res: 0.5, vibrato: { rate: 4.5, depth: 9, delay: 0.3 }, gain: 0.24, drift: 10,
+  },
+  boc_choir: {
+    osc: [{ type: 'triangle', detune: -10 }, { type: 'triangle', detune: 10 }, { type: 'sine', octave: 1, level: 0.25 }],
+    attack: 2, release: 3, cutoff: 1400, res: 0.5, flfo: { rate: 0.2, depth: 300 }, vibrato: { rate: 0.3, depth: 16, delay: 0 }, gain: 0.13, drift: 12,
+  },
+
+  // ───── Efdemin: bells, organ, short stabs, a soft pad ─────
+  efd_bell: {
+    osc: [{ type: 'sine', fm: { ratio: 3.01, index: 1.4, decay: 1.5 } }, { type: 'sine', ratio: 5.4, level: 0.12, decay: 0.8 }],
+    attack: 0.002, dur: 0, decay: 3, sustain: 0, release: 2.5, cutoff: 8000, res: 0.4, gain: 0.22, drift: 2,
+  },
+  efd_organ: { // three drawbars and a little tremolo
+    osc: [{ type: 'sine' }, { type: 'sine', octave: 1, level: 0.5 }, { type: 'sine', ratio: 3, level: 0.3 }],
+    attack: 0.01, release: 0.15, cutoff: 3000, res: 0.4, trem: { rate: 6, depth: 0.15 }, gain: 0.16, drift: 2,
+  },
+  efd_stab: {
+    osc: [{ type: 'triangle' }, { type: 'sawtooth', level: 0.3 }],
+    attack: 0.002, dur: 0.05, release: 0.25, cutoff: 1600, res: 3, fenv: 2.5, fdecay: 0.07, gain: 0.22, drift: 3,
+  },
+  efd_pad: {
+    osc: [{ type: 'sawtooth', detune: -5, level: 0.4 }, { type: 'sawtooth', detune: 5, level: 0.4 }, { type: 'sine', octave: 1, level: 0.2 }],
+    attack: 1, release: 2.5, cutoff: 1200, res: 0.5, flfo: { rate: 0.08, depth: 400 }, gain: 0.11, drift: 6,
+  },
+
+  // ───── Autechre (AE_LIVE): hard FM hits, grain, resonant FM bass, micro-tuned blips ─────
+  ae_fm_perc: {
+    osc: [{ type: 'sine', fm: { ratio: 3.7, index: 5, decay: 0.05 } }],
+    attack: 0.001, dur: 0.01, release: 0.1, cutoff: 9000, res: 0.5, pitch: { from: 12, time: 0.03 }, gain: 0.3,
+  },
+  ae_grain: {
+    osc: [{ type: 'noise' }, { type: 'sine', level: 0.4 }],
+    attack: 0.01, release: 0.2, ftype: 'bandpass', cutoff: 2000, res: 9, trem: { rate: 31, depth: 0.8 }, flfo: { rate: 3, depth: 1800 }, gain: 0.2,
+  },
+  ae_bass: {
+    osc: [{ type: 'sine', fm: { ratio: 0.5, index: 3, decay: 0.2 } }, { type: 'sine', level: 0.6 }],
+    attack: 0.003, release: 0.15, cutoff: 900, res: 5, fenv: 3, fdecay: 0.12, drive: 0.3, gain: 0.4, drift: 3,
+  },
+  ae_blip: {
+    osc: [{ type: 'square', level: 0.6 }, { type: 'sine', fm: { ratio: 2.5, index: 1, decay: 0.05 } }],
+    attack: 0.001, dur: 0.02, release: 0.08, cutoff: 5000, res: 3, gain: 0.2,
+  },
+
+  // ───── drill'n'bass: a clean, slow sub under the chopped breaks ─────
+  drill_sub: {
+    osc: [{ type: 'sine' }, { type: 'sine', octave: 1, level: 0.05 }],
+    attack: 0.005, release: 0.4, cutoff: 400, res: 0.4, gain: 0.6, drift: 1,
   },
 };

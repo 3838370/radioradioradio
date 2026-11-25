@@ -49,15 +49,15 @@ RA.Arc = class Arc {
   // What each mood leans to: preferred sections weigh ×2.2, avoided ones ×0.25; `cap` is the
   // most layers it plays on auto.
   static MOODS = {
-    fog: { prefer: ['drift', 'dread', 'build'], avoid: ['surge', 'peak'], cap: 5 },
+    saw: { prefer: ['drift', 'suspense', 'sparse'], avoid: ['surge', 'peak'], cap: 5 },
+    acid: { prefer: ['build', 'tension', 'surge'], avoid: ['sparse'], cap: 6 },
+    drill: { prefer: ['surge', 'peak', 'collapse'], avoid: ['drift'], cap: 6 },
+    boc: { prefer: ['drift', 'build', 'release'], avoid: ['surge', 'peak'], cap: 5 },
+    minimal: { prefer: ['build', 'drift', 'tension'], avoid: ['peak', 'collapse'], cap: 6 },
     dub: { prefer: ['drift', 'build', 'dread'], avoid: ['peak'], cap: 5 },
-    deep: { prefer: ['drift', 'build', 'suspense'], avoid: ['surge'], cap: 5 },
     space: { prefer: ['sparse', 'suspense', 'drift'], avoid: ['surge', 'peak'], cap: 4 },
-    atmos: { prefer: ['build', 'surge', 'tension'], avoid: ['dread'], cap: 6 },
-    rave: { prefer: ['surge', 'peak', 'tension'], avoid: ['sparse'], cap: 6 },
     dark: { prefer: ['dread', 'suspense', 'collapse'], avoid: ['peak'], cap: 5 },
-    industrial: { prefer: ['dread', 'surge', 'tension'], avoid: ['sparse'], cap: 6 },
-    ae: { prefer: ['surge', 'suspense', 'collapse'], avoid: ['drift'], cap: 6 },
+    ae: { prefer: ['surge', 'suspense', 'collapse', 'dread'], avoid: ['drift'], cap: 6 },
   };
 
   static TENSE = ['tension', 'surge', 'peak', 'dread', 'suspense'];

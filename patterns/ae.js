@@ -27,7 +27,7 @@ loop('hats', (i) => {
   }
 })` },
 
-  { id: 'ae_broken_break', role: 'drums', flavours: { ae: 0.9, rave: 0.3 }, energy: [0.4, 1], code: `
+  { id: 'ae_broken_break', role: 'drums', flavours: { drill: 1, ae: 0.7 }, energy: [0.4, 1], code: `
 fx({ lpf: 9000, crush: 0.3, delay: 0.1 })
 loop('break', (i) => {
   const order = vary('order', [[0, 6, 2, 11, 4, 9, 13, 7], [3, 3, 8, 1, 12, 12, 5, 14], [0, 1, 0, 1, 10, 4, 15, 2]], 2)
@@ -46,7 +46,7 @@ loop('break', (i) => {
   }
 })` },
 
-  { id: 'ae_glitch_hats', role: 'perc', flavours: { ae: 1, industrial: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'ae_glitch_hats', role: 'perc', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ delay: 0.2, rev: 0.1 })
 loop('hats', (i) => {
   const step = vary('step', [0.25, 1 / 3, 0.2, 0.125], 2)
@@ -56,7 +56,7 @@ loop('hats', (i) => {
   }
 })` },
 
-  { id: 'ae_clank_grid', role: 'perc', flavours: { ae: 1, dark: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'ae_clank_grid', role: 'perc', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.3, delay: 0.25 })
 loop('clank', (i) => {
   const hits = spread(vary('h', [5, 7], 4), 12, vary('r', [0, 1, 4, 7], 2))
@@ -66,17 +66,17 @@ loop('clank', (i) => {
   }
 })` },
 
-  { id: 'ae_fm_bass', role: 'bass', flavours: { ae: 1, industrial: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'ae_fm_bass', role: 'bass', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: 2500 })
 loop('bass', (i) => {
   const hits = spread(vary('h', [5, 7], 8), 16, vary('r', [0, 3, 9], 4))
   for (let k = 0; k < 16; k++) {
-    if (hits[k]) synth(vary('v', ['fm_bass', 'growl'], 8), ROOT + choose([0, 0, 1, 12]), { dur: 0.1, amp: 0.45 })
+    if (hits[k]) synth(vary('v', ['fm_bass', 'fm_bass'], 8), ROOT + choose([0, 0, 1, 12]), { dur: 0.1, amp: 0.45 })
     sleep(0.25)
   }
 })` },
 
-  { id: 'ae_metal_lead', role: 'lead', flavours: { ae: 1, dark: 0.4 }, energy: [0.2, 1], code: `
+  { id: 'ae_metal_lead', role: 'lead', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ delay: 0.35, rev: 0.3 })
 loop('lead', (i) => {
   for (const n of phrase('m', { beats: 6, density: 0.5, octave: 2, evolve: 1 })) {
@@ -85,27 +85,27 @@ loop('lead', (i) => {
   }
 })` },
 
-  { id: 'ae_chords', role: 'keys', flavours: { ae: 0.9, industrial: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'ae_chords', role: 'keys', flavours: { ae: 1 }, energy: [0.2, 1], code: `
 fx({ rev: 0.4, delay: 0.3, lpf: 4000 })
 loop('chords', (i) => {
   const pat = vary('pat', [[0, 1.5, 4], [0, 2.75], [0.5, 3, 4.5]], 4)
   let t = 0
   for (const p of pat) {
     sleep(p - t)
-    synth(vary('v', ['sync_lead', 'rave_stab', 'metal_lead'], 8), harm(1, vary('e', ['', '7'], 4)), { dur: 0.3, amp: 0.25 })
+    synth(vary('v', ['sync_lead', 'fm_glass', 'metal_lead'], 8), harm(1, vary('e', ['', '7'], 4)), { dur: 0.3, amp: 0.25 })
     t = p
   }
   sleep(6 - t)
 })` },
 
-  { id: 'ae_drone', role: 'keys', flavours: { ae: 0.8, dark: 0.5 }, energy: [0, 0.8], code: `
+  { id: 'ae_drone', role: 'keys', flavours: { ae: 1 }, energy: [0, 0.8], code: `
 fx({ rev: 0.5, wobble: 0.3 })
 loop('drone', (i) => {
   synth('dark_pad', [ROOT + 12, ROOT + 18], { dur: 12, attack: 3, release: 4, amp: 0.4 })
   sleep(16)
 })` },
 
-  { id: 'ae_noise', role: 'texture', flavours: { ae: 0.9, industrial: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'ae_noise', role: 'texture', flavours: { ae: 1 }, energy: [0.3, 1], code: `
 fx({ rev: 0.3, delay: 0.2 })
 loop('bursts', (i) => {
   const hits = spread(vary('h', [2, 3], 4), 7, vary('r', [0, 2, 4], 4))

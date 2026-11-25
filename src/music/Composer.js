@@ -10,14 +10,14 @@
 // Emits layer:add / layer:change / layer:remove.
 RA.Composer = class Composer {
   static ROLE_ORDER = {
-    fog: ['keys', 'drums', 'texture', 'bass', 'perc', 'lead'],
+    saw: ['keys', 'lead', 'texture', 'bass', 'drums', 'perc'],
+    acid: ['bass', 'drums', 'perc', 'lead', 'keys', 'texture'],
+    drill: ['drums', 'lead', 'bass', 'keys', 'texture', 'perc'],
+    boc: ['drums', 'keys', 'lead', 'texture', 'bass', 'perc'],
+    minimal: ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'],
     dub: ['keys', 'drums', 'bass', 'texture', 'perc', 'lead'],
-    deep: ['keys', 'texture', 'bass', 'lead', 'drums', 'perc'],
     space: ['keys', 'lead', 'texture', 'bass', 'perc', 'drums'],
-    atmos: ['drums', 'bass', 'keys', 'perc', 'lead', 'texture'],
-    rave: ['drums', 'bass', 'lead', 'keys', 'perc', 'texture'],
     dark: ['texture', 'keys', 'bass', 'drums', 'lead', 'perc'],
-    industrial: ['drums', 'texture', 'bass', 'perc', 'keys', 'lead'],
     ae: ['perc', 'drums', 'bass', 'texture', 'lead', 'keys'],
   };
 
@@ -183,7 +183,7 @@ RA.Composer = class Composer {
   }
 
   // How many layers to aim for. With density on auto the arc section gives a range (sparse
-  // 1-2 ... surge 5-6), capped by the mood (space 4, rave 6...), and the energy picks within
+  // 1-2 ... surge 5-6), capped by the mood (space 4, drill 6...), and the energy picks within
   // it; otherwise exactly the number the listener set.
   target() {
     if (this.settings.get('densityAuto')) {
@@ -349,8 +349,8 @@ RA.Composer = class Composer {
     const sec = this.arc.section;
     const I = (kind) => Composer.intent(kind, sec);
     const age = (l) => bar - (l.enteredBar == null ? bar : l.enteredBar);
-    const dubby = (w.dub || 0) + (w.fog || 0) + 0.5 * (w.deep || 0);
-    const collagey = (w.space || 0) + (w.deep || 0) + 0.7 * (w.atmos || 0) + 0.5 * (w.dark || 0);
+    const dubby = (w.dub || 0) + 0.8 * (w.minimal || 0) + 0.4 * (w.boc || 0);
+    const collagey = (w.space || 0) + (w.boc || 0) + 0.6 * (w.saw || 0) + 0.5 * (w.dark || 0) + 0.3 * (w.ae || 0);
     const out = [];
     for (const l of free) {
       out.push({ score: (0.08 + 0.3 * v) * RA.MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });

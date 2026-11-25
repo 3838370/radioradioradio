@@ -4,7 +4,7 @@
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   // ───── drums ─────
-  { id: 'dub_techno_kit', role: 'drums', flavours: { dub: 1, fog: 0.7 }, energy: [0.25, 1], code: `
+  { id: 'dub_techno_kit', role: 'drums', flavours: { dub: 1, minimal: 0.7 }, energy: [0.25, 1], code: `
 fx({ lpf: 5500, rev: 0.15, delay: 0.08 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'dubtechno', density: walk('dens', 0.3, 0.75, 0.1) })
@@ -18,7 +18,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'fog_deep_kick', role: 'drums', flavours: { fog: 1, dub: 0.6 }, energy: [0.15, 1], code: `
+  { id: 'fog_deep_kick', role: 'drums', flavours: { dub: 1 }, energy: [0.15, 1], code: `
 fx({ lpf: 1400, rev: 0.35 })
 loop('kick', (i) => {
   s('bd', { n: 12, amp: 0.9 })
@@ -30,7 +30,7 @@ loop('hats', (i) => {
   sleep(0.5)
 })` },
 
-  { id: 'dub_dr55_kit', role: 'drums', flavours: { dub: 0.9, fog: 0.5, deep: 0.3 }, energy: [0.3, 1], code: `
+  { id: 'dub_dr55_kit', role: 'drums', flavours: { dub: 1, minimal: 0.7 }, energy: [0.3, 1], code: `
 fx({ lpf: 7000, delay: 0.12, rev: 0.1 })
 loop('kit', (i) => {
   const b = beat('b', { style: vary('style', ['dubtechno', 'four'], 32), density: 0.5 })
@@ -43,7 +43,7 @@ loop('kit', (i) => {
   }
 })` },
 
-  { id: 'fog_808_pulse', role: 'drums', flavours: { fog: 0.9, dub: 0.5, deep: 0.3 }, energy: [0, 0.8], code: `
+  { id: 'fog_808_pulse', role: 'drums', flavours: { dub: 1 }, energy: [0, 0.8], code: `
 fx({ lpf: 2500, rev: 0.4, wobble: 0.1 })
 loop('pulse', (i) => {
   const b = beat('b', { style: 'pulse_sparse', density: walk('dens', 0.2, 0.6, 0.1) })
@@ -57,7 +57,7 @@ loop('pulse', (i) => {
 })` },
 
   // ───── perc ─────
-  { id: 'dub_shaker_ghost', role: 'perc', flavours: { dub: 1, fog: 0.6 }, energy: [0.2, 1], code: `
+  { id: 'dub_shaker_ghost', role: 'perc', flavours: { dub: 1, minimal: 0.7 }, energy: [0.2, 1], code: `
 fx({ lpf: 6000, rev: 0.2, delay: 0.15 })
 loop('shake', (i) => {
   const hits = spread(vary('hits', [9, 11, 13], 8), 16)
@@ -67,7 +67,7 @@ loop('shake', (i) => {
   }
 })` },
 
-  { id: 'dub_rim_synth', role: 'perc', flavours: { dub: 1, fog: 0.5 }, energy: [0.2, 1], code: `
+  { id: 'dub_rim_synth', role: 'perc', flavours: { dub: 1 }, energy: [0.2, 1], code: `
 fx({ delay: 0.5, rev: 0.25, lpf: 4000 })
 loop('rim', (i) => {
   const hits = spread(vary('n', [2, 3, 5], 8), 16, vary('rot', [3, 6, 10], 8))
@@ -77,7 +77,7 @@ loop('rim', (i) => {
   }
 })` },
 
-  { id: 'fog_hand_claps', role: 'perc', flavours: { fog: 1, dub: 0.6 }, energy: [0.25, 1], code: `
+  { id: 'fog_hand_claps', role: 'perc', flavours: { dub: 1 }, energy: [0.25, 1], code: `
 fx({ rev: 0.55, lpf: 3000, delay: 0.2 })
 loop('clap', (i) => {
   sleep(1)
@@ -87,7 +87,7 @@ loop('clap', (i) => {
   sleep(1)
 })` },
 
-  { id: 'fog_tick', role: 'perc', flavours: { fog: 0.9, dub: 0.5, deep: 0.3 }, energy: [0, 0.9], code: `
+  { id: 'fog_tick', role: 'perc', flavours: { dub: 1 }, energy: [0, 0.9], code: `
 fx({ lpf: 2200, rev: 0.4 })
 loop('tick', (i) => {
   for (let k = 0; k < 8; k++) {
@@ -97,7 +97,7 @@ loop('tick', (i) => {
 })` },
 
   // ───── bass ─────
-  { id: 'dub_sub_pulse', role: 'bass', flavours: { dub: 1, fog: 0.8 }, energy: [0.2, 1], code: `
+  { id: 'dub_sub_pulse', role: 'bass', flavours: { dub: 1 }, energy: [0.2, 1], code: `
 fx({ lpf: 700 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: vary('st', ['pedal', 'sub', 'dub'], 16) })) {
@@ -106,7 +106,7 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'dub_sh_bass', role: 'bass', flavours: { dub: 0.9, fog: 0.5 }, energy: [0.3, 1], code: `
+  { id: 'dub_sh_bass', role: 'bass', flavours: { dub: 1 }, energy: [0.3, 1], code: `
 fx({ lpf: walk('lpf', 400, 900, 0.1), rev: 0.05 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: 'dub' })) {
@@ -115,14 +115,14 @@ loop('bass', (i) => {
   }
 })` },
 
-  { id: 'fog_drone_sub', role: 'bass', flavours: { fog: 1, dub: 0.6, dark: 0.3 }, energy: [0, 0.8], code: `
+  { id: 'fog_drone_sub', role: 'bass', flavours: { dub: 1 }, energy: [0, 0.8], code: `
 fx({ lpf: 500, rev: 0.2 })
 loop('drone', (i) => {
   synth('dub_sub', ROOT, { dur: 6, attack: 1, release: 2, amp: 0.45 })
   sleep(8)
 })` },
 
-  { id: 'dub_dx_bass', role: 'bass', flavours: { dub: 0.8, fog: 0.6, deep: 0.3 }, energy: [0.25, 1], code: `
+  { id: 'dub_dx_bass', role: 'bass', flavours: { dub: 1, minimal: 0.7 }, energy: [0.25, 1], code: `
 fx({ lpf: 1100, delay: 0.05 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: vary('st', ['dub', 'sub'], 16) })) {
@@ -132,7 +132,7 @@ loop('bass', (i) => {
 })` },
 
   // ───── keys ─────
-  { id: 'dub_chord_echo', role: 'keys', flavours: { dub: 1, fog: 0.7 }, energy: [0.15, 1], code: `
+  { id: 'dub_chord_echo', role: 'keys', flavours: { dub: 1 }, energy: [0.15, 1], code: `
 fx({ delay: 0.6, rev: 0.35, lpf: 3000 })
 loop('chords', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['dub', 'm7', 'sus2'], 16), rhythm: vary('r', ['offbeat', 'stab'], 32), density: walk('d', 0.3, 0.8, 0.1) })) {
@@ -141,7 +141,7 @@ loop('chords', (i) => {
   }
 })` },
 
-  { id: 'fog_wash', role: 'keys', flavours: { fog: 1, dub: 0.7 }, energy: [0, 0.9], code: `
+  { id: 'fog_wash', role: 'keys', flavours: { dub: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.55, lpf: 1600, wobble: 0.12 })
 loop('wash', (i) => {
   synth('dub_pad_wash', harm(1, vary('ext', ['7', ''], 16)), { dur: 7, attack: 2, release: 4, amp: 0.24 })
@@ -149,7 +149,7 @@ loop('wash', (i) => {
 })` },
 
   // ───── lead ─────
-  { id: 'dub_melodica_motif', role: 'lead', flavours: { dub: 0.9, fog: 0.5 }, energy: [0.2, 1], code: `
+  { id: 'dub_melodica_motif', role: 'lead', flavours: { dub: 1 }, energy: [0.2, 1], code: `
 fx({ delay: 0.5, rev: 0.3, lpf: 2600 })
 loop('motif', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.25, octave: 2 })) {
@@ -158,7 +158,7 @@ loop('motif', (i) => {
   }
 })` },
 
-  { id: 'fog_horn_fifths', role: 'lead', flavours: { fog: 1, dub: 0.5 }, energy: [0, 0.9], code: `
+  { id: 'fog_horn_fifths', role: 'lead', flavours: { dub: 1 }, energy: [0, 0.9], code: `
 fx({ rev: 0.5, lpf: 1300, wobble: 0.15 })
 loop('horns', (i) => {
   for (const c of chords('c', { voicing: 'fifths', rhythm: 'long', octave: 1 })) {
@@ -167,7 +167,7 @@ loop('horns', (i) => {
   }
 })` },
 
-  { id: 'dub_bell_echo', role: 'lead', flavours: { dub: 0.8, fog: 0.6, deep: 0.3 }, energy: [0, 1], code: `
+  { id: 'dub_bell_echo', role: 'lead', flavours: { dub: 1, minimal: 0.7 }, energy: [0, 1], code: `
 fx({ delay: 0.6, rev: 0.4 })
 loop('bell', (i) => {
   const wait = vary('wait', [1.5, 2.5, 3], 8)
@@ -177,7 +177,7 @@ loop('bell', (i) => {
 })` },
 
   // ───── texture ─────
-  { id: 'dub_tape_bed', role: 'texture', flavours: { dub: 1, fog: 0.9, deep: 0.4 }, energy: [0, 1], code: `
+  { id: 'dub_tape_bed', role: 'texture', flavours: { dub: 1 }, energy: [0, 1], code: `
 fx({ lpf: 9000, rev: 0.1 })
 loop('hiss', (i) => {
   const t = tape('t')
@@ -191,21 +191,21 @@ loop('crackle', (i) => {
   }
 })` },
 
-  { id: 'dub_hum', role: 'texture', flavours: { dub: 0.8, fog: 0.8, dark: 0.3 }, energy: [0, 0.9], code: `
+  { id: 'dub_hum', role: 'texture', flavours: { dub: 1 }, energy: [0, 0.9], code: `
 fx({ lpf: 600, rev: 0.2 })
 loop('hum', (i) => {
   synth('hum_bed', ROOT - 12, { dur: 14, attack: 3, release: 4, amp: walk('a', 0.3, 0.6, 0.1) })
   sleep(16)
 })` },
 
-  { id: 'fog_noise_wind', role: 'texture', flavours: { fog: 1, dub: 0.5, space: 0.3 }, energy: [0, 1], code: `
+  { id: 'fog_noise_wind', role: 'texture', flavours: { dub: 1 }, energy: [0, 1], code: `
 fx({ lpf: 2400, rev: 0.45 })
 loop('wind', (i) => {
   s('wind', { n: vary('n', [0, 3, 6, 8], 16), amp: walk('a', 0.12, 0.3, 0.1), rate: choose([0.5, 0.75, 1]), pan: rrand(-0.5, 0.5) })
   sleep(8)
 })` },
 
-  { id: 'dub_voice_echo', role: 'texture', flavours: { dub: 0.9, fog: 0.5, atmos: 0.3 }, energy: [0.1, 1], code: `
+  { id: 'dub_voice_echo', role: 'texture', flavours: { dub: 1 }, energy: [0.1, 1], code: `
 fx({ delay: 0.55, rev: 0.45, lpf: 3500 })
 loop('voices', (i) => {
   for (const e of collage('c', { pool: ['speech', 'east', 'speechless'], rate: walk('r', 0.15, 0.45, 0.1) })) {

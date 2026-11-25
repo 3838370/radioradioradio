@@ -3,7 +3,7 @@
 // vary() / walk() keep the stabs, grooves and filters moving so no bar repeats exactly.
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
-  { id: 'dub_kick', role: 'drums', flavours: { dub: 1, fog: 0.3 }, energy: [0.2, 1], code: `
+  { id: 'dub_kick', role: 'drums', flavours: { dub: 1 }, energy: [0.2, 1], code: `
 fx({ lpf: 7000, rev: 0.15 })
 loop('kick', (i) => {
   s('bd', { n: 4, amp: 0.95 })
@@ -18,7 +18,7 @@ loop('hats', (i) => {
   }
 })` },
 
-  { id: 'dub_minimal_kit', role: 'drums', flavours: { dub: 0.9, deep: 0.2 }, energy: [0.4, 1], code: `
+  { id: 'dub_minimal_kit', role: 'drums', flavours: { dub: 1, minimal: 0.7 }, energy: [0.4, 1], code: `
 fx({ lpf: 6000, rev: 0.2, delay: 0.1 })
 loop('kick', (i) => {
   s('bd', { n: 9, amp: 0.9 })
@@ -32,7 +32,7 @@ loop('rim', (i) => {
   }
 })` },
 
-  { id: 'dub_chord_stab', role: 'keys', flavours: { dub: 1 }, energy: [0.2, 1], code: `
+  { id: 'dub_chord_stab', role: 'keys', flavours: { dub: 1, minimal: 0.7 }, energy: [0.2, 1], code: `
 fx({ delay: 0.6, rev: 0.35 })
 loop('stab', (i) => {
   fx({ lpf: walk('lpf', 500, 2600, 0.15) })
@@ -43,7 +43,7 @@ loop('stab', (i) => {
   }
 })` },
 
-  { id: 'dub_chord_wash', role: 'keys', flavours: { dub: 0.8, fog: 0.3 }, energy: [0, 0.8], code: `
+  { id: 'dub_chord_wash', role: 'keys', flavours: { dub: 1 }, energy: [0, 0.8], code: `
 fx({ delay: 0.45, rev: 0.55, lpf: 1800, wobble: 0.2 })
 loop('wash', (i) => {
   synth(vary('voice', ['choir', 'strings'], 32), harm(1, '9'), { dur: 6, attack: 1.5, release: 4, amp: 0.4 })
@@ -73,7 +73,7 @@ loop('rim', (i) => {
   }
 })` },
 
-  { id: 'dub_shaker', role: 'perc', flavours: { dub: 0.8, atmos: 0.2 }, energy: [0.4, 1], code: `
+  { id: 'dub_shaker', role: 'perc', flavours: { dub: 1 }, energy: [0.4, 1], code: `
 fx({ lpf: 6000, rev: 0.2 })
 loop('shaker', (i) => {
   const dens = vary('dens', [2, 3, 4], 8)
@@ -83,7 +83,7 @@ loop('shaker', (i) => {
   }
 })` },
 
-  { id: 'dub_melodica', role: 'lead', flavours: { dub: 0.9 }, energy: [0.2, 1], code: `
+  { id: 'dub_melodica', role: 'lead', flavours: { dub: 1 }, energy: [0.2, 1], code: `
 fx({ delay: 0.5, rev: 0.4, lpf: 2400, wobble: 0.2 })
 loop('melodica', (i) => {
   if (i % 2 == 1) {
@@ -96,7 +96,7 @@ loop('melodica', (i) => {
   }
 })` },
 
-  { id: 'dub_piano', role: 'lead', flavours: { dub: 0.6, deep: 0.4 }, energy: [0, 0.8], code: `
+  { id: 'dub_piano', role: 'lead', flavours: { dub: 1, saw: 0.7 }, energy: [0, 0.8], code: `
 fx({ delay: 0.45, rev: 0.45, lpf: 3000, wobble: 0.15 })
 loop('piano', (i) => {
   for (const n of phrase('p', { beats: 8, density: 0.25, octave: 2, rest: 0.3 })) {
@@ -105,7 +105,7 @@ loop('piano', (i) => {
   }
 })` },
 
-  { id: 'dub_vinyl', role: 'texture', flavours: { dub: 0.9, fog: 0.4 }, energy: [0, 1], code: `
+  { id: 'dub_vinyl', role: 'texture', flavours: { dub: 1 }, energy: [0, 1], code: `
 fx({ lpf: 5000, rev: 0.3 })
 loop('crackle', (i) => {
   for (let k = 0; k < 16; k++) {
@@ -114,7 +114,7 @@ loop('crackle', (i) => {
   }
 })` },
 
-  { id: 'dub_space_echo', role: 'texture', flavours: { dub: 0.8, space: 0.3 }, energy: [0, 1], code: `
+  { id: 'dub_space_echo', role: 'texture', flavours: { dub: 1 }, energy: [0, 1], code: `
 fx({ delay: 0.5, rev: 0.5, lpf: 3000 })
 loop('echo', (i) => {
   sleep(6)
