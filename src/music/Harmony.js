@@ -1,6 +1,8 @@
 // Harmony: key, mode and chord progression. Chords are stacked in thirds from the mode,
-// so every chord is diatonic. Progressions are scale degrees (0 = tonic), 4 bars each.
-// Changes are requested at any time and applied on the next 4-bar boundary.
+// so every chord is diatonic. Progressions are scale degrees (0 = tonic); each chord lasts
+// `barsPerChord` bars (the genre's chordBars: slow in acid and ae, quicker in saw and boc).
+// Changes are requested at any time and applied on the next 4-bar boundary; a key change
+// can be held back until a calm moment (applyPending(false)).
 RA.Harmony = class Harmony {
   static MODES = ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'];
 
@@ -19,6 +21,7 @@ RA.Harmony = class Harmony {
     const change = { prog: rng.pick(others.length ? others : all) };
     const chance = modulate === true ? 0.3 : +modulate || 0;
     if (chance > 0 && rng.chance(chance)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
+    change.bars = rng.pick(RA.Genres.of(genre).chordBars || [4]);
     return change;
   }
 
@@ -32,23 +35,36 @@ RA.Harmony = class Harmony {
 
   request(change) { this.pending = Object.assign(this.pending || {}, change); }
 
-  // Called by the composer on bars divisible by 4. Returns a description if something changed.
-  applyPending() {
+  // Whether a key change is waiting.
+  get keyPending() { return !!this.pending && this.pending.key != null && this.pending.key !== this.key; }
+
+  // Called by the composer on bars divisible by 4 (and on a break). With `withKey` false a
+  // waiting key change stays pending; everything else is applied. Returns a description if
+  // something changed.
+  applyPending(withKey = true) {
     if (!this.pending) return null;
     const p = this.pending;
-    this.pending = null;
-    if (p.key != null) this.key = 40 + RA.MathUtil.mod(p.key - 40, 12);
+    const holdKey = !withKey && p.key != null;
+    this.pending = holdKey ? { key: p.key } : null;
+    const before = this.describe();
+    if (p.key != null && !holdKey) this.key = 40 + RA.MathUtil.mod(p.key - 40, 12);
     if (p.mode) this.mode = p.mode;
     if (p.prog) this.prog = p.prog;
-    return `${this.keyName()} · progression ${this.prog.map((d) => d + 1).join('-')}`;
+    if (p.bars) this.barsPerChord = p.bars;
+    const after = this.describe();
+    return after === before ? null : after;
   }
 
-  // Picks a mode and progression that suit a genre (keeps the current mode if it fits).
+  describe() { return `${this.keyName()} · progression ${this.prog.map((d) => d + 1).join('-')}${this.barsPerChord !== 4 ? ` (${this.barsPerChord} bars each)` : ''}`; }
+
+  // Picks a mode, progression and chord length that suit a genre (keeps the current mode if
+  // it fits).
   planFor(genre, rng) {
     const G = RA.Genres.of(genre);
     return {
       mode: G.modes.includes(this.mode) ? this.mode : rng.pick(G.modes),
       prog: rng.pick(G.progressions),
+      bars: rng.pick(G.chordBars || [4]),
     };
   }
 

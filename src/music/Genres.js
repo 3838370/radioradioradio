@@ -6,7 +6,9 @@
 //   tends        where the journey tends to go next (weights; any genre can follow any other)
 //   sections     arc sections it prefers (×2.2) and avoids (×0.25), and the most layers on auto
 //   modes        modes it plays in
-//   progressions scale degrees (0 = tonic), one chord per 4 bars
+//   progressions scale degrees (0 = tonic)
+//   chordBars    how many bars each chord lasts (one of these, drawn per progression)
+//   wow          how much the tape's wow and flutter (on the whole mix) move here (×)
 //   roleOrder    the order its layers come in
 //   collage      sample folders for collage() (voices, radio, field recordings)
 //   palette      the instruments it may swap in, per family (Families.SYNTHS): when a pattern
@@ -18,7 +20,7 @@ RA.Genres = class Genres {
     // Aphex Twin's ambient side (Selected Ambient Works 85-92 and II, the Drukqs prepared
     // pianos): FM pads, loose 808, ostinatos, tape. Slow, melancholy turns.
     saw: {
-      label: 'saw', tempo: 96, intensity: 0.35,
+      label: 'saw', tempo: 96, intensity: 0.35, chordBars: [2, 4, 4], wow: 1.3,
       tends: { acid: 2, boc: 2, space: 1.5 },
       sections: { prefer: ['drift', 'suspense', 'sparse'], avoid: ['surge', 'peak'], cap: 5 },
       modes: ['aeolian', 'lydian', 'dorian'],
@@ -31,7 +33,7 @@ RA.Genres = class Genres {
     // Aphex Twin's acid and braindance (Analord, the Richard D. James Album): raw 303,
     // 808/909, odd-interval motifs. Sits on one or two chords.
     acid: {
-      label: 'acid', tempo: 132, intensity: 0.75,
+      label: 'acid', tempo: 132, intensity: 0.75, chordBars: [8, 16], wow: 0.8,
       tends: { drill: 2.5, ae: 2, minimal: 1.5 },
       sections: { prefer: ['build', 'tension', 'surge'], avoid: ['sparse'], cap: 6 },
       modes: ['phrygian', 'aeolian', 'dorian'],
@@ -43,7 +45,7 @@ RA.Genres = class Genres {
     },
     // drill'n'bass (Drukqs, Come to Daddy): the amen chopped at speed under slow, sad melodies.
     drill: {
-      label: 'drill', tempo: 168, intensity: 0.85,
+      label: 'drill', tempo: 168, intensity: 0.85, chordBars: [4], wow: 1,
       tends: { dark: 2.5, ae: 2, saw: 1.5 },
       sections: { prefer: ['surge', 'peak', 'collapse'], avoid: ['drift'], cap: 6 },
       modes: ['aeolian', 'dorian', 'lydian'],
@@ -56,7 +58,7 @@ RA.Genres = class Genres {
     // Boards of Canada: slow hip-hop breaks, detuned drifting synths, tape, voices. Leans on
     // the flat seventh (mixolydian).
     boc: {
-      label: 'boc', tempo: 90, intensity: 0.45,
+      label: 'boc', tempo: 90, intensity: 0.45, chordBars: [2, 4], wow: 1.8,
       tends: { saw: 2, dub: 1.5, space: 1.5 },
       sections: { prefer: ['drift', 'build', 'release'], avoid: ['surge', 'peak'], cap: 5 },
       modes: ['mixolydian', 'dorian', 'lydian', 'aeolian'],
@@ -69,7 +71,7 @@ RA.Genres = class Genres {
     // Efdemin: dry 4/4, shuffled hats, bell and organ cells in different cycle lengths.
     // Barely moves harmonically.
     minimal: {
-      label: 'minimal', tempo: 122, intensity: 0.6,
+      label: 'minimal', tempo: 122, intensity: 0.6, chordBars: [8, 16], wow: 0.7,
       tends: { dub: 2.5, acid: 1.5, ae: 1.5 },
       sections: { prefer: ['build', 'drift', 'tension'], avoid: ['peak', 'collapse'], cap: 6 },
       modes: ['dorian', 'aeolian', 'mixolydian'],
@@ -81,7 +83,7 @@ RA.Genres = class Genres {
     },
     // dub techno and Gas: chord stabs into long delays, muffled kick, hiss. One chord for minutes.
     dub: {
-      label: 'dub', tempo: 120, intensity: 0.5,
+      label: 'dub', tempo: 120, intensity: 0.5, chordBars: [8, 16], wow: 1.1,
       tends: { minimal: 2, boc: 1.5, space: 1.5 },
       sections: { prefer: ['drift', 'build', 'dread'], avoid: ['peak'], cap: 5 },
       modes: ['dorian', 'aeolian'],
@@ -93,7 +95,7 @@ RA.Genres = class Genres {
     },
     // drifting space ambient (Aethereon) and FSOL collage.
     space: {
-      label: 'space', tempo: 84, intensity: 0.3,
+      label: 'space', tempo: 84, intensity: 0.3, chordBars: [4, 8], wow: 1.2,
       tends: { saw: 2, dark: 1.5, boc: 1.5 },
       sections: { prefer: ['sparse', 'suspense', 'drift'], avoid: ['surge', 'peak'], cap: 4 },
       modes: ['lydian', 'dorian', 'aeolian'],
@@ -105,7 +107,7 @@ RA.Genres = class Genres {
     },
     // slow tension: half-time weight, drones, low brass, detuned pianos.
     dark: {
-      label: 'dark', tempo: 76, intensity: 0.35,
+      label: 'dark', tempo: 76, intensity: 0.35, chordBars: [4, 8], wow: 1.2,
       tends: { ae: 2, space: 2, saw: 1.5 },
       sections: { prefer: ['dread', 'suspense', 'collapse'], avoid: ['peak'], cap: 5 },
       modes: ['phrygian', 'locrian', 'aeolian'],
@@ -117,7 +119,7 @@ RA.Genres = class Genres {
     },
     // Autechre (AE_LIVE 2016-2018): generated, shifting rhythms, harsh FM, no tonic.
     ae: {
-      label: 'ae', tempo: 118, intensity: 0.65,
+      label: 'ae', tempo: 118, intensity: 0.65, chordBars: [8, 16], wow: 0.7,
       tends: { dark: 2, drill: 2, minimal: 1.5 },
       sections: { prefer: ['surge', 'suspense', 'collapse', 'dread'], avoid: ['drift'], cap: 6 },
       modes: ['phrygian', 'locrian', 'dorian'],

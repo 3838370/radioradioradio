@@ -47,19 +47,75 @@
     equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100 }), { bpm: 100, genres: ['acid'] });
   });
 
-  runner.test('Settings: one schema; PARAMS defaults within their ranges and as before', () => {
+  runner.test('Settings: one schema; PARAMS defaults within their ranges', () => {
     const S = RA.Settings;
     const ids = S.SCHEMA.map((s) => s.id);
     equal(ids.length, new Set(ids).size, 'unique ids');
     for (const s of S.SCHEMA.filter((x) => x.ui === 'params')) {
-      assert(s.group && s.label && s.hint && s.min <= s.def && s.def <= s.max && s.step > 0, s.id);
+      assert(s.group && s.label && s.hint, s.id);
+      if (s.kind === 'bool') assert(typeof s.def === 'boolean', s.id);
+      else assert(s.min <= s.def && s.def <= s.max && s.step > 0, s.id);
     }
     // the knobs that existed before keep their defaults
     const d = S.DEFAULTS;
     equal([d.pace, d.variation, d.density, d.delayBeats, d.feedback, d.fxAuto, d.bpm, d.volume], [32, 0.3, 5, 0.75, 0.42, 0.4, 116, 0.8]);
-    // ...and the new ones reproduce the old behaviour
-    equal([d.modulate, d.legMin, d.legMax, d.fadeIn, d.fadeOut, d.tempoGlide, d.sectionLength, d.detune], [0.3, 8, 20, 1, 2, 8, 1, 1]);
-    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint, g.id);
+    // the transitions as before; notes half as far out of tune; keys and genres change calmly
+    equal([d.modulate, d.legMin, d.legMax, d.fadeIn, d.fadeOut, d.tempoGlide, d.sectionLength, d.detune, d.modulateCalm, d.handoffCalm], [0.3, 8, 20, 1, 2, 8, 1, 0.5, true, true]);
+    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint && RA.Genres.base('boc', g.path) != null, g.id);
+  });
+
+  // A stand-in Composer for the transition tests.
+  function fakeComposer(over = {}) {
+    const vals = Object.assign({}, RA.Settings.DEFAULTS, over.settings || {});
+    const c = {
+      settings: { get: (k) => vals[k] }, clock: { spb: () => 0.5 }, rng: new RA.Rng(3),
+      arc: over.arc || new RA.Arc(new RA.Rng(1)), deck: { size: over.layers == null ? 5 : over.layers },
+      harmony: new RA.Harmony(), logger: new RA.Logger(), fast: false, nextMove: 99, genre: 'saw',
+      drift: { dominant: () => over.genre || 'acid' },
+    };
+    c.transitions = new RA.Transitions(c);
+    return c;
+  }
+
+  runner.test('Transitions: swapped drums and bass stop at once; pads crossfade', () => {
+    const t = fakeComposer().transitions; // 0.5 s per beat
+    equal([t.fadeOut('drums', true), t.fadeOut('bass', true)], [0.125, 0.125]);
+    equal([t.fadeOut('drums'), t.fadeOut('keys', true), t.fadeIn('keys', 8), t.fadeIn('drums', 8)], [4, 4, 2, 0.03]);
+  });
+
+  runner.test('Transitions: key changes wait for a calm moment; the listener\'s key does not', () => {
+    const arc = new RA.Arc(new RA.Rng(1));
+    arc.enter('peak', 0);
+    equal(fakeComposer({ arc }).transitions.keyChangeAllowed(), false, 'peak with 5 layers');
+    equal(fakeComposer({ arc, layers: 2 }).transitions.keyChangeAllowed(), true, 'two layers');
+    equal(fakeComposer({ arc, settings: { modulateCalm: false } }).transitions.keyChangeAllowed(), true, 'switch off');
+    arc.enter('release', 0);
+    equal(fakeComposer({ arc }).transitions.keyChangeAllowed(), true, 'release');
+    const h = new RA.Harmony();
+    h.key = 45;
+    h.request({ key: 50, prog: [0, 5] });
+    h.applyPending(false);
+    equal([h.key, h.prog, h.keyPending], [45, [0, 5], true], 'the progression moves, the key waits');
+    h.applyPending(true);
+    equal([h.key, h.keyPending], [50, false]);
+  });
+
+  runner.test('Transitions: a new genre comes in through a quiet section; chords last as the genre says', () => {
+    const arc = new RA.Arc(new RA.Rng(1));
+    arc.enter('peak', 0);
+    const c = fakeComposer({ arc, genre: 'dub' });
+    c.transitions.followGenre(8);
+    assert(RA.Transitions.QUIET.includes(arc.section) && c.genre === 'dub', 'quiet: ' + arc.section);
+    c.harmony.applyPending(true);
+    assert(RA.Genres.of('dub').chordBars.includes(c.harmony.barsPerChord), 'bars ' + c.harmony.barsPerChord);
+    const off = new RA.Arc(new RA.Rng(1));
+    off.enter('peak', 0);
+    fakeComposer({ arc: off, genre: 'dub', settings: { handoffCalm: false } }).transitions.followGenre(8);
+    equal(off.section, 'peak', 'switch off');
+    for (const g of RA.Genres.LIST) {
+      const h = new RA.Harmony();
+      for (let k = 0; k < 20; k++) assert(RA.Genres.of(g).chordBars.includes(h.planFor(g, new RA.Rng(k)).bars), g);
+    }
   });
 
   runner.test('Settings: a genre\'s own parameters lay over the Genres table, reset and export', () => {

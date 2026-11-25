@@ -110,7 +110,7 @@ RA.Layers = class Layers {
   // Another pattern in this layer's role, keeping its lock, mute and automation switch.
   replace(layer, pattern, startBar) {
     const { locked, muted, fxAuto } = layer;
-    this.exit(layer, startBar);
+    this.exit(layer, startBar, this.c.transitions.fadeOut(layer.role, true));
     const fresh = this.enter(layer.role, pattern, startBar);
     if (fresh) {
       if (muted) this.setMuted(fresh, true);

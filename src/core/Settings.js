@@ -3,7 +3,8 @@
 // saved, exported and reset the same way. Emits 'change' with { name, value } (and `genre`
 // for a genre's own parameter).
 //
-// A schema entry: { id, def, group, label, hint, min, max, step, ui }
+// A schema entry: { id, def, group, label, hint, min, max, step, kind, ui }
+//   kind: 'bool' for a switch (no range); numbers otherwise
 //   ui: 'params' = shown in the PARAMS row (generated from the schema); null = shown
 //       elsewhere (the top bar, the delay bar, panels) or kept internally
 // GENRE_SCHEMA: the parameters each genre has (defaults from the Genres table, `path` in it).
@@ -44,16 +45,18 @@ RA.Settings = class Settings extends RA.Emitter {
     // human feel and tuning
     { id: 'humanTime', def: 1, group: 'feel', label: 'timing', hint: 'how loose melodies are in time (rubato)', min: 0, max: 3, step: 0.1, ui: 'params' },
     { id: 'humanVel', def: 1, group: 'feel', label: 'dynamics', hint: 'how much the loudness of melody notes varies', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'detune', def: 1, group: 'feel', label: 'detune', hint: 'how far notes drift out of tune (synth drift and melody detune); 0 = perfectly in tune', min: 0, max: 2, step: 0.05, ui: 'params' },
+    { id: 'detune', def: 0.5, group: 'feel', label: 'detune', hint: 'how far each note drifts out of tune (synth drift and melody detune); 0 = perfectly in tune, 1 = as the instruments were designed. The tape wow (per genre) bends everything together', min: 0, max: 2, step: 0.05, ui: 'params' },
 
     // harmony
     { id: 'modulate', def: 0.3, group: 'harmony', label: 'modulate', hint: 'chance that a change of progression also moves to another key', min: 0, max: 1, step: 0.05, ui: 'params' },
+    { id: 'modulateCalm', def: true, group: 'harmony', label: 'keys when calm', hint: 'key changes wait for a calm moment (a quiet section, two layers or fewer, or a break) instead of jumping with everything playing', kind: 'bool', ui: 'params' },
 
     // transitions
     { id: 'legMin', def: 8, group: 'transitions', label: 'genre min', hint: 'shortest time on one genre, in minutes', min: 1, max: 60, step: 1, ui: 'params' },
     { id: 'legMax', def: 20, group: 'transitions', label: 'genre max', hint: 'longest time on one genre, in minutes', min: 1, max: 90, step: 1, ui: 'params' },
+    { id: 'handoffCalm', def: true, group: 'transitions', label: 'calm hand-over', hint: 'when a new genre takes over, the music thins out first (a quiet section), the tempo moves with little playing, then the new genre builds up', kind: 'bool', ui: 'params' },
     { id: 'fadeIn', def: 1, group: 'transitions', label: 'fade in', hint: 'bars a new pad, melody or texture takes to come in (drums and bass come in at once)', min: 0, max: 8, step: 0.25, ui: 'params' },
-    { id: 'fadeOut', def: 2, group: 'transitions', label: 'fade out', hint: 'bars a layer takes to fade out', min: 0, max: 8, step: 0.25, ui: 'params' },
+    { id: 'fadeOut', def: 2, group: 'transitions', label: 'fade out', hint: 'bars a layer takes to fade out. When drums or bass are swapped for others, the old ones stop at once, so two beats or two basslines never play together', min: 0, max: 8, step: 0.25, ui: 'params' },
     { id: 'tempoGlide', def: 8, group: 'transitions', label: 'tempo glide', hint: 'bars a tempo change takes', min: 1, max: 32, step: 1, ui: 'params' },
     { id: 'sectionLength', def: 1, group: 'transitions', label: 'sections', hint: 'how long the arc stays in each section (×)', min: 0.25, max: 3, step: 0.05, ui: 'params' },
   ];
@@ -64,6 +67,8 @@ RA.Settings = class Settings extends RA.Emitter {
     { id: 'intensity', path: 'intensity', label: 'energy', hint: 'how intense it is (more layers, busier patterns)', min: 0, max: 1, step: 0.05 },
     { id: 'cap', path: 'sections.cap', label: 'max layers', hint: 'the most layers it plays on auto', min: 1, max: 6, step: 1 },
     { id: 'modes', path: 'modes', label: 'modes', hint: 'the modes it plays in', options: ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'] },
+    { id: 'chordBars', path: 'chordBars', label: 'bars per chord', hint: 'how long each chord lasts (one of those ticked, drawn per progression)', options: [1, 2, 4, 8, 16] },
+    { id: 'wow', path: 'wow', label: 'tape wow', hint: 'how much the tape wow and flutter bend the whole mix (×)', min: 0, max: 3, step: 0.1 },
   ];
 
   static DEFAULTS = Object.fromEntries(Settings.SCHEMA.map((s) => [s.id, s.def]));
@@ -146,7 +151,7 @@ RA.Settings = class Settings extends RA.Emitter {
   }
 
   loadParams(data) {
-    for (const s of Settings.SCHEMA) if (s.ui === 'params' && typeof (data || {})[s.id] === 'number') this.set(s.id, data[s.id]);
+    for (const s of Settings.SCHEMA) if (s.ui === 'params' && typeof (data || {})[s.id] === typeof s.def) this.set(s.id, data[s.id]);
     if (data && data.genreTune && typeof data.genreTune === 'object') this.setTune(Settings.clone(data.genreTune), null, null);
   }
 };

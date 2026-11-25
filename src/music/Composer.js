@@ -40,6 +40,7 @@ RA.Composer = class Composer {
     const plan = this.harmony.planFor(this.genre, this.rng);
     this.harmony.mode = this.settings.get('mode') !== 'auto' ? this.settings.get('mode') : plan.mode;
     this.harmony.prog = plan.prog;
+    this.harmony.barsPerChord = plan.bars;
     if (this.settings.get('key') !== 'auto') this.harmony.key = 40 + RA.MathUtil.mod(this.settings.get('key') - 40, 12);
     const bpm = this.settings.get('bpmAuto') ? this.drift.tempo() : this.settings.get('bpm');
     this.clock.bpm = this.clock.target = bpm;
@@ -54,6 +55,14 @@ RA.Composer = class Composer {
       const r = this.coder.probe(p.code, 4);
       if (r.ok) this.samples.preload(r.samples);
     }
+  }
+
+  // Applies the waiting harmony changes; the key only `withKey` (else it keeps waiting), or
+  // when the listener chose it (keyByHand).
+  applyHarmony(bar, withKey) {
+    const change = this.harmony.applyPending(withKey || this.keyByHand);
+    this.keyByHand = false;
+    if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'event');
   }
 
   preloadNextGenre() {
@@ -72,13 +81,15 @@ RA.Composer = class Composer {
       if (this.settings.get('densityAuto')) this.nextMove = Math.min(this.nextMove, bar + 1);
     }
     if (this.settings.get('paceAuto') && (section || bar >= this.paceUntil)) this.rollPace(bar);
-    if (this.fx) this.fx.setArc(this.arc.value);
+    // the tape's wow: the section's, times the genre's (Genres: wow; boc bends the most)
+    if (this.fx) this.fx.setArc(Object.assign({}, this.arc.value, { wow: this.arc.value.wow * RA.Genres.blend(this.drift.weights(), (g) => g.wow) }));
     if (this.push && bar >= this.push.until) this.push = null;
+    // a key change held back for a calm moment lands right after a break
+    if (bar === this.keyAfterBreak) this.applyHarmony(bar, true);
     if (bar % 4 === 0 || this.push) {
       if (bar % 4 === 0) {
         this.transitions.followGenre(bar);
-        const change = this.harmony.applyPending();
-        if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'event');
+        this.applyHarmony(bar, this.transitions.keyChangeAllowed());
       }
       if (this.settings.get('bpmAuto')) {
         const t = Math.round(this.drift.tempo() * this.arc.tempo * (this.push ? this.push.factor : 1));
@@ -87,7 +98,9 @@ RA.Composer = class Composer {
     }
     // the last bar of a section: a break or a fill (not while frozen or steered by hand)
     const lastBar = !this.arc.held && bar === this.arc.start + this.arc.length - 1;
-    if (lastBar && !this.settings.get('freeze') && this.deck.size >= 2 && this.rng.chance(0.6)) this.fxAuto.fill(bar);
+    if (lastBar && !this.settings.get('freeze') && this.deck.size >= 2 && this.rng.chance(0.6)) {
+      if (this.fxAuto.fill(bar) === 'break' && this.harmony.keyPending) this.keyAfterBreak = bar + 1;
+    }
     if (this.fx) {
       this.fx.syncTempo(this.clock.bpm);
       this.fxAuto.pad(bar);
@@ -484,7 +497,10 @@ RA.Composer = class Composer {
     if (name === 'freeze' && !value) this.nextMove = this.bar + this.pace();
     if (name === 'bpm' && !this.settings.get('bpmAuto')) this.clock.glideTo(value, 8);
     if (name === 'bpmAuto') this.clock.glideTo(value ? Math.round(this.drift.tempo() * this.arc.tempo) : this.settings.get('bpm'), 16);
-    if (name === 'key') this.harmony.request({ key: value === 'auto' ? this.harmony.key : value });
+    if (name === 'key') {
+      this.harmony.request({ key: value === 'auto' ? this.harmony.key : value });
+      this.keyByHand = true; // the listener's key comes in at the next 4 bars, calm or not
+    }
     if (name === 'mode') this.harmony.request({ mode: value === 'auto' ? this.harmony.planFor(this.genre, this.rng).mode : value });
     if (name === 'genres') {
       const was = this.drift.dominant();
