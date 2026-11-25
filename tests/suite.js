@@ -808,13 +808,13 @@
   });
 
   runner.test('Steering: manual layers/tempo pick a section; the arc holds it, then carries on from it', () => {
-    const L = (n, dir, cur = 'build', ratio = 1) => RA.Composer.sectionForLayers(n, dir, cur, ratio);
+    const L = (n, dir, cur = 'build', ratio = 1) => RA.Steering.sectionForLayers(n, dir, cur, ratio);
     equal([L(1, 1), L(3, 1), L(4, 1), L(5, 1), L(6, 1)], ['sparse', 'drift', 'build', 'tension', 'peak']);
     equal([L(3, -1), L(2, -1, 'peak'), L(2, -1, 'collapse')], ['release', 'collapse', 'collapse']);
     // layers read with a manual tempo: slow and full = dread, slow and empty = suspense, fast and full = surge
     equal([L(6, 1, 'build', 0.85), L(5, -1, 'build', 0.85), L(4, -1, 'peak', 0.85), L(2, 1, 'build', 0.85)], ['dread', 'dread', 'dread', 'suspense']);
     equal([L(5, 1, 'build', 1.1), L(6, 1, 'build', 1.1), L(3, 1, 'build', 1.1), L(1, -1, 'drift', 0.85)], ['surge', 'peak', 'tension', 'sparse']);
-    equal([0.8, 0.9, 1, 1.05, 1.15].map(RA.Composer.sectionForTempo), ['sparse', 'drift', 'build', 'tension', 'surge']);
+    equal([0.8, 0.9, 1, 1.05, 1.15].map(RA.Steering.sectionForTempo), ['sparse', 'drift', 'build', 'tension', 'surge']);
     const arc = new RA.Arc(new RA.Rng(2));
     const other = arc.section === 'peak' ? 'sparse' : 'peak';
     equal(arc.hold(other, 10), other);

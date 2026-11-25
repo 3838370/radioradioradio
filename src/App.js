@@ -42,6 +42,7 @@ RA.App = class App {
     RA.SynthVoice.detuneScale = this.settings.get('detune');
     this.state = 'idle'; // idle | loading | playing
     this.muted = false;
+    this.input = new RA.Input(this); // the mouse and the keys
     this.drag = null;    // { type: 'xy' } or { type: 'scrub', ... } while the mouse is down
   }
 
@@ -67,16 +68,16 @@ RA.App = class App {
       p.setup = () => this.setup(p);
       p.draw = () => this.draw(p);
       p.windowResized = () => this.resize(p);
-      p.mousePressed = (event) => this.press(p, event);
-      p.mouseDragged = () => this.dragMove(p);
-      p.mouseReleased = () => this.release(p);
+      p.mousePressed = (event) => this.input.press(p, event);
+      p.mouseDragged = () => this.input.dragMove(p);
+      p.mouseReleased = () => this.input.release(p);
       p.doubleClicked = () => {
         if (this.xy.contains(p.mouseX, p.mouseY)) this.xy.reset();
         if (this.eqCurve && this.eqCurve.contains(p.mouseX, p.mouseY)) this.eqCurve.reset();
       };
-      p.mouseWheel = (event) => this.wheel(p, event);
-      p.keyPressed = (event) => this.key(p, event);
-      p.keyReleased = (event) => this.keyUp(p, event);
+      p.mouseWheel = (event) => this.input.wheel(p, event);
+      p.keyPressed = (event) => this.input.key(p, event);
+      p.keyReleased = (event) => this.input.keyUp(p, event);
     });
   }
 
@@ -106,9 +107,9 @@ RA.App = class App {
     this.savePanel = new RA.SavePanel(p, this.drawer.pane('save'), this);
 
     this.editor = new RA.CodeEditor(p, this.stage, {
-      onRun: (layer, code) => this.composer.applyCode(layer.id, code),
-      onOpen: (layer) => this.composer.setEditing(layer.id, true),
-      onClose: (layer) => this.composer.setEditing(layer.id, false),
+      onRun: (layer, code) => this.composer.deck.applyCode(layer.id, code),
+      onOpen: (layer) => this.composer.deck.setEditing(layer.id, true),
+      onClose: (layer) => this.composer.deck.setEditing(layer.id, false),
       keepOpen: [document.getElementById('drawer')], // its panels insert code into the editor
     });
     this.wireEvents(p);
@@ -340,55 +341,6 @@ RA.App = class App {
       () => statusEl.html('Não consegui copiar; seleciona o código acima.'));
   }
 
-  // ───── mouse and keys ─────
-
-  press(p, event) {
-    if (this.state !== 'playing') return;
-    // Only presses on the canvas itself (not on the editor or panels laid over it).
-    if (!event || event.target !== p.canvas) return;
-    const mx = p.mouseX, my = p.mouseY;
-    const top = this.hud.hit(mx, my);
-    if (top) {
-      if (top.type === 'refresh') this.composer.refreshAll();
-      else this.toggleGenre(top.g);
-      return;
-    }
-    if (this.inViewButton(mx, my)) return this.nextView();
-    if (this.view === 'code') {
-      const b = this.fullCode.hit(mx, my);
-      if (b && b.type === 'copy') this.copyFullCode();
-      if (this.fullCode.contains(mx, my)) return;
-    }
-    if (this.view === 'seq') {
-      const b = this.seq.hit(mx, my);
-      if (b) this.seqAction(b);
-      if (this.seq.contains(mx, my)) return;
-    }
-    if (this.view !== 'cards') return; // the cards aren't on screen
-    if (this.xy.contains(mx, my)) {
-      this.drag = { type: 'xy' };
-      this.xy.set(mx, my);
-      return;
-    }
-    if (this.eqCurve.contains(mx, my)) {
-      this.drag = { type: 'eq' };
-      this.eqCurve.press(mx, my);
-      return;
-    }
-    const num = this.grid.numberAt(mx, my);
-    if (num) {
-      const code = num.card.layer.code;
-      this.drag = { type: 'scrub', layer: num.card.layer, start: num.start, len: num.len, from: code.substr(num.start, num.len), y0: my, moved: false, last: 0, code };
-      return;
-    }
-    const hit = this.grid.hit(mx, my);
-    if (!hit) return;
-    if (hit.action === 'edit') return this.editor.open(this.composer.find(hit.layerId));
-    if (hit.action === 'sound') this.openLayerPanel(hit.layerId);
-    if (hit.action === 'mute') this.composer.toggleMute(hit.layerId);
-    if (hit.action === 'lock') this.composer.toggleLock(hit.layerId);
-    if (hit.action === 'regen') this.composer.regenerate(hit.layerId);
-  }
 
   // ───── views: cards → full code → sequencer → cards ─────
 
@@ -457,68 +409,9 @@ RA.App = class App {
       () => this.logger.add('could not copy the code', 'err'));
   }
 
-  wheel(p, event) {
-    if (this.state !== 'playing' || this.view === 'cards' || !event) return;
-    const v = this.view === 'code' ? this.fullCode : this.seq;
-    if (!v.contains(p.mouseX, p.mouseY)) return;
-    v.wheel(this.view === 'code' ? event.delta : event.delta * 0.6);
-    return false;
-  }
 
-  // A sequencer click, turned into an edit of the layer's code (which locks the layer).
-  seqAction(b) {
-    const layer = this.composer.find(b.layerId);
-    if (!layer) return;
-    const CT = RA.CodeTools;
-    if (b.type === 'layer-mute') return this.composer.toggleMute(layer.id);
-    if (b.type === 'layer-lock') return this.composer.toggleLock(layer.id);
-    if (b.type === 'audition') return this.audition(b.row);
-    let code = layer.code, desc;
-    if (b.type === 'mute-row') {
-      const keys = new Set(CT.muteKeys(code));
-      const off = !keys.has(b.key);
-      if (off) keys.add(b.key); else keys.delete(b.key);
-      code = CT.setMutes(code, [...keys]);
-      desc = `${off ? 'mute' : 'unmute'} ${b.key}`;
-    } else if (b.type === 'release-row') {
-      code = CT.setHits(code, b.key, null);
-      desc = `${b.key} back to the code`;
-    } else if (b.type === 'cell') {
-      const row = CT.hitsRows(code).find((r) => r.key === b.key);
-      // a row taken over for the first time starts from what it plays in this cycle, with
-      // the cycle's length (16 steps for a bar, 12, 20... for other loops)
-      const cells = row ? [...row.pattern] : b.row.cells.map((v) => (v > 0 ? 'x' : '.'));
-      cells[b.step] = cells[b.step] === '.' ? 'x' : '.';
-      code = CT.setHits(code, b.key, cells.join(''), row ? '' : this.hitsOpts(b.row));
-      desc = `seq ${b.key} step ${b.step + 1}`;
-    }
-    const res = this.composer.liveEdit(layer.id, code, { desc, final: true });
-    if (!res.ok) this.logger.add(`sequencer: ${res.error}`, 'err');
-  }
 
-  // The options a new hits() row copies from the sound's latest event.
-  hitsOpts(row) {
-    const ev = row.last || {};
-    const r2 = (v) => Math.round(v * 100) / 100;
-    const o = {};
-    if (ev.amp != null) o.amp = r2(ev.amp);
-    if (row.kind === 'synth') {
-      o.note = ev.notes && ev.notes.length ? ev.notes[0] : this.harmony.root(this.composer.bar);
-      o.dur = ev.dur != null ? r2(ev.dur) : 0.5;
-    }
-    return o;
-  }
 
-  audition(row) {
-    const ev = row.last || {};
-    if (row.kind === 's') {
-      const i = row.key.lastIndexOf(':');
-      this.audio.audition(row.key.slice(0, i), +row.key.slice(i + 1) || 0, { amp: ev.amp != null ? ev.amp : 0.6 });
-    } else {
-      this.audio.auditionSynth(row.key, ev.notes && ev.notes.length ? ev.notes.slice(0, 4) : [this.harmony.root(this.composer.bar) + 12],
-        { amp: ev.amp != null ? ev.amp : 0.3, dur: 0.6 });
-    }
-  }
 
   // Turns one genre on or off. The last one left on can't be turned off.
   toggleGenre(g) {
@@ -533,69 +426,11 @@ RA.App = class App {
     this.settings.set('genres', list.length === RA.Genres.LIST.length ? null : list);
   }
 
-  dragMove(p) {
-    const d = this.drag;
-    if (!d) return;
-    if (d.type === 'xy') { this.xy.set(p.mouseX, p.mouseY); return; }
-    if (d.type === 'eq') { this.eqCurve.move(p.mouseX, p.mouseY); return; }
-    const dy = d.y0 - p.mouseY;
-    if (Math.abs(dy) > 2) d.moved = true;
-    if (!d.moved || performance.now() - d.last < 50) return;
-    d.last = performance.now();
-    this.applyScrub(d, dy, false);
-  }
 
-  applyScrub(d, dy, final) {
-    const str = RA.CodeTools.scrub(d.from, dy);
-    const code = RA.CodeTools.splice(d.code, d.start, d.len, str);
-    const res = this.composer.liveEdit(d.layer.id, code, { desc: `${d.from} → ${str}`, final });
-    if (res.ok) { d.code = code; d.len = str.length; }
-  }
 
-  release(p) {
-    const d = this.drag;
-    this.drag = null;
-    if (d && d.type === 'eq') this.eqCurve.release();
-    if (!d || d.type !== 'scrub') return;
-    if (d.moved) this.applyScrub(d, d.y0 - p.mouseY, true);
-    else this.editor.open(this.composer.find(d.layer.id)); // a plain click on a number edits
-  }
 
-  key(p, event) {
-    if (this.state !== 'playing') return;
-    const tag = document.activeElement && document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-    const pad = this.padForKey(p, event);
-    if (pad) {
-      if (event && event.repeat) return false;
-      if (event && event.shiftKey) this.fx.toggle(pad.id, 'latch'); else this.fx.engage(pad.id, 'hold');
-      return false;
-    }
-    const k = p.key.toLowerCase();
-    if (k === 'n') { this.composer.forceMove(); this.logger.add('(change requested)'); }
-    if (k === 't') this.composer.skipGenre();
-    if (k === 's') this.composer.skipSection();
-    if (k === 'r') this.composer.refreshAll();
-    if (k === 'v') this.nextView();
-    if (k === 'm') {
-      this.muted = !this.muted;
-      p.outputVolume(this.muted ? 0 : this.settings.get('volume'), 0.1);
-    }
-  }
 
-  // Number keys 1-8 play the effect pads (Shift+number latches). Uses the physical key, so
-  // Shift doesn't turn "1" into "!".
-  padForKey(p, event) {
-    const m = /^(?:Digit|Numpad)(\d)$/.exec((event && event.code) || '');
-    const digit = m ? m[1] : p.key;
-    return RA.FxRack.PADS.find((x) => x.key === digit) || null;
-  }
 
-  keyUp(p, event) {
-    if (this.state !== 'playing') return;
-    const pad = this.padForKey(p, event);
-    if (pad && !(event && event.shiftKey)) this.fx.release(pad.id, 'hold');
-  }
 
   // ───── drawing ─────
 

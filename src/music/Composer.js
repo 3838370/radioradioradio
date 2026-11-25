@@ -1,37 +1,37 @@
-// Composer: the radio's DJ. Once per bar it follows the genre (harmony, tempo) and the arc
-// (sections: layer count, tempo, colour), sometimes plays an effect pad or moves the delay
-// time, plays a break or fill before a section changes, and every `pace` bars makes one
-// move: add or drop layers toward the target, replace a layer that no longer fits the genre,
-// or one move chosen by score (see candidates()): swap a pattern, play a new version of it,
-// change an instrument for another of its family, tweak a number, reset, drop a layer out
-// for a few bars, reharmonise, scatter a collage phrase, push or drag the tempo.
-// Every pattern comes in as a fresh version of itself, and the session memory makes what was
-// heard lately less likely. Versions, timbres and tweaks only change the values of the
-// layer's params({ ... }) line (see Variation), never the rest of its code.
+// Composer: the radio's DJ, the one that decides. Once per bar it follows the genre and the
+// arc (sections: layer count, tempo, colour), and every `pace` bars makes one move: add or
+// drop layers toward the target, replace a layer that no longer fits the genre, or one move
+// chosen by score (see candidates()): swap a pattern, play a new version of it, change an
+// instrument for another of its family, tweak a number, reset, drop a layer out for a few
+// bars, reharmonise, scatter a collage phrase, push or drag the tempo.
+// The work is shared out:
+//   deck         Layers: the layers playing and their life (enter, fade, swap, edits)
+//   transitions  Transitions: genre hand-overs and how layers fade in and out
+//   steering     Steering: what the listener does by hand
+//   fxAuto       FxAuto: effect pads, delay jumps, breaks and fills
+// Versions, timbres and tweaks only change a layer's params({ ... }) line (see Variation).
 // Locked layers are never touched. Emits layer:add / layer:change / layer:remove.
 RA.Composer = class Composer {
   static CALM = ['sparse', 'drift', 'release', 'collapse', 'suspense'];
 
   constructor({ bank, coder, audio, samples, harmony, drift, arc, fx = null, instruments = null, settings, clock, scheduler, rng, emitter, logger, fast }) {
     Object.assign(this, { bank, coder, audio, samples, harmony, drift, arc, fx, instruments, settings, clock, scheduler, rng, emitter, logger, fast });
-    this.variation = new RA.Variation({
-      rng,
-      synthExists: (n) => (instruments ? instruments.has(n) : !!RA.SynthPresets[n]),
-      sampleCount: (f) => samples.count(f),
-    });
-    this.layers = new Map(); // role -> Layer
     this.bar = 0;
     this.nextMove = 0;
     this.energy = drift.intensity();
     this.genre = drift.dominant();
-    this.serial = 0;
-    this.recent = [];        // last pattern ids heard, avoided when choosing
-    this.memory = new RA.Memory(); // everything heard this session (fatigue, versions)
     this.lastHarmBar = 0;    // when the progression last changed
     this.push = null;        // { factor, until }: a short tempo push or pull
     this.autoPace = settings.get('pace'); // the pace chosen on auto (see rollPace), and until when
     this.paceUntil = 0;
+    this.deck = new RA.Layers(this);
+    this.transitions = new RA.Transitions(this);
+    this.steering = new RA.Steering(this);
+    this.fxAuto = new RA.FxAuto(this);
   }
+
+  // The layers playing: role -> Layer.
+  get layers() { return this.deck.map; }
 
   // ───── lifecycle ─────
 
@@ -56,12 +56,16 @@ RA.Composer = class Composer {
     }
   }
 
+  preloadNextGenre() {
+    this.preloadFor(Object.assign(RA.Genres.zeroWeights(), { [this.drift.next()]: 1 }));
+  }
+
   onBar(bar) {
     this.bar = bar;
     if (this.drift.advanceBar(this.clock.bpm)) this.preloadNextGenre();
-    this.steer(bar);
+    this.steering.steer(bar);
     const section = this.arc.advanceBar(bar, 240 / this.clock.bpm, this.drift.weights());
-    this.leanGenre();
+    this.steering.lean();
     this.energy = RA.MathUtil.clamp(this.drift.intensity() + this.arc.boost, 0.03, 1);
     if (section) {
       this.logger.add(`bar ${bar}: section → ${section.toUpperCase()}`, 'event');
@@ -72,7 +76,7 @@ RA.Composer = class Composer {
     if (this.push && bar >= this.push.until) this.push = null;
     if (bar % 4 === 0 || this.push) {
       if (bar % 4 === 0) {
-        this.followGenre(bar);
+        this.transitions.followGenre(bar);
         const change = this.harmony.applyPending();
         if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'event');
       }
@@ -83,69 +87,24 @@ RA.Composer = class Composer {
     }
     // the last bar of a section: a break or a fill (not while frozen or steered by hand)
     const lastBar = !this.arc.held && bar === this.arc.start + this.arc.length - 1;
-    if (lastBar && !this.settings.get('freeze') && this.layers.size >= 2 && this.rng.chance(0.6)) this.fill(bar);
+    if (lastBar && !this.settings.get('freeze') && this.deck.size >= 2 && this.rng.chance(0.6)) this.fxAuto.fill(bar);
     if (this.fx) {
       this.fx.syncTempo(this.clock.bpm);
-      this.autoFx(bar);
-      this.autoDelay(bar);
+      this.fxAuto.pad(bar);
+      this.fxAuto.delay(bar);
     }
     // Off the layer target (the listener's count, or the arc moved): don't wait a whole pace.
-    if (this.layers.size !== this.target()) this.nextMove = Math.min(this.nextMove, bar + this.interval());
+    if (this.deck.size !== this.target()) this.nextMove = Math.min(this.nextMove, bar + this.interval());
     if (bar >= this.nextMove) {
-      // Freeze holds the code: no swaps, resets or mutations. The layer count still follows
+      // Freeze holds the code: no swaps, resets or tweaks. The layer count still follows
       // the listener's density (on auto it stays as it is), and the first two layers always
       // come in so it's never silent.
-      const freeze = this.settings.get('freeze') && this.layers.size >= 2;
+      const freeze = this.settings.get('freeze') && this.deck.size >= 2;
       if (!freeze) this.move(bar);
       else if (!this.settings.get('densityAuto')) this.moveCount(bar);
       this.nextMove = bar + this.interval();
     }
     this.scheduler.at((bar + 1) * 4, () => this.onBar(bar + 1));
-  }
-
-  preloadNextGenre() {
-    this.preloadFor(Object.assign(RA.Genres.zeroWeights(), { [this.drift.next()]: 1 }));
-  }
-
-  followGenre(bar) {
-    const dom = this.drift.dominant();
-    if (dom === this.genre) return;
-    this.genre = dom;
-    const change = this.harmony.planFor(dom, this.rng);
-    // The listener's key and mode choices always win over the genre's.
-    if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
-    if (this.settings.get('key') === 'auto') change.key = this.harmony.key + this.rng.pick([0, 5, 7, -3]);
-    this.harmony.request(change);
-    this.nextMove = Math.min(this.nextMove, bar + (this.fast ? 1 : 4)); // start handing over soon
-    this.logger.add(`bar ${bar}: genre → ${RA.Genres.label(dom)}`, 'event');
-  }
-
-  // ───── effects ─────
-
-  // Now and then, fire an effect pad that suits the section, for one to four bars.
-  autoFx(bar) {
-    const p = this.settings.get('fxAuto');
-    if (!p || this.fx.autoActive() || !this.rng.chance(p * 0.08)) return;
-    const sec = this.arc.section;
-    const calm = Composer.CALM.includes(sec);
-    const id = this.rng.weighted(calm
-      ? [['dub', 3], ['warp', 2], ['wash', 3], ['wobble', 2], ['throw', 2]]
-      : sec === 'dread'
-        ? [['sweep', 3], ['wobble', 2], ['warp', 2], ['dub', 1], ['tapestop', 0.5]]
-        : [['throw', 3], ['sweep', 2], ['stutter', sec === 'surge' ? 3 : 2], ['dub', 1], ['tapestop', sec === 'tension' ? 0.6 : sec === 'peak' || sec === 'surge' ? 1.2 : 0]]);
-    const bars = id === 'stutter' || id === 'tapestop' ? 1 : this.rng.int(1, 4);
-    this.fx.pulse(id, bars * 4 * this.clock.spb());
-    const pad = RA.FxRack.PADS.find((x) => x.id === id);
-    this.logger.add(`bar ${bar}: fx ${pad.label.toLowerCase()} (${bars} bar${bars > 1 ? 's' : ''})`);
-  }
-
-  // Aphex-style: sometimes jump the delay to another note value; the glide bends the echoes.
-  autoDelay(bar) {
-    if (!this.settings.get('delayAuto') || !this.rng.chance(this.fast ? 0.2 : 0.05)) return;
-    const current = this.settings.get('delayBeats');
-    const [name, beats] = this.rng.pick(RA.FxRack.DELAY_NOTES.filter(([, b]) => Math.abs(b - current) > 0.01));
-    this.fx.setDelayBeats(beats);
-    this.logger.add(`bar ${bar}: delay → ${name}`);
   }
 
   // ───── pacing ─────
@@ -194,13 +153,15 @@ RA.Composer = class Composer {
   // and hand over quickly when the genre has moved on; otherwise follow the pace knob.
   interval() {
     const target = this.target();
-    const building = this.layers.size < target && this.bar < 64;
-    const offTarget = Math.abs(this.layers.size - target) >= 1;
+    const building = this.deck.size < target && this.bar < 64;
+    const offTarget = Math.abs(this.deck.size - target) >= 1;
     const w = this.drift.weights();
-    const outOfGenre = [...this.layers.values()].some((l) => !l.locked && this.misfit(l, w));
+    const outOfGenre = [...this.deck.values()].some((l) => !l.locked && this.misfit(l, w));
     if (offTarget) return Math.min(this.pace(), this.fast ? 1 : 2);
     return building || outOfGenre ? Math.min(this.pace(), this.fast ? 1 : 4) : this.pace();
   }
+
+  // ───── choosing patterns ─────
 
   // A pattern for a role, avoiding what was heard recently when there's a choice.
   pickPattern(role, exclude = []) {
@@ -209,40 +170,14 @@ RA.Composer = class Composer {
     // With STEPS chosen, a fitting pattern (even one heard recently) beats any other;
     // roles with none that fit fall back to the usual choice.
     // Patterns heard lately or often weigh less (the session memory).
-    const tired = (p) => this.memory.weight(p.id, this.bar);
-    const tries = [[exclude.concat(this.recent), meter], [exclude, meter], [exclude.concat(this.recent), null], [exclude, null]];
+    const tired = (p) => this.deck.memory.weight(p.id, this.bar);
+    const recent = this.deck.recent;
+    const tries = [[exclude.concat(recent), meter], [exclude, meter], [exclude.concat(recent), null], [exclude, null]];
     for (const [ex, m] of meter ? tries : tries.slice(2)) {
       const p = this.bank.pick(role, w, this.energy, this.rng, ex, m, tired);
       if (p) return p;
     }
     return null;
-  }
-
-  // A new version of a pattern: some of its params (instruments, kits) swapped for others
-  // of their family that the genre allows. Tries a few times for a version not heard this
-  // session. Returns { code, changes, sig }.
-  roll(pattern) {
-    const params = RA.CodeTools.paramsOf(pattern.code);
-    const strength = 0.3 + 0.7 * this.settings.get('variation');
-    let r = null;
-    for (let k = 0; k < 4; k++) {
-      r = this.variation.version(params, this.genre, strength);
-      if (!this.memory.heard(pattern.id + r.sig)) break;
-    }
-    const code = r.changes.length ? RA.CodeTools.setParams(pattern.code, r.params) : pattern.code;
-    return { code, changes: r.changes, sig: pattern.id + r.sig };
-  }
-
-  // Loads new params into a layer (its code with the params line rewritten).
-  loadParams(layer, params, desc, bar) {
-    const code = RA.CodeTools.setParams(layer.code, params);
-    const probe = this.coder.probe(code);
-    if (!probe.ok) return false;
-    this.samples.preload(probe.samples);
-    if (!this.coder.load(layer, this.fullCode(code)).ok) return false;
-    this.emitter.emit('layer:change', { layer, desc });
-    this.logger.add(`bar ${bar}: ~ ${layer.role}: ${desc}`);
-    return true;
   }
 
   // The step count the listener chose (STEPS), or null on auto.
@@ -264,18 +199,13 @@ RA.Composer = class Composer {
     if (!meter) return;
     const start = this.phraseStart(this.bar + 1);
     let n = 0;
-    for (const layer of [...this.layers.values()]) {
+    for (const layer of [...this.deck.values()]) {
       if (layer.locked || layer.editing) continue;
       if (RA.PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps)) continue;
       this.swap(layer, this.bar, `${meter.steps} steps`, start);
       n++;
     }
     this.logger.add(`steps → ${meter.steps}${n ? ` (${n} layer${n > 1 ? 's' : ''} swapped)` : ''}`, 'event');
-  }
-
-  remember(id) {
-    this.recent.push(id);
-    if (this.recent.length > 12) this.recent.shift();
   }
 
   // Layers enter on 4-bar boundaries, where the chords change.
@@ -287,13 +217,13 @@ RA.Composer = class Composer {
   // the count catches up quickly. Returns whether it did anything.
   moveCount(bar) {
     const target = this.target();
-    if (this.layers.size < target) {
-      for (let k = Math.min(2, target - this.layers.size); k > 0; k--) this.add(bar);
+    if (this.deck.size < target) {
+      for (let k = Math.min(2, target - this.deck.size); k > 0; k--) this.add(bar);
       return true;
     }
-    if (this.layers.size > target && [...this.layers.values()].some((l) => !l.locked)) {
-      for (let k = Math.min(2, this.layers.size - target); k > 0; k--) {
-        const left = [...this.layers.values()].filter((l) => !l.locked);
+    if (this.deck.size > target && this.deck.free().length) {
+      for (let k = Math.min(2, this.deck.size - target); k > 0; k--) {
+        const left = this.deck.free();
         if (left.length) this.drop(bar, left);
       }
       return true;
@@ -303,14 +233,14 @@ RA.Composer = class Composer {
 
   move(bar) {
     const w = this.drift.weights();
-    const free = [...this.layers.values()].filter((l) => !l.locked);
+    const free = this.deck.free();
     if (this.moveCount(bar)) return;
     if (!free.length) return;
     // a role the section leaves out (no drums in sparse or suspense) goes; another comes in
     const banned = this.settings.get('densityAuto') && free.find((l) => (this.arc.spec.no || []).includes(l.role));
     if (banned) {
       this.logger.add(`bar ${bar}: − ${banned.role} (${banned.patternId}, ${this.arc.section})`);
-      this.exit(banned, this.phraseStart(bar));
+      this.deck.exit(banned, this.phraseStart(bar));
       return;
     }
 
@@ -326,10 +256,11 @@ RA.Composer = class Composer {
 
   // ───── the decision scheme ─────
   //
-  // Each possible move gets a score from the variation knob, the arc section, the genre and
-  // the layer's age (bars since it came in), and one is drawn by weight. So in a dub drift
-  // layers drop out for a few bars and the progression shifts; in a build patterns swap; in
-  // space the radio scatters collage phrases; in a surge or dread the tempo pushes or drags.
+  // Each possible move gets a score from the variation knob, the arc section, the genre, the
+  // listener's weights (PARAMS) and the layer's age (bars since it came in), and one is drawn
+  // by weight. So in a dub drift layers drop out for a few bars and the progression shifts; in
+  // a build patterns swap; in space the radio scatters collage phrases; in a surge or dread
+  // the tempo pushes or drags.
 
   // How much each section asks for a kind of move (1 = neutral, 0 = never).
   static INTENT = {
@@ -347,36 +278,41 @@ RA.Composer = class Composer {
     return t[section] == null ? (kind === 'tempo' ? 0 : 1) : t[section];
   }
 
+  // The PARAMS weight for each kind of move.
+  static WEIGHTS = { swap: 'wSwap', reroll: 'wReroll', timbre: 'wTimbre', mutate: 'wMutate', reset: 'wMutate', dropout: 'wDropout', reharm: 'wReharm', collage: 'wCollage' };
+
+  static hasNumbers(code) { return Object.values(RA.CodeTools.paramsOf(code)).some((v) => typeof v === 'number'); }
+
   // [{ score, run }] for this move.
   candidates(bar, free, w) {
     const v = this.settings.get('variation');
     const sec = this.arc.section;
-    // the section's intent for a kind of move, times the listener's weight for it (PARAMS)
-    const W = { swap: 'wSwap', reroll: 'wReroll', timbre: 'wTimbre', mutate: 'wMutate', reset: 'wMutate', dropout: 'wDropout', reharm: 'wReharm', collage: 'wCollage' };
+    const W = Composer.WEIGHTS;
     const I = (kind) => Composer.intent(kind, sec) * (W[kind] ? this.settings.get(W[kind]) : 1);
     const age = (l) => bar - (l.enteredBar == null ? bar : l.enteredBar);
     const dubby = (w.dub || 0) + 0.8 * (w.minimal || 0) + 0.4 * (w.boc || 0);
     const collagey = (w.space || 0) + (w.boc || 0) + 0.6 * (w.saw || 0) + 0.5 * (w.dark || 0) + 0.3 * (w.ae || 0);
+    const variation = this.deck.variation;
     const out = [];
     for (const l of free) {
       out.push({ score: (0.08 + 0.3 * v) * RA.MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });
       // versions and timbres only where the genre has other instruments or kits for its params;
       // tweaks only where it has numbers
       const params = RA.CodeTools.paramsOf(l.code);
-      if (Object.values(params).some((x) => typeof x === 'string' && this.variation.options(x, this.genre).length)) {
+      if (Object.values(params).some((x) => typeof x === 'string' && variation.options(x, this.genre).length)) {
         out.push({ score: 0.2 * (0.5 + v) * RA.MathUtil.clamp(age(l) / 24, 0.3, 1.5) * I('reroll') / free.length, run: () => this.reroll(l, bar) });
       }
-      if (this.variation.canTimbre(params, this.genre)) {
+      if (variation.canTimbre(params, this.genre)) {
         out.push({ score: 0.12 * (0.5 + v) * I('timbre') / free.length, run: () => this.timbre(l, bar) });
       }
       if (Composer.hasNumbers(l.code)) out.push({ score: 0.35 * I('mutate') / free.length, run: () => this.mutate(l, bar) });
-      if (l.code !== this.fullCode(l.base || l.pattern.code)) out.push({ score: 0.15 * (1 - v) * I('reset') / free.length, run: () => this.reset(l, bar) });
+      if (l.code !== this.deck.fullCode(l.base || l.pattern.code)) out.push({ score: 0.15 * (1 - v) * I('reset') / free.length, run: () => this.deck.reset(l, bar) });
       if (free.length >= 2 && !l.muted) out.push({ score: (0.04 + 0.25 * dubby) * I('dropout') / free.length, run: () => this.dropout(l, bar) });
     }
     if (this.settings.get('key') === 'auto' || this.settings.get('mode') === 'auto') {
       out.push({ score: (0.04 + 0.2 * RA.MathUtil.clamp((bar - this.lastHarmBar) / 48, 0, 1.5)) * I('reharm'), run: () => this.reharmonize(bar) });
     }
-    if (this.layers.size) out.push({ score: (0.03 + 0.25 * collagey) * I('collage'), run: () => this.collageEvent(bar) });
+    if (this.deck.size) out.push({ score: (0.03 + 0.25 * collagey) * I('collage'), run: () => this.collageEvent(bar) });
     if (this.settings.get('bpmAuto')) out.push({ score: 0.15 * I('tempo'), run: () => this.tempoPush(bar) });
     return out.filter((o) => o.score > 0);
   }
@@ -384,18 +320,27 @@ RA.Composer = class Composer {
   // The same pattern, another version (other instruments and kits of the genre), with the
   // layer's head (fx line, mutes) kept.
   reroll(layer, bar) {
-    const r = this.roll(layer.pattern);
+    const r = this.deck.roll(layer.pattern);
     if (!r.changes.length) return;
     const params = RA.CodeTools.paramsOf(r.code);
-    if (!this.loadParams(layer, params, 'new version: ' + r.changes.slice(0, 3).join(', '), bar)) return;
+    if (!this.deck.loadParams(layer, params, 'new version: ' + r.changes.slice(0, 3).join(', '), bar)) return;
     layer.base = r.code;
-    this.memory.note(layer.patternId, r.sig, bar);
+    this.deck.memory.note(layer.patternId, r.sig, bar);
   }
 
   // One instrument of the layer swapped for another of its family in this genre (same notes).
   timbre(layer, bar) {
-    const r = this.variation.timbre(RA.CodeTools.paramsOf(layer.code), this.genre);
-    if (r) this.loadParams(layer, r.params, r.change, bar);
+    const r = this.deck.variation.timbre(RA.CodeTools.paramsOf(layer.code), this.genre);
+    if (r) this.deck.loadParams(layer, r.params, r.change, bar);
+  }
+
+  // A small move of one of the layer's numeric params (odds...), near the pattern's own value.
+  mutate(layer, bar) {
+    const original = RA.CodeTools.paramsOf(layer.base || layer.pattern.code);
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const r = this.deck.variation.tweak(RA.CodeTools.paramsOf(layer.code), original, this.settings.get('variation'));
+      if (r && this.deck.loadParams(layer, r.params, r.change, bar)) return;
+    }
   }
 
   // Dub-style drop: the layer goes quiet for 1-4 bars from the next bar, then comes back.
@@ -406,7 +351,7 @@ RA.Composer = class Composer {
     const from = (bar + 1) * 4, to = from + bars * 4;
     const spb = this.clock.spb();
     bus.fade(0, 0.25 * spb, Math.max(this.audio.ac.currentTime, this.clock.timeOf(from)));
-    this.scheduler.at(to, (t) => { if (this.layers.get(layer.role) === layer) bus.fade(1, 0.5 * spb, t); }, null);
+    this.scheduler.at(to, (t) => { if (this.deck.get(layer.role) === layer) bus.fade(1, 0.5 * spb, t); }, null);
     this.logger.add(`bar ${bar}: ${layer.role} drops out for ${bars} bar${bars > 1 ? 's' : ''}`);
   }
 
@@ -422,7 +367,7 @@ RA.Composer = class Composer {
   // A short collage phrase (voices, radio, field sounds) over the texture, FSOL-style.
   collageEvent(bar) {
     const pool = RA.Families.collagePool(this.drift.weights());
-    const layer = this.layers.get('texture') || this.layers.get('keys') || [...this.layers.values()][0];
+    const layer = this.deck.get('texture') || this.deck.get('keys') || [...this.deck.values()][0];
     if (!layer) return;
     const names = [];
     let beat = (bar + 2) * 4;
@@ -446,28 +391,12 @@ RA.Composer = class Composer {
     this.logger.add(`bar ${bar}: tempo ${up ? 'pushes' : 'drags'} ${Math.round((factor - 1) * 100)}%`);
   }
 
-  // The last bar before the arc moves on: a break (the beat drops for a bar) or an effect fill.
-  fill(bar) {
-    const beat = this.layers.get('drums') || this.layers.get('perc');
-    if (beat && !beat.locked && this.rng.chance(0.5)) {
-      const bus = this.audio.bus(beat.id);
-      const spb = this.clock.spb();
-      bus.fade(0, 0.1 * spb, Math.max(this.audio.ac.currentTime, this.clock.timeOf(bar * 4 + 2)));
-      this.scheduler.at((bar + 1) * 4, (t) => { if (this.layers.get(beat.role) === beat) bus.fade(1, 0.05, t); }, null);
-      this.logger.add(`bar ${bar}: break`);
-    } else if (this.fx) {
-      const id = this.rng.pick(['stutter', 'throw', 'sweep']);
-      this.fx.pulse(id, 4 * this.clock.spb());
-      this.logger.add(`bar ${bar}: fill (${id})`);
-    }
-  }
-
   // The next role is drawn at random, favouring the ones the section wants first, then the
   // ones that suit the genre. Roles the section leaves out only come in when the listener's
   // count needs them.
   add(bar) {
     const spec = this.arc.spec;
-    let missing = RA.Genres.of(this.drift.dominant()).roleOrder.filter((r) => !this.layers.has(r));
+    let missing = RA.Genres.of(this.drift.dominant()).roleOrder.filter((r) => !this.deck.has(r));
     const allowed = missing.filter((r) => !(spec.no || []).includes(r));
     if (allowed.length || this.settings.get('densityAuto')) missing = allowed;
     if (!missing.length) return;
@@ -477,7 +406,7 @@ RA.Composer = class Composer {
     for (const role of [first, ...this.rng.shuffle(missing.filter((r) => r !== first))]) {
       const pattern = this.pickPattern(role);
       if (!pattern) continue;
-      const layer = this.enter(role, pattern, this.phraseStart(bar));
+      const layer = this.deck.enter(role, pattern, this.phraseStart(bar));
       if (layer) this.logger.add(`bar ${bar}: + ${role} (${pattern.id}${layer.changes.length ? ': ' + layer.changes.slice(0, 2).join(', ') : ''})`);
       return;
     }
@@ -495,168 +424,21 @@ RA.Composer = class Composer {
     const score = (l) => this.bank.fit(l.pattern, w) + 0.1 * (order.length - order.indexOf(l.role)) + beat(l) + sec(l);
     const layer = free.slice().sort((a, b) => score(a) - score(b))[0];
     this.logger.add(`bar ${bar}: − ${layer.role} (${layer.patternId})`);
-    this.exit(layer, this.phraseStart(bar));
+    this.deck.exit(layer, this.phraseStart(bar));
   }
 
+  // Another pattern in this layer's role, from the next phrase.
   swap(layer, bar, why, startBar = this.phraseStart(bar)) {
     const pattern = this.pickPattern(layer.role, [layer.patternId]);
     if (!pattern) return this.mutate(layer, bar);
-    const { locked, muted, fxAuto } = layer;
-    this.exit(layer, startBar);
-    const fresh = this.enter(layer.role, pattern, startBar);
-    if (fresh) {
-      if (muted) this.setMuted(fresh, true);
-      fresh.locked = locked;
-      fresh.fxAuto = fxAuto;
-      this.logger.add(`bar ${bar}: ${layer.role} ${layer.patternId} → ${pattern.id} (${why})`);
-    }
+    if (this.deck.replace(layer, pattern, startBar)) this.logger.add(`bar ${bar}: ${layer.role} ${layer.patternId} → ${pattern.id} (${why})`);
   }
 
-  // A small move of one of the layer's numeric params (odds, hits...), near the pattern's own
-  // value.
-  mutate(layer, bar) {
-    const original = RA.CodeTools.paramsOf(layer.base || layer.pattern.code);
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const r = this.variation.tweak(RA.CodeTools.paramsOf(layer.code), original, this.settings.get('variation'));
-      if (r && this.loadParams(layer, r.params, r.change, bar)) return;
-    }
-  }
-
-  static hasNumbers(code) { return Object.values(RA.CodeTools.paramsOf(code)).some((v) => typeof v === 'number'); }
-
-  // A layer's code carries everything that makes its sound: the inst(...) definitions of
-  // the instruments it plays, then the pattern.
-  fullCode(code) {
-    return this.instruments ? RA.CodeTools.withInstruments(code, this.instruments) : code;
-  }
-
-  // Back to the version it came in with, before any tweaks or timbre moves.
-  reset(layer, bar) {
-    if (!this.coder.load(layer, this.fullCode(layer.base || layer.pattern.code)).ok) return;
-    this.emitter.emit('layer:change', { layer, desc: 'back to original' });
-    this.logger.add(`bar ${bar}: ${layer.role} back to its original code`);
-  }
-
-  // A pattern comes in as a fresh version of itself (roll()); if that version doesn't run,
-  // as written.
-  enter(role, pattern, startBar) {
-    const r = this.roll(pattern);
-    let base = r.code;
-    let code = this.fullCode(base);
-    let probe = this.coder.probe(code);
-    if (!probe.ok && base !== pattern.code) {
-      base = pattern.code;
-      code = this.fullCode(base);
-      probe = this.coder.probe(code);
-    }
-    if (!probe.ok) { this.logger.add(`skipped ${pattern.id}: ${probe.error}`, 'err'); return null; }
-    this.samples.preload(probe.samples);
-    const layer = new RA.Layer({ id: `${role}-${++this.serial}`, role, pattern });
-    const startBeat = startBar * 4;
-    const res = this.coder.load(layer, code, startBeat);
-    if (!res.ok) { this.logger.add(`skipped ${pattern.id}: ${res.error}`, 'err'); return null; }
-    layer.base = base;
-    layer.enteredBar = startBar;
-    layer.changes = base === r.code ? r.changes : [];
-    this.memory.note(pattern.id, base === r.code ? r.sig : null, startBar);
-    const quick = role === 'drums' || role === 'bass' || startBar === 0;
-    const at = Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat));
-    this.audio.bus(layer.id).fade(1, quick ? 0.03 : Math.max(0.03, 4 * this.settings.get('fadeIn') * this.clock.spb()), at);
-    this.layers.set(role, layer);
-    this.remember(pattern.id);
-    this.emitter.emit('layer:add', { layer });
-    return layer;
-  }
-
-  exit(layer, startBar, fadeBars = this.settings.get('fadeOut')) {
-    if (this.layers.get(layer.role) === layer) this.layers.delete(layer.role);
-    const startBeat = startBar * 4;
-    const bus = this.audio.bus(layer.id);
-    if (bus) bus.fade(0, Math.max(0.03, fadeBars * 4 * this.clock.spb()), Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat)));
-    this.scheduler.at(startBeat + fadeBars * 4 + 1, () => {
-      this.coder.remove(layer);
-      this.audio.dropBus(layer.id);
-    });
-    this.emitter.emit('layer:remove', { layer });
-  }
-
-  // ───── listener actions ─────
-
-  find(id) { return [...this.layers.values()].find((l) => l.id === id) || null; }
-
-  setMuted(layer, muted) {
-    layer.muted = muted;
-    const bus = this.audio.bus(layer.id);
-    if (bus) bus.setMuted(muted);
-    this.emitter.emit('layer:state', { layer });
-  }
-
-  toggleMute(id) {
-    const layer = this.find(id);
-    if (layer) this.setMuted(layer, !layer.muted);
-  }
-
-  toggleLock(id) {
-    const layer = this.find(id);
-    if (!layer) return;
-    layer.locked = !layer.locked;
-    this.logger.add(`${layer.role} ${layer.locked ? 'locked' : 'unlocked'}`);
-    this.emitter.emit('layer:state', { layer });
-  }
+  // ───── the listener's requests ─────
 
   regenerate(id) {
-    const layer = this.find(id);
+    const layer = this.deck.find(id);
     if (layer) this.swap(layer, this.bar, 'by you', this.phraseStart(this.bar + 1));
-  }
-
-  // While its editor is open a layer is held (locked) so the composer can't change or
-  // remove it under the listener's hands; closing without running restores the old lock.
-  setEditing(id, editing) {
-    const layer = this.find(id);
-    if (!layer) return;
-    layer.editing = editing;
-    if (editing) {
-      layer.lockedBeforeEdit = layer.locked;
-      layer.locked = true;
-    } else if (!layer.pattern.edited && layer.lockedBeforeEdit != null) {
-      layer.locked = layer.lockedBeforeEdit;
-    }
-    this.emitter.emit('layer:state', { layer });
-  }
-
-  // Code typed in the editor: heard from the next bar.
-  applyCode(id, code) {
-    return this.liveEdit(id, code, { desc: 'edited by you', final: true, restart: true });
-  }
-
-  // Code changed by the listener (editor, dragged numbers, sound panel). The layer is
-  // locked, its code becomes a "user_" pattern the composer can reuse later, and that
-  // code is the new original that resets and mutation bounds follow.
-  //   final:   the gesture ended (log it, save the pattern, make long loops pick it up soon)
-  //   restart: restart the loops at the next bar even if they're short
-  liveEdit(id, code, { desc = 'edited by you', final = false, restart = false } = {}) {
-    const layer = this.find(id);
-    if (!layer) return { ok: false, error: 'this layer is gone' };
-    const probe = this.coder.probe(code, final ? 8 : 2);
-    if (!probe.ok) return probe;
-    this.samples.preload(probe.samples);
-    const res = this.coder.load(layer, code);
-    if (!res.ok) return res;
-    const longLoop = [...layer.loops.values()].some((l) => l.nextBeat > this.clock.beat + 4);
-    if (restart || (final && longLoop)) this.coder.restartAt(layer, Math.floor(this.clock.beat / 4 + 1) * 4);
-
-    const baseId = layer.pattern.id.replace(/^user_/, '');
-    layer.pattern = Object.assign({}, layer.pattern, { id: 'user_' + baseId, code, edited: true, user: true });
-    layer.base = null; // the listener's code is now the original
-    if (!layer.locked) layer.locked = true;
-    layer.lockedBeforeEdit = null; // an edited layer stays locked when its editor closes
-    this.emitter.emit('layer:change', { layer, desc, instant: true });
-    this.emitter.emit('layer:state', { layer });
-    if (final) {
-      this.emitter.emit('pattern:user', { pattern: layer.pattern });
-      this.logger.add(`bar ${this.bar}: ${layer.role}: ${desc} (by you, locked)`);
-    }
-    return { ok: true };
   }
 
   forceMove() { this.nextMove = this.bar + 1; }
@@ -666,84 +448,13 @@ RA.Composer = class Composer {
   refreshAll() {
     const start = this.phraseStart(this.bar + 1);
     let n = 0;
-    for (const layer of [...this.layers.values()]) {
+    for (const layer of [...this.deck.values()]) {
       if (layer.locked || layer.editing) continue;
       this.swap(layer, this.bar, 'refresh', start);
       n++;
     }
     this.logger.add(n ? `refresh: ${n} layer${n > 1 ? 's' : ''} swapped` : 'refresh: every layer is locked', 'event');
     return n;
-  }
-
-  // ───── steering by hand ─────
-
-  // The arc section that matches what the listener is doing on manual, or null when
-  // nothing structural is on manual. Layers lead, read together with the tempo when that is
-  // on manual too (`ratio`: their tempo against the genre's; 1 when the tempo is on auto, as
-  // the auto tempo follows the section itself). Tempo alone counts when layers are on auto.
-  // `dir` is the way the layer count last moved (-1 down, +1 up).
-  //               slower (< ×0.94)            normal                 faster (> ×1.04)
-  //   1-2 layers  suspense (sparse going down) sparse / drift         build
-  //   3-4 layers  dread going down, else drift drift / build          tension
-  //   5-6 layers  dread                        tension / peak         surge (peak with 6)
-  // Going down from full at a normal tempo gives release, or collapse after a peak.
-  static sectionForLayers(n, dir, current, ratio = 1) {
-    const slow = ratio < 0.94, fast = ratio > 1.04;
-    const falling = () => (['peak', 'surge', 'collapse'].includes(current) ? 'collapse' : 'release');
-    if (n <= 2) {
-      if (slow) return dir < 0 ? 'sparse' : 'suspense';
-      if (fast) return 'build';
-      return n <= 1 ? 'sparse' : dir < 0 ? falling() : 'drift';
-    }
-    if (n <= 4) {
-      if (slow) return dir < 0 ? 'dread' : 'drift';
-      if (fast) return 'tension';
-      return dir < 0 ? falling() : n === 4 ? 'build' : 'drift';
-    }
-    if (slow) return 'dread';
-    if (fast) return n >= 6 ? 'peak' : 'surge';
-    return n >= 6 ? 'peak' : 'tension';
-  }
-
-  static sectionForTempo(ratio) {
-    if (ratio >= 1.09) return 'surge';
-    if (ratio >= 1.03) return 'tension';
-    if (ratio <= 0.86) return 'sparse';
-    if (ratio <= 0.95) return 'drift';
-    return 'build';
-  }
-
-  steeredSection() {
-    const S = this.settings;
-    const ratio = S.get('bpmAuto') ? 1 : S.get('bpm') / this.drift.tempo();
-    if (!S.get('densityAuto')) return Composer.sectionForLayers(S.get('density'), this.steerDir || 0, this.arc.section, ratio);
-    if (!S.get('bpmAuto')) return Composer.sectionForTempo(ratio);
-    return null;
-  }
-
-  // Holds the arc where the listener has taken it, or lets it go on from there.
-  steer(bar = this.bar) {
-    const want = this.steeredSection();
-    if (!want) {
-      if (this.arc.held) this.logger.add(`bar ${bar}: back on auto, carrying on from ${this.arc.section.toUpperCase()}`, 'event');
-      this.arc.letGo(bar);
-      return;
-    }
-    const tempo = this.settings.get('bpmAuto') ? null : this.settings.get('bpm') / this.drift.tempo();
-    const changed = this.arc.hold(want, bar, tempo);
-    if (changed) {
-      this.logger.add(`bar ${bar}: section → ${changed.toUpperCase()} (by hand)`, 'event');
-      this.leanGenre();
-      this.drift.rethinkNext(); // the genre after this one should suit the new register
-      this.preloadNextGenre();
-    }
-  }
-
-  // The listener's register also leans the choice of the next genre (slow and sparse →
-  // calmer, darker genres; full and fast → excited ones), fading with the arc's lean.
-  leanGenre() {
-    const l = this.arc.lean;
-    this.drift.lean = l && { energy: 0.25 + 0.6 * l.level, bpm: this.drift.tempo() * l.tempo, strength: l.strength };
   }
 
   skipSection() {
@@ -760,17 +471,14 @@ RA.Composer = class Composer {
   onSetting({ name, value }) {
     if (name === 'density') {
       this.nextMove = Math.min(this.nextMove, this.bar + 1);
-      // Which way the listener is going: from their last setting, or from what's playing.
-      const from = this.settings.get('densityAuto') || this.lastDensity == null ? this.layers.size : this.lastDensity;
-      if (value !== from) this.steerDir = Math.sign(value - from);
-      this.lastDensity = value;
+      this.steering.noteDensity(value);
     }
     if (name === 'densityAuto') this.nextMove = Math.min(this.nextMove, this.bar + 1);
     if (name === 'steps') {
       if (value === 'auto') this.logger.add('steps → auto', 'event');
       else this.followMeter();
     }
-    if (['density', 'densityAuto', 'bpm', 'bpmAuto'].includes(name)) this.steer();
+    if (['density', 'densityAuto', 'bpm', 'bpmAuto'].includes(name)) this.steering.steer();
     if (name === 'pace') this.nextMove = Math.min(this.nextMove, this.bar + this.pace());
     if (name === 'paceAuto' && value) this.rollPace(this.bar);
     if (name === 'freeze' && !value) this.nextMove = this.bar + this.pace();
@@ -783,9 +491,9 @@ RA.Composer = class Composer {
       this.drift.setAllowed(value);
       this.preloadNextGenre();
       this.logger.add(`genres: ${this.drift.allowed.map((g) => RA.Genres.label(g)).join(' · ')}`, 'event');
-      // The style playing now was turned off: move to the new one and swap the layers.
+      // The genre playing now was turned off: move to the new one and swap the layers.
       if (!this.drift.allowed.includes(was)) {
-        this.followGenre(this.bar);
+        this.transitions.followGenre(this.bar);
         this.refreshAll();
       }
     }

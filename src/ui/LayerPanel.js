@@ -47,7 +47,7 @@ RA.LayerPanel = class LayerPanel {
 
   layers() { return this.app.composer ? [...this.app.composer.layers.values()] : []; }
 
-  layer() { return this.app.composer ? this.app.composer.find(this.layerId) : null; }
+  layer() { return this.app.composer ? this.app.composer.deck.find(this.layerId) : null; }
 
   // The list of layers changed.
   refresh() {
@@ -110,7 +110,7 @@ RA.LayerPanel = class LayerPanel {
     const base = key === 'lpf' ? value / m.lpfMul : key === 'amp' ? value / m.ampMul
       : Math.max(0, value - (m[key + 'Add'] || 0));
     this.editing = true;
-    this.app.composer.liveEdit(layer.id, RA.CodeTools.setFxParam(layer.code, key, base), { desc: `${key} → ${RA.CodeTools.format(value)}`, final });
+    this.app.composer.deck.liveEdit(layer.id, RA.CodeTools.setFxParam(layer.code, key, base), { desc: `${key} → ${RA.CodeTools.format(value)}`, final });
     if (bus) bus.pin(key, base);
     this.editing = false;
   }
