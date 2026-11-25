@@ -1,11 +1,11 @@
-// Hud: two small terminal lines. Title, the mood drift (one meter per flavour) and
+// Hud: two small terminal lines. Title, the genre drift (one meter per genre) and
 // [↻ REFRESH] on top; key, chord, tempo, bar, next change and energy below. Clicking a
-// mood's name turns that style on or off (struck-through styles never play).
+// genre's name turns it on or off (struck-through genres never play).
 RA.Hud = class Hud {
   static HEIGHT = 50;
 
   constructor() {
-    this.hits = []; // { type: 'style', f } | { type: 'refresh' }, with x, y, w, h
+    this.hits = []; // { type: 'genre', g } | { type: 'refresh' }, with x, y, w, h
   }
 
   hit(mx, my) {
@@ -37,15 +37,15 @@ RA.Hud = class Hud {
     p.textSize(T.size.small);
     let x = 14 + titleW + 18;
     this.hits = [];
-    for (const f of RA.Mood.CYCLE) {
-      const wgt = s.weights[f];
-      const on = s.styles.includes(f);
-      const label = RA.Mood.LABELS[f].toUpperCase();
+    for (const g of RA.Genres.LIST) {
+      const wgt = s.weights[g];
+      const on = s.genres.includes(g);
+      const label = RA.Genres.label(g).toUpperCase();
       const lw = p.textWidth(label);
       p.fill(!on ? T.faint : wgt > 0.5 ? T.bright : T.dim);
       p.text(label, x, 21);
-      if (!on) p.rect(x - 1, 17, lw + 2, 1); // struck through: this style won't play
-      this.hits.push({ type: 'style', f, x: x - 3, y: 6, w: lw + 6 + 30, h: 22 });
+      if (!on) p.rect(x - 1, 17, lw + 2, 1); // struck through: this genre won't play
+      this.hits.push({ type: 'genre', g, x: x - 3, y: 6, w: lw + 6 + 30, h: 22 });
       x = this.meter(p, x + lw + 6, 13, on ? wgt : 0, 5) + 14;
     }
     // The arc section; MANUAL while the listener steers it (layers or tempo on manual).

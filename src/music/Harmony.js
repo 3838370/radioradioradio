@@ -4,42 +4,19 @@
 RA.Harmony = class Harmony {
   static MODES = ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'];
 
-  static MODES_FOR = {
-    saw: ['aeolian', 'lydian', 'dorian'],
-    acid: ['phrygian', 'aeolian', 'dorian'],
-    drill: ['aeolian', 'dorian', 'lydian'],
-    boc: ['mixolydian', 'dorian', 'lydian', 'aeolian'],
-    minimal: ['dorian', 'aeolian', 'mixolydian'],
-    dub: ['dorian', 'aeolian'],
-    space: ['lydian', 'dorian', 'aeolian'],
-    dark: ['phrygian', 'locrian', 'aeolian'],
-    ae: ['phrygian', 'locrian', 'dorian'],
-  };
-
-  // dub and minimal barely move (one chord for minutes); acid sits on one or two chords;
-  // saw and drill have slow, melancholy turns; boc leans on the flat seventh (mixolydian).
-  // The composer changes progression now and then within a genre (reharm()).
-  static PROGRESSIONS = {
-    saw: [[0, 4], [0, 5, 3, 4], [0, 3, 4, 3], [0, 0, 5, 4], [0, 1, 4, 0], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5, 1, 4], [3, 4, 0, 0], [0, 6, 5, 4], [0, 2]],
-    acid: [[0], [0, 1], [0, 0, 0, 6], [0, 6], [0, 0, 1, 0], [0, 4], [0, 0, 5, 1], [0, 3]],
-    drill: [[0, 5, 3, 4], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5], [3, 4, 0, 0], [0, 6, 5, 4], [5, 4, 3, 4], [0, 1, 5, 4]],
-    boc: [[0, 4], [0, 6], [0, 3, 4], [0, 6, 5, 4], [0, 0, 6, 6], [3, 0], [0, 4, 3, 6], [5, 4, 0, 0], [0, 2, 6, 4], [0, 6, 3, 4]],
-    minimal: [[0], [0, 3], [0, 0, 0, 5], [0, 0, 6, 0], [0, 5], [0, 0, 3, 0], [3, 0], [0, 4, 0, 0]],
-    dub: [[0], [0, 0, 0, 3], [0, 0, 5, 0], [0, 3], [0, 0, 0, 6], [0, 5], [0, 0, 3, 5], [3, 0], [0, 6, 0, 0], [0, 4, 0, 0], [0, 0, 5, 5], [0, 0, 3, 3]],
-    space: [[0, 4], [0, 1, 0, 4], [0, 5, 3, 4], [0, 2, 3, 1], [0, 3], [0, 1], [3, 0], [0, 5, 4, 3], [0, 2], [0, 4, 5, 3], [1, 0, 3, 0], [0, 6]],
-    dark: [[0, 1], [0, 0, 1, 0], [0, 5, 1, 0], [0], [0, 6], [0, 1, 6, 0], [0, 0, 4, 1], [0, 3, 1, 0], [0, 5, 4, 1]],
-    ae: [[0], [0, 1], [0, 4, 1], [0, 3, 6], [0, 6, 1, 5], [1, 0, 5], [0, 2, 1], [0, 5, 2, 6], [0, 0, 1, 0], [0, 6, 0, 1]],
-  };
+  // Each genre's modes and progressions are in Genres. The composer changes progression now
+  // and then within a genre (reharm()).
 
   // Key moves for a modulation: up a fourth or fifth, a tone, a minor third.
   static MODULATIONS = [5, 7, -5, 2, -2, 3, -3];
 
-  // A change within the mood, never the same progression as now: usually a new
+  // A change within the genre, never the same progression as now: usually a new
   // progression, sometimes (`canModulate`) a key move as well.
-  reharm(flavour, rng, canModulate = true) {
+  reharm(genre, rng, canModulate = true) {
     const current = this.prog.join();
-    const others = Harmony.PROGRESSIONS[flavour].filter((p) => p.join() !== current);
-    const change = { prog: rng.pick(others.length ? others : Harmony.PROGRESSIONS[flavour]) };
+    const all = RA.Genres.of(genre).progressions;
+    const others = all.filter((p) => p.join() !== current);
+    const change = { prog: rng.pick(others.length ? others : all) };
     if (canModulate && rng.chance(0.3)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
     return change;
   }
@@ -65,12 +42,12 @@ RA.Harmony = class Harmony {
     return `${this.keyName()} · progression ${this.prog.map((d) => d + 1).join('-')}`;
   }
 
-  // Picks a mode and progression that suit a flavour (keeps the current mode if it fits).
-  planFor(flavour, rng) {
-    const modes = Harmony.MODES_FOR[flavour];
+  // Picks a mode and progression that suit a genre (keeps the current mode if it fits).
+  planFor(genre, rng) {
+    const G = RA.Genres.of(genre);
     return {
-      mode: modes.includes(this.mode) ? this.mode : rng.pick(modes),
-      prog: rng.pick(Harmony.PROGRESSIONS[flavour]),
+      mode: G.modes.includes(this.mode) ? this.mode : rng.pick(G.modes),
+      prog: rng.pick(G.progressions),
     };
   }
 

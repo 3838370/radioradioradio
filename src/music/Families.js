@@ -44,19 +44,6 @@ RA.Families = class Families {
     space: ['space', 'cosmicg', 'bubble', 'future'],
   };
 
-  // Sound pools for collage() per mood (FSOL-style collage of voices, radio, field sounds).
-  static COLLAGE = {
-    saw: ['outdoor', 'birds3', 'wind', 'bubble', 'speechless'],
-    acid: ['glitch', 'diphone', 'mouth', 'numbers'],
-    drill: ['speech', 'mouth', 'glitch2', 'alphabet'],
-    boc: ['speech', 'numbers', 'kurt', 'birds3', 'outdoor', 'alphabet'],
-    minimal: ['east', 'outdoor', 'noise2', 'speechless'],
-    dub: ['speech', 'east', 'noise2', 'outdoor', 'wind'],
-    space: ['cosmicg', 'space', 'speechless', 'numbers', 'bubble', 'insect', 'birds3'],
-    dark: ['crow', 'insect', 'speechless', 'noise2', 'seawolf', 'industrial'],
-    ae: ['glitch', 'diphone2', 'tacscan', 'invaders', 'numbers', 'sid'],
-  };
-
   static synthFamily(name) {
     for (const [f, list] of Object.entries(Families.SYNTHS)) if (list.includes(name)) return f;
     return null;
@@ -73,13 +60,14 @@ RA.Families = class Families {
     return others.length ? rng.pick(others) : null;
   }
 
-  // The pool for collage() for the mood weights: the dominant mood's, with a little of the
-  // second mood's mixed in.
+  // The pool for collage() for the genre weights: the dominant genre's (Genres: collage),
+  // with a little of the second genre's mixed in.
   static collagePool(weights) {
+    const pool = (g) => (RA.Genres.of(g) || {}).collage || [];
     const sorted = Object.entries(weights || {}).filter(([, w]) => w > 0).sort((a, b) => b[1] - a[1]);
-    if (!sorted.length) return Families.COLLAGE.space;
-    const pool = new Set(Families.COLLAGE[sorted[0][0]] || []);
-    if (sorted[1] && sorted[1][1] > 0.25) for (const s of Families.COLLAGE[sorted[1][0]] || []) pool.add(s);
-    return [...pool];
+    if (!sorted.length) return pool('space');
+    const out = new Set(pool(sorted[0][0]));
+    if (sorted[1] && sorted[1][1] > 0.25) for (const s of pool(sorted[1][0])) out.add(s);
+    return [...out];
   }
 };

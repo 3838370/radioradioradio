@@ -1,17 +1,25 @@
-// PatternBank: the AI-written patterns, with lookup by role and fit to the current mood.
-// Pattern: { id, role, flavours: { saw?, boc?, ae? ... (see Mood.CYCLE) }, energy: [min, max], code }
+// PatternBank: the AI-written patterns, with lookup by role and fit to the current genres.
+// Pattern: { id, role, genres: { saw?, boc?, ae? ... (see Genres) }, energy: [min, max], code }
 RA.PatternBank = class PatternBank {
   static ROLES = ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'];
 
+  // A pattern as the bank keeps it: trimmed code, and its genre weights in today's genres
+  // (older patterns call them `flavours` and may use older genre names).
+  static normalize(p) {
+    const out = Object.assign({}, p, { code: p.code.trim(), genres: RA.Genres.migrateWeights(p.genres || p.flavours) });
+    delete out.flavours;
+    return out;
+  }
+
   constructor(patterns) {
-    this.patterns = patterns.map((p) => Object.assign({}, p, { code: p.code.trim() }));
+    this.patterns = patterns.map(PatternBank.normalize);
   }
 
   get(id) { return this.patterns.find((p) => p.id === id) || null; }
 
   // Adds or replaces a pattern (the listener's edits are saved as 'user_' patterns).
   upsert(pattern) {
-    const p = Object.assign({}, pattern, { code: pattern.code.trim() });
+    const p = PatternBank.normalize(pattern);
     const i = this.patterns.findIndex((x) => x.id === p.id);
     if (i >= 0) this.patterns[i] = p; else this.patterns.push(p);
   }
@@ -22,10 +30,11 @@ RA.PatternBank = class PatternBank {
 
   byRole(role) { return this.patterns.filter((p) => p.role === role); }
 
-  // 0..1: how well a pattern matches the mood weights.
+  // 0..1: how well a pattern matches the genre weights.
   fit(pattern, weights) {
+    const g = pattern.genres || {};
     let s = 0;
-    for (const f of Object.keys(weights)) s += (pattern.flavours[f] || 0) * weights[f];
+    for (const f of Object.keys(weights)) s += (g[f] || 0) * weights[f];
     return s;
   }
 
@@ -72,7 +81,7 @@ RA.PatternBank = class PatternBank {
 
   // Weighted pick among the best six, so good fits are likelier but it's rarely predictable.
   // meter ({ steps, probe }): the listener chose a step count; only patterns that fit it,
-  // from any mood (the mood still weighs in). null when none fit.
+  // from any genre (the genre still weighs in). null when none fit.
   // weightOf(p): an extra factor per pattern (the session memory's fatigue).
   pick(role, weights, intensity, rng, exclude = [], meter = null, weightOf = null) {
     const extra = (p) => (weightOf ? weightOf(p) : 1);

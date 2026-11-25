@@ -13,8 +13,8 @@
 // On auto this spends about a quarter of the time on 1-2 layers, 45% on 3-4 and 30% on 5-6,
 // and over 40% in tense sections (tension, surge, peak, dread, suspense).
 // Each section has a range of layers (the composer picks within it by energy), a tempo
-// factor, effect colours, and roles it wants first or leaves out. Each mood prefers some
-// sections and avoids others (MOODS), and caps the layer count.
+// factor, effect colours, and roles it wants first or leaves out. Each genre prefers some
+// sections and avoids others (Genres: sections), and caps the layer count.
 // Values glide between sections, so changes are felt rather than heard as switches.
 // While the listener steers by hand, the composer holds the arc in the section that matches
 // what they're doing; back on auto, the arc carries on from there and keeps leaning towards
@@ -46,20 +46,6 @@ RA.Arc = class Arc {
     collapse: [['sparse', 1.5], ['drift', 1.2], ['build', 1], ['suspense', 0.8]],
   };
 
-  // What each mood leans to: preferred sections weigh ×2.2, avoided ones ×0.25; `cap` is the
-  // most layers it plays on auto.
-  static MOODS = {
-    saw: { prefer: ['drift', 'suspense', 'sparse'], avoid: ['surge', 'peak'], cap: 5 },
-    acid: { prefer: ['build', 'tension', 'surge'], avoid: ['sparse'], cap: 6 },
-    drill: { prefer: ['surge', 'peak', 'collapse'], avoid: ['drift'], cap: 6 },
-    boc: { prefer: ['drift', 'build', 'release'], avoid: ['surge', 'peak'], cap: 5 },
-    minimal: { prefer: ['build', 'drift', 'tension'], avoid: ['peak', 'collapse'], cap: 6 },
-    dub: { prefer: ['drift', 'build', 'dread'], avoid: ['peak'], cap: 5 },
-    space: { prefer: ['sparse', 'suspense', 'drift'], avoid: ['surge', 'peak'], cap: 4 },
-    dark: { prefer: ['dread', 'suspense', 'collapse'], avoid: ['peak'], cap: 5 },
-    ae: { prefer: ['surge', 'suspense', 'collapse', 'dread'], avoid: ['drift'], cap: 6 },
-  };
-
   static TENSE = ['tension', 'surge', 'peak', 'dread', 'suspense'];
   static KEYS = ['level', 'tempo', 'delay', 'feedback', 'wow', 'space', 'boost'];
 
@@ -84,28 +70,22 @@ RA.Arc = class Arc {
 
   get spec() { return Arc.SECTIONS[this.section]; }
 
-  // How much the moods (weights { mood: 0..1 }) like a section: 1 = neutral.
-  static moodBias(name, weights) {
+  // How much the genres (weights { genre: 0..1 }) like a section: 1 = neutral. Preferred
+  // sections (Genres: sections.prefer) weigh ×2.2, avoided ones ×0.25.
+  static genreBias(name, weights) {
     if (!weights) return 1;
-    let b = 0, total = 0;
-    for (const [f, w] of Object.entries(weights)) {
-      if (!w || !Arc.MOODS[f]) continue;
-      const m = Arc.MOODS[f];
-      b += w * (m.prefer.includes(name) ? 2.2 : m.avoid.includes(name) ? 0.25 : 1);
-      total += w;
-    }
-    return total ? b / total : 1;
+    const b = RA.Genres.blend(weights, (g) => (g.sections.prefer.includes(name) ? 2.2 : g.sections.avoid.includes(name) ? 0.25 : 1));
+    return b || 1;
   }
 
-  // The most layers the moods play on auto (blended by their weights).
+  // The most layers the genres play on auto (blended by their weights).
   static cap(weights) {
-    let c = 0, total = 0;
-    for (const [f, w] of Object.entries(weights || {})) if (w && Arc.MOODS[f]) { c += w * Arc.MOODS[f].cap; total += w; }
-    return total ? Math.round(c / total) : 5;
+    const c = RA.Genres.blend(weights, (g) => g.sections.cap);
+    return c ? Math.round(c) : 5;
   }
 
   // The listener is steering (a control on manual): stay in the section that matches what
-  // they're doing, and remember that register (`tempo`: their tempo against the mood's, when
+  // they're doing, and remember that register (`tempo`: their tempo against the genre's, when
   // they set it). Returns the name when it changes.
   hold(name, bar, tempo = null) {
     this.held = true;
@@ -126,11 +106,11 @@ RA.Arc = class Arc {
 
   static LEAN_SECONDS = 300; // the listener's register fades out evenly over 5 minutes
 
-  // The next section: the NEXT table weighted by the moods' preferences. With a register
+  // The next section: the NEXT table weighted by the genres' preferences. With a register
   // left by the listener, sections close to it (in level and tempo) are favoured, staying in
   // the same one included.
   next(weights = null) {
-    const base = Arc.NEXT[this.section].map(([n, w]) => [n, w * Arc.moodBias(n, weights)]);
+    const base = Arc.NEXT[this.section].map(([n, w]) => [n, w * Arc.genreBias(n, weights)]);
     if (!this.lean) return this.rng.weighted(base);
     const { level, tempo, strength: s } = this.lean;
     return this.rng.weighted(Object.keys(Arc.SECTIONS).map((n) => {
@@ -141,7 +121,7 @@ RA.Arc = class Arc {
     }));
   }
 
-  // Once per bar (`seconds`: the bar's length, for the lean's fade; `weights`: the moods
+  // Once per bar (`seconds`: the bar's length, for the lean's fade; `weights`: the genres
   // now). Returns the new section's name when it changes.
   advanceBar(bar, seconds = 0, weights = null) {
     let changed = null;

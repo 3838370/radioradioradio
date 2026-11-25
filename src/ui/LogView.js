@@ -13,7 +13,7 @@ RA.LogView = class LogView {
     const lines = this.logger.recent(Math.floor((h - 8) / lh));
     lines.forEach((l, k) => {
       const newest = k === lines.length - 1;
-      p.fill(l.kind === 'err' ? T.err : l.kind === 'mood' ? T.text : newest ? T.text : T.dim);
+      p.fill(l.kind === 'err' ? T.err : l.kind === 'event' ? T.text : newest ? T.text : T.dim);
       p.text(('> ' + l.msg).slice(0, maxChars), x, y + 16 + k * lh);
     });
   }

@@ -14,7 +14,7 @@ RA.FullCodeView = class FullCodeView {
 
   // The program: a header, then one section per layer.
   static text(layers, info) {
-    const out = [`// BROKEN-RADIO · ${info.mood} · ${info.section} · ${info.bpm} bpm · ${info.key}`, ''];
+    const out = [`// BROKEN-RADIO · ${info.genre} · ${info.section} · ${info.bpm} bpm · ${info.key}`, ''];
     for (const l of layers) {
       const title = `// ── ${l.role.toUpperCase()} · ${l.patternId}${l.muted ? ' · muted' : ''}${l.locked ? ' · locked' : ''} `;
       out.push(title + '─'.repeat(Math.max(4, 60 - title.length)), l.code.replace(/\s+$/, ''), '');

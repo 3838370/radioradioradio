@@ -1,7 +1,7 @@
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
-// URL flags: ?fast=1 (moods last ~1 minute, pace divided by 8), ?seed=123 (repeatable choices)
-// Keys: N = change something now, T = skip mood forward, S = skip section, M = mute all,
+// URL flags: ?fast=1 (genres last ~1 minute, pace divided by 8), ?seed=123 (repeatable choices)
+// Keys: N = change something now, T = skip genre forward, S = skip section, M = mute all,
 //       V = next view (cards / full code / sequencer), R = refresh,
 //       1-8 = effect pads (hold; Shift+number latches)
 // On a code card: drag a number up/down to change it; click elsewhere to edit the code
@@ -13,18 +13,18 @@ RA.App = class App {
     this.rng = new RA.Rng(params.has('seed') ? +params.get('seed') : null);
     this.store = new RA.Store();
     const saved = this.store.load();
-    this.settings = new RA.Settings(saved.settings || {});
+    this.settings = new RA.Settings(RA.Settings.migrate(saved.settings));
     this.emitter = new RA.Emitter();
     this.logger = new RA.Logger();
     this.instruments = new RA.InstrumentLibrary(RA.SynthPresets);
     this.instruments.load(saved.instruments);
     this.bank = new RA.PatternBank(RA.PATTERNS);
-    // your saved patterns, their flavours moved to today's genres (fog → dub, deep → saw/boc...)
+    // your saved patterns (the bank moves older genre names to today's: fog → dub, deep → saw/boc...)
     for (const pat of saved.userPatterns || []) {
-      if (pat && pat.code && pat.role) this.bank.upsert(Object.assign({}, pat, { flavours: RA.Mood.migrateFlavours(pat.flavours) }));
+      if (pat && pat.code && pat.role) this.bank.upsert(pat);
     }
     this.harmony = new RA.Harmony();
-    this.mood = new RA.Mood(this.rng, { legMinutes: this.fast ? [1, 1.5] : [8, 20], styles: this.settings.get('styles') });
+    this.drift = new RA.GenreDrift(this.rng, { legMinutes: this.fast ? [1, 1.5] : [8, 20], allowed: this.settings.get('genres') });
     this.hud = new RA.Hud();
     this.grid = new RA.CardGrid(this.emitter);
     // The stage shows the same code three ways; the ⇄ button (or V) cycles through them.
@@ -133,7 +133,7 @@ RA.App = class App {
     const ac = p.getAudioContext();
 
     await this.indexReady;
-    this.clock = new RA.Clock(this.mood.tempo());
+    this.clock = new RA.Clock(this.drift.tempo());
     this.scheduler = new RA.Scheduler(ac, this.clock, this.logger);
     this.audio = new RA.AudioEngine(ac, this.samples, this.instruments);
     this.fx = new RA.FxRack(this.audio, this.clock, this.settings);
@@ -145,11 +145,11 @@ RA.App = class App {
       instruments: this.instruments,
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
-      mood: () => this.mood.weights(),
+      genres: () => this.drift.weights(),
     }));
     this.composer = new RA.Composer({
       bank: this.bank, coder: this.coder, audio: this.audio, samples: this.samples, harmony: this.harmony,
-      mood: this.mood, arc: this.arc, fx: this.fx, instruments: this.instruments, mutator: new RA.Mutator(this.rng, (name) => this.samples.count(name)),
+      drift: this.drift, arc: this.arc, fx: this.fx, instruments: this.instruments, mutator: new RA.Mutator(this.rng, (name) => this.samples.count(name)),
       settings: this.settings, clock: this.clock, scheduler: this.scheduler, rng: this.rng,
       emitter: this.emitter, logger: this.logger, fast: this.fast,
     });
@@ -161,7 +161,7 @@ RA.App = class App {
     if (this.settings.get('eq')) this.audio.eq.set(this.settings.get('eq'));
     this.eqCurve = new RA.EqCurve(this.audio.eq, (values) => this.settings.set('eq', values));
 
-    this.composer.preloadFor(this.mood.weights());
+    this.composer.preloadFor(this.drift.weights());
     const t0 = performance.now();
     while (this.samples.pendingCount > 0 && performance.now() - t0 < 8000) await new Promise((r) => setTimeout(r, 100));
 
@@ -170,7 +170,7 @@ RA.App = class App {
     this.composer.start();
     p.outputVolume(this.settings.get('volume'));
     this.state = 'playing';
-    this.logger.add('dica: arrasta números no código · clica num cartão para editar · ≈ abre o som da camada', 'mood');
+    this.logger.add('dica: arrasta números no código · clica num cartão para editar · ≈ abre o som da camada', 'event');
   }
 
   // ───── persistence and your own sounds ─────
@@ -234,7 +234,7 @@ RA.App = class App {
           const bytes = await file.arrayBuffer();
           const n = await this.addLocalSample(p, file.name, bytes);
           this.store.putSample(file.name, bytes).catch(() => this.logger.add('não consegui guardar ' + file.name + ' (só fica nesta sessão)', 'err'));
-          this.logger.add(`novo som: s('my', { n: ${n} })  ← ${file.name}`, 'mood');
+          this.logger.add(`novo som: s('my', { n: ${n} })  ← ${file.name}`, 'event');
         } catch (err) {
           this.logger.add(`não consegui ler ${file.name}`, 'err');
         }
@@ -307,7 +307,7 @@ RA.App = class App {
     const top = this.hud.hit(mx, my);
     if (top) {
       if (top.type === 'refresh') this.composer.refreshAll();
-      else this.toggleStyle(top.f);
+      else this.toggleGenre(top.g);
       return;
     }
     if (this.inViewButton(mx, my)) return this.nextView();
@@ -401,7 +401,7 @@ RA.App = class App {
 
   fullCodeText() {
     return RA.FullCodeView.text([...this.composer.layers.values()], {
-      mood: RA.Mood.LABELS[this.mood.dominant()].toUpperCase(),
+      genre: RA.Genres.label(this.drift.dominant()).toUpperCase(),
       section: this.arc.section.toUpperCase(),
       bpm: Math.round(this.clock.bpm),
       key: this.harmony.keyName(),
@@ -477,17 +477,17 @@ RA.App = class App {
     }
   }
 
-  // Turns one style (mood) on or off. The last one left on can't be turned off.
-  toggleStyle(f) {
-    const on = new Set(this.mood.allowed);
-    if (on.has(f)) {
-      if (on.size === 1) { this.logger.add('at least one style has to stay on'); return; }
-      on.delete(f);
+  // Turns one genre on or off. The last one left on can't be turned off.
+  toggleGenre(g) {
+    const on = new Set(this.drift.allowed);
+    if (on.has(g)) {
+      if (on.size === 1) { this.logger.add('at least one genre has to stay on'); return; }
+      on.delete(g);
     } else {
-      on.add(f);
+      on.add(g);
     }
-    const list = RA.Mood.CYCLE.filter((x) => on.has(x));
-    this.settings.set('styles', list.length === RA.Mood.CYCLE.length ? null : list);
+    const list = RA.Genres.LIST.filter((x) => on.has(x));
+    this.settings.set('genres', list.length === RA.Genres.LIST.length ? null : list);
   }
 
   dragMove(p) {
@@ -530,7 +530,7 @@ RA.App = class App {
     }
     const k = p.key.toLowerCase();
     if (k === 'n') { this.composer.forceMove(); this.logger.add('(change requested)'); }
-    if (k === 't') this.composer.skipMood();
+    if (k === 't') this.composer.skipGenre();
     if (k === 's') this.composer.skipSection();
     if (k === 'r') this.composer.refreshAll();
     if (k === 'v') this.nextView();
@@ -594,7 +594,7 @@ RA.App = class App {
       this.editor.follow(card && card.rect, { x: 12, w: p.width - 24 });
     }
     this.hud.draw(p, p.width, {
-      weights: this.mood.weights(),
+      weights: this.drift.weights(),
       keyName: this.harmony.keyName(),
       chord: this.harmony.chordName(this.composer.bar),
       bpm: this.clock.bpm,
@@ -606,7 +606,7 @@ RA.App = class App {
       stats: `${this.audio.voices} VOICES · ${this.samples.loaded} SAMPLES`,
       section: this.arc.section,
       steered: this.arc.held,
-      styles: this.mood.allowed,
+      genres: this.drift.allowed,
       hover: (this.hud.hit(p.mouseX, p.mouseY) || {}).type,
     });
     this.drawBottom(p, p.height - bottomH, bottomH);
@@ -671,7 +671,7 @@ RA.App = class App {
     p.fill(T.text);
     p.text('ENDLESS JS CODED AMBIENT RADIO', cx, cy - 28);
     p.fill(T.dim);
-    p.text(RA.Mood.CYCLE.map((f) => RA.Mood.LABELS[f].toUpperCase()).join(' · '), cx, cy - 12);
+    p.text(RA.Genres.LIST.map((g) => RA.Genres.label(g).toUpperCase()).join(' · '), cx, cy - 12);
     if (this.state === 'loading') {
       const s = this.samples;
       const blink = (performance.now() >> 9) % 2 ? '_' : ' ';

@@ -1,7 +1,7 @@
-// Composer: the radio's DJ. Once per bar it follows the mood (harmony, tempo) and the arc
+// Composer: the radio's DJ. Once per bar it follows the genre (harmony, tempo) and the arc
 // (sections: layer count, tempo, colour), sometimes plays an effect pad or moves the delay
 // time, plays a break or fill before a section changes, and every `pace` bars makes one
-// move: add or drop layers toward the target, replace a layer that no longer fits the mood,
+// move: add or drop layers toward the target, replace a layer that no longer fits the genre,
 // or one move chosen by score (see candidates()): swap a pattern, play a new version of it,
 // change a synth for another of its family, mutate, reset, drop a layer out for a few bars,
 // reharmonise, scatter a collage phrase, push or drag the tempo.
@@ -9,27 +9,15 @@
 // makes what was heard lately less likely. Locked layers are never touched.
 // Emits layer:add / layer:change / layer:remove.
 RA.Composer = class Composer {
-  static ROLE_ORDER = {
-    saw: ['keys', 'lead', 'texture', 'bass', 'drums', 'perc'],
-    acid: ['bass', 'drums', 'perc', 'lead', 'keys', 'texture'],
-    drill: ['drums', 'lead', 'bass', 'keys', 'texture', 'perc'],
-    boc: ['drums', 'keys', 'lead', 'texture', 'bass', 'perc'],
-    minimal: ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'],
-    dub: ['keys', 'drums', 'bass', 'texture', 'perc', 'lead'],
-    space: ['keys', 'lead', 'texture', 'bass', 'perc', 'drums'],
-    dark: ['texture', 'keys', 'bass', 'drums', 'lead', 'perc'],
-    ae: ['perc', 'drums', 'bass', 'texture', 'lead', 'keys'],
-  };
-
   static CALM = ['sparse', 'drift', 'release', 'collapse', 'suspense'];
 
-  constructor({ bank, coder, audio, samples, harmony, mood, arc, fx = null, instruments = null, mutator, settings, clock, scheduler, rng, emitter, logger, fast }) {
-    Object.assign(this, { bank, coder, audio, samples, harmony, mood, arc, fx, instruments, mutator, settings, clock, scheduler, rng, emitter, logger, fast });
+  constructor({ bank, coder, audio, samples, harmony, drift, arc, fx = null, instruments = null, mutator, settings, clock, scheduler, rng, emitter, logger, fast }) {
+    Object.assign(this, { bank, coder, audio, samples, harmony, drift, arc, fx, instruments, mutator, settings, clock, scheduler, rng, emitter, logger, fast });
     this.layers = new Map(); // role -> Layer
     this.bar = 0;
     this.nextMove = 0;
-    this.energy = mood.intensity();
-    this.flavour = mood.dominant();
+    this.energy = drift.intensity();
+    this.genre = drift.dominant();
     this.serial = 0;
     this.recent = [];        // last pattern ids heard, avoided when choosing
     this.memory = new RA.Memory(); // everything heard this session (fatigue, versions)
@@ -43,14 +31,14 @@ RA.Composer = class Composer {
 
   start() {
     this.harmony.key = 40 + this.rng.int(0, 11);
-    const plan = this.harmony.planFor(this.flavour, this.rng);
+    const plan = this.harmony.planFor(this.genre, this.rng);
     this.harmony.mode = this.settings.get('mode') !== 'auto' ? this.settings.get('mode') : plan.mode;
     this.harmony.prog = plan.prog;
     if (this.settings.get('key') !== 'auto') this.harmony.key = 40 + RA.MathUtil.mod(this.settings.get('key') - 40, 12);
-    const bpm = this.settings.get('bpmAuto') ? this.mood.tempo() : this.settings.get('bpm');
+    const bpm = this.settings.get('bpmAuto') ? this.drift.tempo() : this.settings.get('bpm');
     this.clock.bpm = this.clock.target = bpm;
     this.settings.on('change', (e) => this.onSetting(e));
-    this.logger.add(`mood: ${RA.Mood.LABELS[this.flavour]} (${this.flavour}) · ${this.harmony.keyName()} · ${bpm} BPM`, 'mood');
+    this.logger.add(`genre: ${RA.Genres.label(this.genre)} · ${this.harmony.keyName()} · ${bpm} BPM`, 'event');
     this.scheduler.at(0, () => this.onBar(0));
   }
 
@@ -64,13 +52,13 @@ RA.Composer = class Composer {
 
   onBar(bar) {
     this.bar = bar;
-    if (this.mood.advanceBar(this.clock.bpm)) this.preloadNextFlavour();
+    if (this.drift.advanceBar(this.clock.bpm)) this.preloadNextGenre();
     this.steer(bar);
-    const section = this.arc.advanceBar(bar, 240 / this.clock.bpm, this.mood.weights());
-    this.leanMood();
-    this.energy = RA.MathUtil.clamp(this.mood.intensity() + this.arc.boost, 0.03, 1);
+    const section = this.arc.advanceBar(bar, 240 / this.clock.bpm, this.drift.weights());
+    this.leanGenre();
+    this.energy = RA.MathUtil.clamp(this.drift.intensity() + this.arc.boost, 0.03, 1);
     if (section) {
-      this.logger.add(`bar ${bar}: section → ${section.toUpperCase()}`, 'mood');
+      this.logger.add(`bar ${bar}: section → ${section.toUpperCase()}`, 'event');
       if (this.settings.get('densityAuto')) this.nextMove = Math.min(this.nextMove, bar + 1);
     }
     if (this.settings.get('paceAuto') && (section || bar >= this.paceUntil)) this.rollPace(bar);
@@ -78,12 +66,12 @@ RA.Composer = class Composer {
     if (this.push && bar >= this.push.until) this.push = null;
     if (bar % 4 === 0 || this.push) {
       if (bar % 4 === 0) {
-        this.followMood(bar);
+        this.followGenre(bar);
         const change = this.harmony.applyPending();
-        if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'mood');
+        if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'event');
       }
       if (this.settings.get('bpmAuto')) {
-        const t = Math.round(this.mood.tempo() * this.arc.tempo * (this.push ? this.push.factor : 1));
+        const t = Math.round(this.drift.tempo() * this.arc.tempo * (this.push ? this.push.factor : 1));
         if (Math.abs(t - this.clock.target) >= 1) this.clock.glideTo(t, this.push ? 8 : 32);
       }
     }
@@ -109,21 +97,21 @@ RA.Composer = class Composer {
     this.scheduler.at((bar + 1) * 4, () => this.onBar(bar + 1));
   }
 
-  preloadNextFlavour() {
-    this.preloadFor(Object.assign(RA.Mood.zeroWeights(), { [this.mood.next()]: 1 }));
+  preloadNextGenre() {
+    this.preloadFor(Object.assign(RA.Genres.zeroWeights(), { [this.drift.next()]: 1 }));
   }
 
-  followMood(bar) {
-    const dom = this.mood.dominant();
-    if (dom === this.flavour) return;
-    this.flavour = dom;
+  followGenre(bar) {
+    const dom = this.drift.dominant();
+    if (dom === this.genre) return;
+    this.genre = dom;
     const change = this.harmony.planFor(dom, this.rng);
-    // The listener's key and mode choices always win over the mood's.
+    // The listener's key and mode choices always win over the genre's.
     if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
     if (this.settings.get('key') === 'auto') change.key = this.harmony.key + this.rng.pick([0, 5, 7, -3]);
     this.harmony.request(change);
     this.nextMove = Math.min(this.nextMove, bar + (this.fast ? 1 : 4)); // start handing over soon
-    this.logger.add(`bar ${bar}: mood → ${RA.Mood.LABELS[dom]} (${dom})`, 'mood');
+    this.logger.add(`bar ${bar}: genre → ${RA.Genres.label(dom)}`, 'event');
   }
 
   // ───── effects ─────
@@ -183,11 +171,11 @@ RA.Composer = class Composer {
   }
 
   // How many layers to aim for. With density on auto the arc section gives a range (sparse
-  // 1-2 ... surge 5-6), capped by the mood (space 4, drill 6...), and the energy picks within
+  // 1-2 ... surge 5-6), capped by the genre (space 4, drill 6...), and the energy picks within
   // it; otherwise exactly the number the listener set.
   target() {
     if (this.settings.get('densityAuto')) {
-      const cap = RA.Arc.cap(this.mood.weights());
+      const cap = RA.Arc.cap(this.drift.weights());
       const [lo0, hi0] = this.arc.spec.layers;
       const hi = Math.min(hi0, cap), lo = Math.min(lo0, hi);
       const f = RA.MathUtil.clamp((this.energy - 0.15) / 0.7, 0, 1);
@@ -197,20 +185,20 @@ RA.Composer = class Composer {
   }
 
   // Build up quickly at the start, follow the target quickly when it thins out or fills up,
-  // and hand over quickly when the mood has moved on; otherwise follow the pace knob.
+  // and hand over quickly when the genre has moved on; otherwise follow the pace knob.
   interval() {
     const target = this.target();
     const building = this.layers.size < target && this.bar < 64;
     const offTarget = Math.abs(this.layers.size - target) >= 1;
-    const w = this.mood.weights();
-    const outOfMood = [...this.layers.values()].some((l) => !l.locked && this.misfit(l, w));
+    const w = this.drift.weights();
+    const outOfGenre = [...this.layers.values()].some((l) => !l.locked && this.misfit(l, w));
     if (offTarget) return Math.min(this.pace(), this.fast ? 1 : 2);
-    return building || outOfMood ? Math.min(this.pace(), this.fast ? 1 : 4) : this.pace();
+    return building || outOfGenre ? Math.min(this.pace(), this.fast ? 1 : 4) : this.pace();
   }
 
   // A pattern for a role, avoiding what was heard recently when there's a choice.
   pickPattern(role, exclude = []) {
-    const w = this.mood.weights();
+    const w = this.drift.weights();
     const meter = this.meter();
     // With STEPS chosen, a fitting pattern (even one heard recently) beats any other;
     // roles with none that fit fall back to the usual choice.
@@ -247,7 +235,7 @@ RA.Composer = class Composer {
     return steps === 'auto' || steps == null ? null : { steps: +steps, probe: (code) => this.coder.probe(code, 8) };
   }
 
-  // A layer that no longer suits the mood, unless it's there for the listener's STEPS.
+  // A layer that no longer suits the genre, unless it's there for the listener's STEPS.
   misfit(layer, w) {
     if (this.bank.fit(layer.pattern, w) >= 0.4) return false;
     const meter = this.meter();
@@ -266,7 +254,7 @@ RA.Composer = class Composer {
       this.swap(layer, this.bar, `${meter.steps} steps`, start);
       n++;
     }
-    this.logger.add(`steps → ${meter.steps}${n ? ` (${n} layer${n > 1 ? 's' : ''} swapped)` : ''}`, 'mood');
+    this.logger.add(`steps → ${meter.steps}${n ? ` (${n} layer${n > 1 ? 's' : ''} swapped)` : ''}`, 'event');
   }
 
   remember(id) {
@@ -298,7 +286,7 @@ RA.Composer = class Composer {
   }
 
   move(bar) {
-    const w = this.mood.weights();
+    const w = this.drift.weights();
     const free = [...this.layers.values()].filter((l) => !l.locked);
     if (this.moveCount(bar)) return;
     if (!free.length) return;
@@ -312,7 +300,7 @@ RA.Composer = class Composer {
 
     const worst = free.slice().sort((a, b) => this.bank.fit(a.pattern, w) - this.bank.fit(b.pattern, w))[0];
     const misfit = this.misfit(worst, w) ? worst : free.find((l) => this.misfit(l, w));
-    if (misfit) return this.swap(misfit, bar, 'mood');
+    if (misfit) return this.swap(misfit, bar, 'genre');
 
     // Everything else is chosen by score (see candidates()).
     const options = this.candidates(bar, free, w);
@@ -322,7 +310,7 @@ RA.Composer = class Composer {
 
   // ───── the decision scheme ─────
   //
-  // Each possible move gets a score from the variation knob, the arc section, the mood and
+  // Each possible move gets a score from the variation knob, the arc section, the genre and
   // the layer's age (bars since it came in), and one is drawn by weight. So in a dub drift
   // layers drop out for a few bars and the progression shifts; in a build patterns swap; in
   // space the radio scatters collage phrases; in a surge or dread the tempo pushes or drags.
@@ -413,18 +401,18 @@ RA.Composer = class Composer {
     this.logger.add(`bar ${bar}: ${layer.role} drops out for ${bars} bar${bars > 1 ? 's' : ''}`);
   }
 
-  // A new progression within the mood (sometimes a key move too), from the next 4 bars.
+  // A new progression within the genre (sometimes a key move too), from the next 4 bars.
   reharmonize(bar) {
-    const change = this.harmony.reharm(this.flavour, this.rng, this.settings.get('key') === 'auto');
+    const change = this.harmony.reharm(this.genre, this.rng, this.settings.get('key') === 'auto');
     if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
     this.harmony.request(change);
     this.lastHarmBar = bar;
-    this.logger.add(`bar ${bar}: reharmonise${change.key != null ? ' and modulate' : ''}`, 'mood');
+    this.logger.add(`bar ${bar}: reharmonise${change.key != null ? ' and modulate' : ''}`, 'event');
   }
 
   // A short collage phrase (voices, radio, field sounds) over the texture, FSOL-style.
   collageEvent(bar) {
-    const pool = RA.Families.collagePool(this.mood.weights());
+    const pool = RA.Families.collagePool(this.drift.weights());
     const layer = this.layers.get('texture') || this.layers.get('keys') || [...this.layers.values()][0];
     if (!layer) return;
     const names = [];
@@ -466,11 +454,11 @@ RA.Composer = class Composer {
   }
 
   // The next role is drawn at random, favouring the ones the section wants first, then the
-  // ones that suit the mood. Roles the section leaves out only come in when the listener's
+  // ones that suit the genre. Roles the section leaves out only come in when the listener's
   // count needs them.
   add(bar) {
     const spec = this.arc.spec;
-    let missing = Composer.ROLE_ORDER[this.mood.dominant()].filter((r) => !this.layers.has(r));
+    let missing = RA.Genres.of(this.drift.dominant()).roleOrder.filter((r) => !this.layers.has(r));
     const allowed = missing.filter((r) => !(spec.no || []).includes(r));
     if (allowed.length || this.settings.get('densityAuto')) missing = allowed;
     if (!missing.length) return;
@@ -487,8 +475,8 @@ RA.Composer = class Composer {
   }
 
   drop(bar, free) {
-    const w = this.mood.weights();
-    const order = Composer.ROLE_ORDER[this.mood.dominant()];
+    const w = this.drift.weights();
+    const order = RA.Genres.of(this.drift.dominant()).roleOrder;
     // In calm sections the beat goes first, leaving pads, melodies and echoes.
     const calm = Composer.CALM.includes(this.arc.section);
     const beat = (l) => (calm && (l.role === 'drums' || l.role === 'perc') ? -1 : 0);
@@ -677,7 +665,7 @@ RA.Composer = class Composer {
       this.swap(layer, this.bar, 'refresh', start);
       n++;
     }
-    this.logger.add(n ? `refresh: ${n} layer${n > 1 ? 's' : ''} swapped` : 'refresh: every layer is locked', 'mood');
+    this.logger.add(n ? `refresh: ${n} layer${n > 1 ? 's' : ''} swapped` : 'refresh: every layer is locked', 'event');
     return n;
   }
 
@@ -685,7 +673,7 @@ RA.Composer = class Composer {
 
   // The arc section that matches what the listener is doing on manual, or null when
   // nothing structural is on manual. Layers lead, read together with the tempo when that is
-  // on manual too (`ratio`: their tempo against the mood's; 1 when the tempo is on auto, as
+  // on manual too (`ratio`: their tempo against the genre's; 1 when the tempo is on auto, as
   // the auto tempo follows the section itself). Tempo alone counts when layers are on auto.
   // `dir` is the way the layer count last moved (-1 down, +1 up).
   //               slower (< ×0.94)            normal                 faster (> ×1.04)
@@ -721,7 +709,7 @@ RA.Composer = class Composer {
 
   steeredSection() {
     const S = this.settings;
-    const ratio = S.get('bpmAuto') ? 1 : S.get('bpm') / this.mood.tempo();
+    const ratio = S.get('bpmAuto') ? 1 : S.get('bpm') / this.drift.tempo();
     if (!S.get('densityAuto')) return Composer.sectionForLayers(S.get('density'), this.steerDir || 0, this.arc.section, ratio);
     if (!S.get('bpmAuto')) return Composer.sectionForTempo(ratio);
     return null;
@@ -731,36 +719,36 @@ RA.Composer = class Composer {
   steer(bar = this.bar) {
     const want = this.steeredSection();
     if (!want) {
-      if (this.arc.held) this.logger.add(`bar ${bar}: back on auto, carrying on from ${this.arc.section.toUpperCase()}`, 'mood');
+      if (this.arc.held) this.logger.add(`bar ${bar}: back on auto, carrying on from ${this.arc.section.toUpperCase()}`, 'event');
       this.arc.letGo(bar);
       return;
     }
-    const tempo = this.settings.get('bpmAuto') ? null : this.settings.get('bpm') / this.mood.tempo();
+    const tempo = this.settings.get('bpmAuto') ? null : this.settings.get('bpm') / this.drift.tempo();
     const changed = this.arc.hold(want, bar, tempo);
     if (changed) {
-      this.logger.add(`bar ${bar}: section → ${changed.toUpperCase()} (by hand)`, 'mood');
-      this.leanMood();
-      this.mood.rethinkNext(); // the mood after this one should suit the new register
-      this.preloadNextFlavour();
+      this.logger.add(`bar ${bar}: section → ${changed.toUpperCase()} (by hand)`, 'event');
+      this.leanGenre();
+      this.drift.rethinkNext(); // the genre after this one should suit the new register
+      this.preloadNextGenre();
     }
   }
 
-  // The listener's register also leans the choice of the next mood (slow and sparse →
-  // calmer, darker moods; full and fast → excited ones), fading with the arc's lean.
-  leanMood() {
+  // The listener's register also leans the choice of the next genre (slow and sparse →
+  // calmer, darker genres; full and fast → excited ones), fading with the arc's lean.
+  leanGenre() {
     const l = this.arc.lean;
-    this.mood.lean = l && { energy: 0.25 + 0.6 * l.level, bpm: this.mood.tempo() * l.tempo, strength: l.strength };
+    this.drift.lean = l && { energy: 0.25 + 0.6 * l.level, bpm: this.drift.tempo() * l.tempo, strength: l.strength };
   }
 
   skipSection() {
     this.arc.skip(this.bar + 1);
-    this.logger.add('section skipped', 'mood');
+    this.logger.add('section skipped', 'event');
   }
 
-  skipMood() {
-    this.mood.skip();
-    this.preloadNextFlavour();
-    this.logger.add('mood skipped forward', 'mood');
+  skipGenre() {
+    this.drift.skip();
+    this.preloadNextGenre();
+    this.logger.add('genre skipped forward', 'event');
   }
 
   onSetting({ name, value }) {
@@ -773,7 +761,7 @@ RA.Composer = class Composer {
     }
     if (name === 'densityAuto') this.nextMove = Math.min(this.nextMove, this.bar + 1);
     if (name === 'steps') {
-      if (value === 'auto') this.logger.add('steps → auto', 'mood');
+      if (value === 'auto') this.logger.add('steps → auto', 'event');
       else this.followMeter();
     }
     if (['density', 'densityAuto', 'bpm', 'bpmAuto'].includes(name)) this.steer();
@@ -781,17 +769,17 @@ RA.Composer = class Composer {
     if (name === 'paceAuto' && value) this.rollPace(this.bar);
     if (name === 'freeze' && !value) this.nextMove = this.bar + this.pace();
     if (name === 'bpm' && !this.settings.get('bpmAuto')) this.clock.glideTo(value, 8);
-    if (name === 'bpmAuto') this.clock.glideTo(value ? Math.round(this.mood.tempo() * this.arc.tempo) : this.settings.get('bpm'), 16);
+    if (name === 'bpmAuto') this.clock.glideTo(value ? Math.round(this.drift.tempo() * this.arc.tempo) : this.settings.get('bpm'), 16);
     if (name === 'key') this.harmony.request({ key: value === 'auto' ? this.harmony.key : value });
-    if (name === 'mode') this.harmony.request({ mode: value === 'auto' ? this.harmony.planFor(this.flavour, this.rng).mode : value });
-    if (name === 'styles') {
-      const was = this.mood.dominant();
-      this.mood.setStyles(value);
-      this.preloadNextFlavour();
-      this.logger.add(`styles: ${this.mood.allowed.map((f) => RA.Mood.LABELS[f]).join(' · ')}`, 'mood');
+    if (name === 'mode') this.harmony.request({ mode: value === 'auto' ? this.harmony.planFor(this.genre, this.rng).mode : value });
+    if (name === 'genres') {
+      const was = this.drift.dominant();
+      this.drift.setAllowed(value);
+      this.preloadNextGenre();
+      this.logger.add(`genres: ${this.drift.allowed.map((g) => RA.Genres.label(g)).join(' · ')}`, 'event');
       // The style playing now was turned off: move to the new one and swap the layers.
-      if (!this.mood.allowed.includes(was)) {
-        this.followMood(this.bar);
+      if (!this.drift.allowed.includes(was)) {
+        this.followGenre(this.bar);
         this.refreshAll();
       }
     }

@@ -72,7 +72,7 @@ RA.ControlPanel = class ControlPanel {
       settings.set('densityAuto', v);
     });
 
-    g = this.group('tempo', 'BPM; auto follows the mood');
+    g = this.group('tempo', 'BPM; auto follows the genre');
     this.tempo = p.createSlider(60, 180, settings.get('bpm'), 1).parent(g);
     this.tempoVal = this.valueLabel(g);
     // Like density: moving the slider takes over from auto.
@@ -95,7 +95,7 @@ RA.ControlPanel = class ControlPanel {
     steps.selected(String(settings.get('steps')));
     steps.changed(() => settings.set('steps', steps.value() === 'auto' ? 'auto' : +steps.value()));
 
-    g = this.group('key', 'auto changes key with the mood');
+    g = this.group('key', 'auto changes key with the genre');
     const key = p.createSelect().parent(g);
     key.option('auto', 'auto');
     ControlPanel.KEYS.forEach((k, i) => key.option(k, String(i)));

@@ -13,15 +13,25 @@ RA.Settings = class Settings extends RA.Emitter {
     glide: 0.4,        // seconds a delay-time change takes (pitch-bending echoes)
     fxAuto: 0.4,       // how often the composer fires effect pads by itself
     layerAuto: true,   // master switch for the layers' automatic sound settings
-    bpmAuto: true,
+    bpmAuto: true,     // the tempo follows the genre and the arc
     bpm: 116,
     key: 'auto',       // 'auto' or a pitch class 0..11
     mode: 'auto',      // 'auto' or a mode name
     steps: 'auto',     // 'auto' or a loop cycle in 16th steps (16, 12, 20...) the patterns should have
     volume: 0.8,
-    styles: null,      // the moods allowed to play (array of names); null = all
+    genres: null,      // the genres allowed to play (array of names); null = all
     eq: null,          // master EQ { low, lomid, himid, high: { f, g } }; null = flat
   };
+
+  // Saved settings from earlier versions: `styles` (the genres allowed to play) is now `genres`.
+  static migrate(saved) {
+    const s = Object.assign({}, saved || {});
+    if ('styles' in s) {
+      if (!('genres' in s)) s.genres = s.styles;
+      delete s.styles;
+    }
+    return s;
+  }
 
   constructor(overrides = {}) {
     super();

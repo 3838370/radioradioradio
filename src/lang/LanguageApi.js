@@ -16,8 +16,8 @@
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 RA.LanguageApi = class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, mood = null, fx = null, instruments = null, rng = new RA.Rng() }) {
-    this.mood = mood;       // () => the mood weights, for collage()'s default pool
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, rng = new RA.Rng() }) {
+    this.genres = genres;   // () => the genre weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
     this.coder = coder;
     this.audio = audio;
@@ -281,9 +281,9 @@ RA.LanguageApi = class LanguageApi {
       },
 
       // collage('c', { pool, rate, beats }) -> [{ s, n, rate, begin, pan, amp, dur }]
-      //   pool: sample folders (default: the mood's: voices, radio, field recordings)
+      //   pool: sample folders (default: the genre's: voices, radio, field recordings)
       collage(name, { pool = null, rate = 0.5, beats = 4 } = {}) {
-        const list = pool || RA.Families.collagePool(self.mood ? self.mood() : null);
+        const list = pool || RA.Families.collagePool(self.genres ? self.genres() : null);
         const g = self.generator('collage:' + name, (x) => !pool || x.pool.join() === pool.join(), () => new RA.CollageGen(self.rng, list));
         const hits = g.next(beats, rate).map(({ at, sound }) => Object.assign({ at, amp: self.rng.float(0.25, 0.5) }, sound));
         return self.timeline(hits, beats, { s: null, amp: 0 });
