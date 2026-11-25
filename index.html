@@ -61,6 +61,15 @@
     .control .check { margin-left: 2px; }
     .control input[type=range] { width: 90px; }
     .controls .tail { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    /* the PARAMS row under the top bar (ParamsBar), same units and lines as the controls */
+    .params { display: flex; flex-wrap: wrap; gap: 6px 0; padding: 6px 12px 8px; align-items: center; font-size: 11px;
+      border-top: 1px solid var(--line); }
+    .params > .control:first-child { padding-left: 0; border-left: none; }
+    .params .param { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; }
+    .params .plabel { color: var(--dim); }
+    .params input[type=range] { width: 64px; }
+    .params .reset { color: var(--bright); cursor: pointer; }
+    .params .chip { padding: 0 4px; }
     .check { display: inline-flex; }
     .check label { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
 
@@ -197,6 +206,7 @@
   <script src="src/ui/SavePanel.js"></script>
   <script src="src/ui/FxBar.js"></script>
   <script src="src/ui/ControlPanel.js"></script>
+  <script src="src/ui/ParamsBar.js"></script>
   <script src="src/ui/Hud.js"></script>
   <script src="src/ui/LogView.js"></script>
   <script src="src/ui/Spectrum.js"></script>

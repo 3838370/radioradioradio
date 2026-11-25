@@ -90,6 +90,16 @@ RA.App = class App {
 
     // Build the control strip first so the stage's remaining height is known.
     this.panel = new RA.ControlPanel(p, this.settings, p.select('#top'));
+    // the PARAMS row under it (closed at first), opened by its button
+    this.paramsBar = new RA.ParamsBar(p, this.settings, p.select('#top'), {
+      playing: () => this.drift.dominant(),
+      onResize: () => this.resize(p),
+      onExport: () => this.store.download('radio-params.json', this.settings.paramsSnapshot()),
+      onImport: async (file) => {
+        try { this.settings.loadParams(await this.store.readJson(file)); this.paramsBar.render(); } catch (e) { alert('Não consegui importar: ' + e.message); }
+      },
+    });
+    const paramsButton = this.panel.addButton('[params ▾]', () => paramsButton.html(this.paramsBar.toggle() ? '[params ▴]' : '[params ▾]'));
     this.panel.addButton('[≈] painel', () => this.drawer.toggle());
     this.drawer = new RA.Drawer(p, p.select('#drawer'), [
       { id: 'layer', label: 'Camada' }, { id: 'instruments', label: 'Instrumentos' },
@@ -445,6 +455,7 @@ RA.App = class App {
     this.grid.padLine = this.automation.padComment();
     this.panel.sync(this.clock.bpm, this.composer.layers.size, this.composer.target(),
       [...this.composer.layers.values()].filter((l) => l.muted).length, this.composer.basePace());
+    this.paramsBar.sync();
     if (this.drawer.isOpen && this.drawer.current === 'layer') this.layerPanel.tick();
 
     const bottomH = 104;
