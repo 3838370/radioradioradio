@@ -142,6 +142,7 @@ RA.App = class App {
       instruments: this.instruments,
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
+      mood: () => this.mood.weights(),
     }));
     this.composer = new RA.Composer({
       bank: this.bank, coder: this.coder, audio: this.audio, samples: this.samples, harmony: this.harmony,
@@ -561,7 +562,8 @@ RA.App = class App {
     // dt may be large when the browser throttles frames; typing then catches up.
     this.grid.update(Math.min(1, p.deltaTime / 1000), this.audio.ac.currentTime, now);
     this.grid.padLine = this.automation.padComment();
-    this.panel.sync(this.clock.bpm, this.composer.layers.size, this.composer.target());
+    this.panel.sync(this.clock.bpm, this.composer.layers.size, this.composer.target(),
+      [...this.composer.layers.values()].filter((l) => l.muted).length, this.composer.basePace());
     if (this.drawer.isOpen && this.drawer.current === 'layer') this.layerPanel.tick();
 
     const bottomH = 104;

@@ -1,37 +1,66 @@
-// Arc: the shape of the music over minutes, independent of the mood. It walks through
-// sections with random lengths and a weighted choice of what comes next:
-//   sparse   few layers, slower, long delays and lots of vibrato
-//   drift    a little more, still slow and wet
-//   build    layers come back
-//   tension  full, slightly faster, drier and brighter
-//   release  thinning out, delays opening up again
-//   peak     euphoric: everything in, accelerating, energy pushed up
-//   collapse after the peak: it slows down and goes dark, wet and wobbly
+// Arc: the shape of the music over minutes. It walks through sections with random lengths
+// and a weighted choice of what comes next. Tension comes two ways, fast or slow:
+//   sparse   1-2 layers, slower, no drums, long delays and lots of vibrato
+//   drift    2-4, still slow and wet
+//   build    3-4, the rhythm comes back
+//   tension  4-5, slightly faster, drier and brighter
+//   surge    5-6, fast tension: accelerating, drums and bass up front, dry
+//   peak     everything in, euphoric
+//   dread    4-6, slow tension: heavy and dark, half-time weight, sub, closed filters
+//   suspense 1-3, slow and empty tension: drones and risers, no drums, filters opening
+//   release  2-4, thinning out, delays opening up again
+//   collapse 2-3, after a peak: slow, dark, wet and wobbly
+// On auto this spends about a quarter of the time on 1-2 layers, 45% on 3-4 and 30% on 5-6,
+// and over 40% in tense sections (tension, surge, peak, dread, suspense).
+// Each section has a range of layers (the composer picks within it by energy), a tempo
+// factor, effect colours, and roles it wants first or leaves out. Each mood prefers some
+// sections and avoids others (MOODS), and caps the layer count.
 // Values glide between sections, so changes are felt rather than heard as switches.
 // While the listener steers by hand, the composer holds the arc in the section that matches
 // what they're doing; back on auto, the arc carries on from there and keeps leaning towards
 // that register (similar sections, similar tempo) for 5 minutes, fading out.
 RA.Arc = class Arc {
   static SECTIONS = {
-    sparse:   { level: 0.05, tempo: 0.82, delay: 1.9, feedback: 0.2, wow: 3.5, space: 1.5, boost: -0.15, bars: [16, 40] },
-    drift:    { level: 0.4, tempo: 0.92, delay: 1.3, feedback: 0.1, wow: 2, space: 1.25, boost: -0.05, bars: [16, 32] },
-    build:    { level: 0.75, tempo: 1, delay: 1, feedback: 0, wow: 1, space: 1, boost: 0.05, bars: [8, 24] },
-    tension:  { level: 1, tempo: 1.06, delay: 0.75, feedback: -0.05, wow: 0.7, space: 0.8, boost: 0.15, bars: [16, 32] },
-    release:  { level: 0.35, tempo: 0.95, delay: 1.5, feedback: 0.12, wow: 2, space: 1.35, boost: -0.05, bars: [8, 16] },
-    peak:     { level: 1, tempo: 1.12, delay: 0.6, feedback: -0.05, wow: 0.5, space: 0.7, boost: 0.3, bars: [8, 16] },
-    collapse: { level: 0.3, tempo: 0.84, delay: 1.7, feedback: 0.15, wow: 3, space: 1.6, boost: -0.25, bars: [8, 24] },
+    sparse:   { layers: [1, 2], level: 0.05, tempo: 0.85, delay: 1.9, feedback: 0.2, wow: 3.5, space: 1.5, boost: -0.15, bars: [16, 32], no: ['drums'] },
+    drift:    { layers: [2, 4], level: 0.4, tempo: 0.92, delay: 1.3, feedback: 0.1, wow: 2, space: 1.25, boost: -0.05, bars: [16, 32] },
+    build:    { layers: [3, 4], level: 0.7, tempo: 1, delay: 1, feedback: 0, wow: 1, space: 1, boost: 0.05, bars: [8, 24] },
+    tension:  { layers: [4, 5], level: 0.9, tempo: 1.04, delay: 0.75, feedback: -0.05, wow: 0.7, space: 0.8, boost: 0.15, bars: [12, 28] },
+    surge:    { layers: [5, 6], level: 1, tempo: 1.1, delay: 0.6, feedback: -0.05, wow: 0.4, space: 0.7, boost: 0.25, bars: [8, 16], first: ['drums', 'bass'] },
+    peak:     { layers: [6, 6], level: 1, tempo: 1.12, delay: 0.6, feedback: -0.05, wow: 0.5, space: 0.7, boost: 0.3, bars: [8, 16] },
+    dread:    { layers: [4, 6], level: 0.85, tempo: 0.84, delay: 0.9, feedback: 0.05, wow: 1.2, space: 0.9, boost: 0.1, bars: [12, 28], first: ['bass', 'drums', 'keys'] },
+    suspense: { layers: [1, 3], level: 0.25, tempo: 0.86, delay: 1.6, feedback: 0.15, wow: 1.5, space: 1.4, boost: 0.05, bars: [8, 24], no: ['drums', 'perc'], first: ['keys', 'texture'] },
+    release:  { layers: [2, 4], level: 0.35, tempo: 0.95, delay: 1.5, feedback: 0.12, wow: 2, space: 1.35, boost: -0.05, bars: [8, 16] },
+    collapse: { layers: [2, 3], level: 0.3, tempo: 0.84, delay: 1.7, feedback: 0.15, wow: 3, space: 1.6, boost: -0.25, bars: [8, 20] },
   };
 
   static NEXT = {
-    sparse: [['drift', 3], ['build', 1]],
-    drift: [['build', 2], ['sparse', 1], ['tension', 1]],
-    build: [['tension', 3], ['drift', 1], ['peak', 1]],
-    tension: [['release', 3], ['sparse', 1], ['peak', 2]],
-    release: [['sparse', 2], ['drift', 2]],
+    sparse: [['drift', 3], ['build', 1.2], ['suspense', 1]],
+    drift: [['build', 2.5], ['sparse', 0.8], ['tension', 1.2], ['suspense', 0.7], ['dread', 1]],
+    build: [['tension', 2.5], ['drift', 1], ['peak', 0.8], ['dread', 1.2], ['surge', 1]],
+    tension: [['release', 2.5], ['sparse', 0.8], ['peak', 1.5], ['surge', 1.5]],
+    surge: [['peak', 2], ['collapse', 1], ['tension', 1]],
     peak: [['collapse', 3], ['release', 1], ['sparse', 1]],
-    collapse: [['sparse', 2], ['drift', 1], ['build', 1]],
+    dread: [['collapse', 1.5], ['surge', 1], ['suspense', 1], ['release', 1]],
+    suspense: [['dread', 1.5], ['surge', 1], ['drift', 1], ['build', 1]],
+    release: [['sparse', 1.5], ['drift', 2], ['suspense', 0.6], ['build', 0.8]],
+    collapse: [['sparse', 1.5], ['drift', 1.2], ['build', 1], ['suspense', 0.8]],
   };
 
+  // What each mood leans to: preferred sections weigh ×2.2, avoided ones ×0.25; `cap` is the
+  // most layers it plays on auto.
+  static MOODS = {
+    fog: { prefer: ['drift', 'dread', 'build'], avoid: ['surge', 'peak'], cap: 5 },
+    dub: { prefer: ['drift', 'build', 'dread'], avoid: ['peak'], cap: 5 },
+    deep: { prefer: ['drift', 'build', 'suspense'], avoid: ['surge'], cap: 5 },
+    space: { prefer: ['sparse', 'suspense', 'drift'], avoid: ['surge', 'peak'], cap: 4 },
+    atmos: { prefer: ['build', 'surge', 'tension'], avoid: ['dread'], cap: 6 },
+    rave: { prefer: ['surge', 'peak', 'tension'], avoid: ['sparse'], cap: 6 },
+    dark: { prefer: ['dread', 'suspense', 'collapse'], avoid: ['peak'], cap: 5 },
+    industrial: { prefer: ['dread', 'surge', 'tension'], avoid: ['sparse'], cap: 6 },
+    ae: { prefer: ['surge', 'suspense', 'collapse'], avoid: ['drift'], cap: 6 },
+  };
+
+  static TENSE = ['tension', 'surge', 'peak', 'dread', 'suspense'];
   static KEYS = ['level', 'tempo', 'delay', 'feedback', 'wow', 'space', 'boost'];
 
   constructor(rng, { scale = 1 } = {}) {
@@ -51,6 +80,28 @@ RA.Arc = class Arc {
     this.section = name;
     this.start = bar;
     this.length = Math.max(2, Math.round(this.rng.int(s.bars[0], s.bars[1]) * this.scale));
+  }
+
+  get spec() { return Arc.SECTIONS[this.section]; }
+
+  // How much the moods (weights { mood: 0..1 }) like a section: 1 = neutral.
+  static moodBias(name, weights) {
+    if (!weights) return 1;
+    let b = 0, total = 0;
+    for (const [f, w] of Object.entries(weights)) {
+      if (!w || !Arc.MOODS[f]) continue;
+      const m = Arc.MOODS[f];
+      b += w * (m.prefer.includes(name) ? 2.2 : m.avoid.includes(name) ? 0.25 : 1);
+      total += w;
+    }
+    return total ? b / total : 1;
+  }
+
+  // The most layers the moods play on auto (blended by their weights).
+  static cap(weights) {
+    let c = 0, total = 0;
+    for (const [f, w] of Object.entries(weights || {})) if (w && Arc.MOODS[f]) { c += w * Arc.MOODS[f].cap; total += w; }
+    return total ? Math.round(c / total) : 5;
   }
 
   // The listener is steering (a control on manual): stay in the section that matches what
@@ -75,10 +126,11 @@ RA.Arc = class Arc {
 
   static LEAN_SECONDS = 300; // the listener's register fades out evenly over 5 minutes
 
-  // The next section. With a register left by the listener, sections close to it (in level
-  // and tempo) are favoured, staying in the same one included; otherwise the usual NEXT table.
-  next() {
-    const base = Arc.NEXT[this.section];
+  // The next section: the NEXT table weighted by the moods' preferences. With a register
+  // left by the listener, sections close to it (in level and tempo) are favoured, staying in
+  // the same one included.
+  next(weights = null) {
+    const base = Arc.NEXT[this.section].map(([n, w]) => [n, w * Arc.moodBias(n, weights)]);
     if (!this.lean) return this.rng.weighted(base);
     const { level, tempo, strength: s } = this.lean;
     return this.rng.weighted(Object.keys(Arc.SECTIONS).map((n) => {
@@ -89,13 +141,13 @@ RA.Arc = class Arc {
     }));
   }
 
-  // Once per bar (`seconds`: the bar's length, for the lean's fade). Returns the new
-  // section's name when it changes.
-  advanceBar(bar, seconds = 0) {
+  // Once per bar (`seconds`: the bar's length, for the lean's fade; `weights`: the moods
+  // now). Returns the new section's name when it changes.
+  advanceBar(bar, seconds = 0, weights = null) {
     let changed = null;
     if (!this.held && this.lean && (this.lean.strength -= seconds / Arc.LEAN_SECONDS) <= 0) this.lean = null;
     if (!this.held && bar >= this.start + this.length) {
-      this.enter(this.next(), bar);
+      this.enter(this.next(weights), bar);
       changed = this.section;
     }
     const target = Arc.SECTIONS[this.section];

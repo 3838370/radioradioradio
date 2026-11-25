@@ -73,7 +73,8 @@ RA.Hud = class Hud {
       // the cycle lengths playing, in 16th steps: 16 = a bar; 12 · 16 · 20 = polyrhythm
       ...(s.steps && s.steps.length ? [`${s.steps.join(' · ')} STEPS`] : []),
       `BAR ${s.bar}`,
-      s.freeze ? 'FROZEN' : `NEXT ${s.nextMove}`,
+      // LOCK (the freeze setting) holds the code; the layer count still follows a manual density
+      s.freeze ? 'CODE LOCKED' : `NEXT ${s.nextMove}`,
     ];
     x = 14;
     for (const part of parts) {

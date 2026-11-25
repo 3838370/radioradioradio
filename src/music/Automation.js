@@ -13,7 +13,7 @@
 // change in the code card and on the panel). Pads are a temporary modulation on the bus,
 // shown on the cards as a comment line while they're on.
 RA.Automation = class Automation {
-  static CALM = ['sparse', 'drift', 'release'];
+  static CALM = ['sparse', 'drift', 'release', 'collapse'];
 
   // param -> [calm range, busy range] for the auto target
   static RANGES = {
@@ -24,6 +24,16 @@ RA.Automation = class Automation {
     crushAdd: [[0, 0.08], [0, 0.15]],
     ampMul: [[0.85, 1], [0.92, 1.05]],
     resAdd: [[0, 1.5], [0, 3]],
+  };
+
+  // Sections with their own colour, over the calm/busy ranges above:
+  //   dread     heavy and dark: closed filter, some grit, little reverb
+  //   suspense  filter opening with rising resonance, wet
+  //   surge     bright, dry, tight
+  static SECTION_RANGES = {
+    dread: { lpfMul: [0.3, 0.65], crushAdd: [0.04, 0.18], revAdd: [0, 0.1], resAdd: [0.5, 2.5], wobbleAdd: [0, 0.1] },
+    suspense: { lpfMul: [0.35, 1.1], resAdd: [1.5, 4], revAdd: [0.2, 0.5], delayAdd: [0.1, 0.35] },
+    surge: { lpfMul: [1, 1.6], revAdd: [0, 0.06], delayAdd: [0, 0.08], wobbleAdd: [0, 0.04] },
   };
 
   // pad id -> how it moves each parameter at full strength
@@ -64,8 +74,9 @@ RA.Automation = class Automation {
   // A new auto target for one parameter, gliding over 8-32 bars.
   retarget(st, param, now) {
     const calm = Automation.CALM.includes(this.arc.section);
-    const [lo, hi] = Automation.RANGES[param][calm ? 0 : 1];
-    const bars = this.rng.int(8, 32) * (this.fast ? 0.25 : 1);
+    const own = (Automation.SECTION_RANGES[this.arc.section] || {})[param];
+    const [lo, hi] = own || Automation.RANGES[param][calm ? 0 : 1];
+    const bars = (now < (this.quickUntil || 0) ? this.rng.int(4, 8) : this.rng.int(8, 32)) * (this.fast ? 0.25 : 1);
     st.from = st.value;
     st.to = this.rng.float(lo, hi);
     st.start = now;
@@ -127,6 +138,12 @@ RA.Automation = class Automation {
     this.last = nowMs;
     const now = this.audio.ac.currentTime;
     this.updateEnvelopes(dt);
+    // a new section: every parameter heads for its colour now, over 4-8 bars
+    if (this.arc.section !== this.lastSection) {
+      this.lastSection = this.arc.section;
+      this.quickUntil = now + 0.2;
+      for (const st of this.state.values()) for (const s of Object.values(st)) s.end = now;
+    }
     const write = nowMs - (this.lastWrite || 0) > 400; // code updates ~2.5x per second
     if (write) this.lastWrite = nowMs;
     for (const layer of this.layers()) {

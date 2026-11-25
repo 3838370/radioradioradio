@@ -9,12 +9,14 @@
 //   note pitch key_rate chord scale harm degree modal
 //   vary(name, options, bars)  walk(name, lo, hi, speed)  phrase(name, opts)  pad(id, beats)
 //   beat(name, { style, density })  swing(step, k, amount)
+//   chords(name, opts)  bassline(name, opts)  collage(name, opts)  drone(name, opts)  motif(name, opts)  tape(name)
 //   KEY ROOT QUAL MODE ENERGY BAR BPM
 //
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 RA.LanguageApi = class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, fx = null, instruments = null, rng = new RA.Rng() }) {
+  constructor({ coder, audio, harmony, clock, energy, section = null, mood = null, fx = null, instruments = null, rng = new RA.Rng() }) {
+    this.mood = mood;       // () => the mood weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
     this.coder = coder;
     this.audio = audio;
@@ -34,6 +36,34 @@ RA.LanguageApi = class LanguageApi {
     const layer = this.coder.cur && this.coder.cur.layer;
     if (!layer) return this.globalVars;
     return layer.vars || (layer.vars = new Map());
+  }
+
+  // A generator kept in the layer's store under `key`, made again when `fits` says the
+  // stored one no longer matches the options.
+  generator(key, fits, make) {
+    const store = this.vars();
+    let g = store.get(key);
+    if (!g || !fits(g)) { g = make(); store.set(key, g); }
+    return g;
+  }
+
+  // Hits at beat positions -> events in order with `dur` (beats to the next one), starting
+  // with a rest if the first hit isn't on the downbeat. `len` defaults to the gap.
+  timeline(hits, beats, rest) {
+    const out = [];
+    const sorted = hits.filter((h) => h.at < beats).sort((a, b) => a.at - b.at);
+    let pos = 0;
+    sorted.forEach((h, k) => {
+      if (h.at > pos + 1e-9) out.push(Object.assign({}, rest, { dur: h.at - pos }));
+      const end = k + 1 < sorted.length ? sorted[k + 1].at : beats;
+      const e = Object.assign({}, h, { dur: end - h.at });
+      delete e.at;
+      if (e.len == null) e.len = e.dur;
+      out.push(e);
+      pos = end;
+    });
+    if (!sorted.length) out.push(Object.assign({}, rest, { dur: beats }));
+    return out.filter((e) => e.dur > 1e-9);
   }
 
   // Whether a sound stays quiet: 'mute' (the mute line), 'hand' (it has hits() rows and
@@ -226,6 +256,71 @@ RA.LanguageApi = class LanguageApi {
       },
 
       phrase: (name, opts) => self.phrase(name, opts),
+
+      // Generators (see Generators.js). Each returns one bar of events to play in order,
+      // waiting sleep(e.dur) after each; rests have nothing to play (notes/note/s null).
+
+      // chords('c', { voicing, octave, rhythm, density }) -> [{ notes, len, vel, dur }]
+      //   voicing: triad m7 add9 sus2 sus4 dub cluster wide quartal fifths
+      //   rhythm: stab (offbeat dub techno hits) offbeat push long
+      chords(name, { voicing = 'm7', octave = 1, rhythm = 'stab', density = 0.5 } = {}) {
+        const g = self.generator('chords:' + name, (x) => x.rhythm === rhythm, () => new RA.ChordGen(self.rng, rhythm));
+        const notes = RA.ChordGen.voice(harmony, coder.bar(), voicing, octave);
+        const hits = g.next(density).map((at) => ({ at, notes, vel: self.rng.float(0.75, 1), len: rhythm === 'long' ? null : 0.25 }));
+        return self.timeline(hits, 4, { notes: null, vel: 0, len: 0 });
+      },
+
+      // bassline('b', { style, octave }) -> [{ note, len, vel, accent, slide, dur }]
+      //   style: dub sub 808 acid walk pedal
+      bassline(name, { style = 'dub', octave = 0 } = {}) {
+        const g = self.generator('bass:' + name, (x) => x.style === style, () => new RA.BassGen(self.rng, style));
+        const root = harmony.degreeAt(coder.bar());
+        const hits = g.next().map(([at, step, len, accent, slide]) => ({ at, note: harmony.degree(root + step, octave), len, accent: !!accent, slide: !!slide, vel: accent ? 1 : 0.8 }));
+        return self.timeline(hits, 4, { note: null, len: 0, vel: 0 });
+      },
+
+      // collage('c', { pool, rate, beats }) -> [{ s, n, rate, begin, pan, amp, dur }]
+      //   pool: sample folders (default: the mood's: voices, radio, field recordings)
+      collage(name, { pool = null, rate = 0.5, beats = 4 } = {}) {
+        const list = pool || RA.Families.collagePool(self.mood ? self.mood() : null);
+        const g = self.generator('collage:' + name, (x) => !pool || x.pool.join() === pool.join(), () => new RA.CollageGen(self.rng, list));
+        const hits = g.next(beats, rate).map(({ at, sound }) => Object.assign({ at, amp: self.rng.float(0.25, 0.5) }, sound));
+        return self.timeline(hits, beats, { s: null, amp: 0 });
+      },
+
+      // drone('d', { voices, octave }) -> { notes, changed }: chord tones that drift slowly
+      drone(name, { voices = 3, octave = 1 } = {}) {
+        const g = self.generator('drone:' + name, (x) => x.steps.length === voices, () => new RA.DroneGen(self.rng, voices));
+        const root = harmony.degreeAt(coder.bar());
+        const { steps, changed } = g.next();
+        return { notes: steps.map((k) => harmony.degree(root + k, octave)), changed };
+      },
+
+      // tape('t') -> { level, wow, crackles: [{ amp, dur }] }: an old tape and record under
+      // the music. level (hiss, 0.3..1) drifts; wow is a flutter episode now and then (fades);
+      // crackles are a few clicks scattered over the bar (play them with sleep(c.dur)).
+      tape(name) {
+        const g = self.generator('tape:' + name, () => true, () => ({ level: self.rng.float(0.5, 1), wow: 0 }));
+        g.level = RA.MathUtil.clamp(g.level + self.rng.float(-0.08, 0.08), 0.3, 1);
+        g.wow = self.rng.chance(0.08) ? self.rng.float(0.2, 0.6) : g.wow * 0.7;
+        const hits = [];
+        for (let at = 0; at < 4; at += 0.25) if (self.rng.chance(0.08)) hits.push({ at, amp: self.rng.float(0.2, 0.6) });
+        return { level: g.level, wow: g.wow, crackles: self.timeline(hits, 4, { amp: 0 }) };
+      },
+
+      // motif('m', { beats, density, octave }) -> [{ note, dur, vel }]: a short melody that
+      // repeats and changes one detail at a time
+      motif(name, { beats = 4, density = 0.4, octave = 2 } = {}) {
+        const g = self.generator('motif:' + name, (x) => x.opts.beats === beats, () => new RA.MotifGen(self.rng, self.melody, { beats, density }));
+        const bar = coder.bar();
+        let pos = 0;
+        return g.next().map((n) => {
+          const strong = pos % 1 === 0 && n.dur >= 1;
+          pos += n.dur;
+          const step = strong ? harmony.snapToChord(n.step, bar) : n.step;
+          return { note: n.rest ? null : harmony.degree(step, octave), dur: n.dur, vel: n.vel };
+        });
+      },
 
       // An evolving drum beat: 16 steps [{ k, s, h, p, v }] for this bar.
       // styles: four, break, halftime, dnb, broken, ae

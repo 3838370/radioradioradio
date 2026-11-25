@@ -2,6 +2,7 @@
 RA.Settings = class Settings extends RA.Emitter {
   static DEFAULTS = {
     pace: 32,          // bars between composer moves
+    paceAuto: true,    // the composer alternates short and long paces by itself
     freeze: false,     // no moves at all
     variation: 0.3,    // 0 = tiny nudges only, 1 = big swings and swaps
     density: 5,        // max simultaneous layers

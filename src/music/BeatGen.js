@@ -5,7 +5,8 @@
 //
 // next() returns one bar of 16th steps: [{ k, s, h, p, v }] (booleans + velocity 0..1).
 // Most styles are 16 steps (4/4); odd meters are longer or shorter (seven = 7/8 is 14,
-// five = 5/4 is 20, eleven = 11/8 is 22), so loop over b.length, not 16.
+// five = 5/4 is 20, eleven = 11/8 is 22, ritual = 12/8 is 24), so loop over b.length, not 16.
+// Styles marked `nofill` (dubtechno, pulse_sparse, drift_free) never play fills.
 RA.BeatGen = class BeatGen {
   static STYLES = {
     // steady four-on-the-floor (dub, industrial, fog)
@@ -102,6 +103,66 @@ RA.BeatGen = class BeatGen {
       h: Array.from({ length: 22 }, (_, i) => (i % 2 ? 0.3 : 0.8)),
       p: Array.from({ length: 22 }, (_, i) => (i % 5 === 3 ? 0.25 : 0)),
     },
+    // dub techno: a soft 4/4 kick, offbeat hats, ghost shaker 16ths, rare rims; no fills
+    dubtechno: {
+      nofill: true,
+      k: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1],
+      s: [0, 0, 0, 0, 0.35, 0, 0, 0.2, 0, 0, 0.15, 0, 0.35, 0, 0.15, 0],
+      h: [0, 0.1, 0.85, 0.25, 0, 0.1, 0.85, 0.25, 0, 0.1, 0.85, 0.25, 0, 0.1, 0.85, 0.35],
+      p: [0.35, 0.2, 0, 0.25, 0.35, 0.2, 0, 0.25, 0.35, 0.2, 0, 0.25, 0.35, 0.2, 0, 0.3],
+    },
+    // Selected Ambient Works-style 808: loose kicks, busy hats with rolls
+    saw808: {
+      k: [1, 0, 0, 0.3, 0, 0, 0.5, 0, 0, 0.2, 0.8, 0, 0, 0, 0.2, 0],
+      s: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0.2],
+      h: [0.9, 0.3, 0.9, 0.5, 0.9, 0.3, 0.9, 0.6, 0.9, 0.3, 0.9, 0.5, 0.9, 0.4, 0.9, 0.7],
+      p: [0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0.2, 0, 0],
+    },
+    // dread: heavy half-time, snare on 3, the kick barely moves
+    halftime_dread: {
+      k: [1, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, 0.6, 0, 0, 0, 0, 0],
+      s: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.1],
+      h: [0.5, 0, 0.3, 0, 0.5, 0, 0.3, 0, 0.5, 0, 0.3, 0, 0.5, 0, 0.3, 0.2],
+      p: [0, 0, 0, 0.15, 0, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0],
+    },
+    // FSOL-style chopped break, with gaps
+    fsol_break: {
+      k: [1, 0, 0, 0, 0, 0, 0.4, 0, 0, 0.7, 0, 0, 0, 0, 0.2, 0],
+      s: [0, 0, 0, 0, 1, 0, 0, 0.2, 0, 0, 0, 0.3, 1, 0, 0, 0.3],
+      h: [0.7, 0.2, 0.6, 0.2, 0.7, 0.2, 0.6, 0.3, 0.7, 0.2, 0.6, 0.2, 0.7, 0.2, 0.6, 0.4],
+      p: [0, 0.2, 0, 0, 0, 0.2, 0, 0, 0.25, 0, 0, 0, 0, 0.2, 0, 0],
+    },
+    // only a pulse: a kick or a sub hit now and then (suspense, space)
+    pulse_sparse: {
+      nofill: true,
+      k: [1, 0, 0, 0, 0, 0, 0, 0.1, 0.3, 0, 0, 0, 0, 0, 0.1, 0],
+      s: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.15, 0, 0, 0],
+      h: [0, 0.1, 0.25, 0.1, 0, 0.1, 0.25, 0.1, 0, 0.1, 0.25, 0.1, 0, 0.1, 0.25, 0.15],
+      p: [0, 0, 0.1, 0, 0, 0.15, 0, 0, 0.1, 0, 0, 0.1, 0, 0.15, 0, 0],
+    },
+    // 12/8 hand drums (24 steps: four groups of six 16ths)
+    ritual: {
+      groups: [6, 6, 6, 6],
+      k: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0.8, 0, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 0],
+      s: [0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0, 0, 0.2],
+      h: Array.from({ length: 24 }, (_, i) => (i % 2 ? 0.15 : 0.6)),
+      p: [0.6, 0, 0.4, 0.5, 0, 0.4, 0, 0.5, 0.4, 0, 0.5, 0.3, 0.6, 0, 0.4, 0.5, 0, 0.4, 0, 0.5, 0.4, 0, 0.5, 0.3],
+    },
+    // downtempo / trip-hop: lazy kick, snare on 2 and 4, swung hats
+    downtempo: {
+      k: [1, 0, 0, 0.2, 0, 0, 0, 0.4, 0, 0, 0.9, 0, 0, 0, 0, 0.2],
+      s: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.15, 1, 0, 0, 0],
+      h: [0.8, 0, 0.6, 0.3, 0.8, 0, 0.6, 0.3, 0.8, 0, 0.6, 0.3, 0.8, 0, 0.6, 0.4],
+      p: [0, 0.15, 0, 0, 0, 0, 0.1, 0, 0, 0.15, 0, 0, 0, 0, 0.1, 0],
+    },
+    // drifting, almost without a pulse: a few soft hits that float
+    drift_free: {
+      nofill: true,
+      k: [1, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0.3, 0, 0, 0, 0, 0],
+      s: [0, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0.2, 0, 0],
+      h: [0.3, 0, 0.15, 0, 0.3, 0, 0.15, 0, 0.3, 0, 0.15, 0, 0.3, 0, 0.15, 0],
+      p: [0, 0.1, 0, 0.1, 0, 0, 0.15, 0, 0, 0.1, 0, 0, 0.15, 0, 0, 0.1],
+    },
     // Autechre-ish: no fixed grid; probabilities are drawn fresh for every new beat
     ae: null,
     // ae with a bar of 11 to 19 steps that changes when the table does
@@ -175,7 +236,8 @@ RA.BeatGen = class BeatGen {
       this.grid = this.sample();
     }
     const bar = this.grid.map((s) => Object.assign({}, s));
-    if (this.bars % 4 === 0 && this.rng.chance(0.55)) this.fill(bar, this.bars % 16 === 0 ? 8 : 4);
+    // styles marked nofill (dub techno, sparse pulses) never break their steady flow
+    if (!this.table.nofill && this.bars % 4 === 0 && this.rng.chance(0.55)) this.fill(bar, this.bars % 16 === 0 ? 8 : 4);
     return bar;
   }
 

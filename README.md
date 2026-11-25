@@ -24,12 +24,20 @@ then open http://localhost:8000.
 ## Playing it
 
 Click **▶ TUNE IN**. The radio drifts between nine styles (deep, space, atmos, rave, dark,
-industrial, ae, fog, dub) along an arc of sections (sparse, drift, build, tension, release,
-peak, collapse).
+industrial, ae, fog, dub) along an arc of sections. Tension comes fast (**surge**: full
+and accelerating) or slow (**dread**: heavy and dark; **suspense**: empty, drones and
+risers), between calmer stretches (sparse, drift, build, tension, peak, release, collapse).
+
+Nothing repeats for long: every pattern comes in as a new version of itself (instruments
+and kits swapped within their families), generators write chords, basslines, melodies,
+drones and collages that keep evolving, the harmony moves within each style, and the radio
+remembers what it has played this session.
 
 - **Top bar:** pace, variation, density (layers), tempo, steps (the loops' cycle: 16, or odd
-  IDM ones like 12, 20, 28), key and mode, volume. Each **auto** lets the radio decide;
-  moving a control takes over, and the radio follows what you're doing.
+  IDM ones like 12, 20, 28), key and mode, volume. Each **auto** lets the radio decide and
+  shows what it chose; moving a control takes over (until you tick auto again), and the
+  radio reads what you're doing: many layers and a slow tempo is dread, fast is surge.
+- **LOCK** (top right): holds the code of every layer; a manual density still works.
 - **Styles:** click a style's name to turn it on or off. **[↻ REFRESH]** swaps the layers.
 - **Views** (⇄ bottom right, or **V**): code cards, the full code (live; **[COPY]**), and a
   step sequencer. Everything you do in any view is written into the same code.

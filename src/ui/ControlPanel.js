@@ -31,13 +31,23 @@ RA.ControlPanel = class ControlPanel {
     const { p, settings } = this;
     const S = ControlPanel.PACE_STEPS;
 
-    let g = this.group('pace', 'how often the composer changes something');
-    const pace = p.createSlider(0, S.length - 1, S.indexOf(settings.get('pace')), 1).parent(g);
-    const paceVal = this.valueLabel(g);
-    const showPace = () => paceVal.html(`every ${S[pace.value()]} bars`);
-    pace.input(() => { settings.set('pace', S[pace.value()]); showPace(); });
-    showPace();
-    this.checkbox(g, 'freeze', settings.get('freeze'), (v) => settings.set('freeze', v));
+    // Like density: on auto the slider shows the pace the composer is using; moving it
+    // takes over until auto is ticked again.
+    let g = this.group('pace', 'how often the composer changes something; auto: short and long periods by itself');
+    this.pace = p.createSlider(0, S.length - 1, Math.max(0, S.indexOf(settings.get('pace'))), 1).parent(g);
+    this.paceVal = this.valueLabel(g);
+    this.pace.input(() => {
+      settings.set('pace', S[this.pace.value()]);
+      if (settings.get('paceAuto')) { settings.set('paceAuto', false); this.paceAuto.checked(false); }
+      this.paceVal.html(`every ${S[this.pace.value()]} bars`);
+    });
+    this.paceVal.html(settings.get('paceAuto') ? 'auto' : `every ${settings.get('pace')} bars`);
+    // Turning auto off holds the pace it was using.
+    this.paceAuto = this.checkbox(g, 'auto', settings.get('paceAuto'), (v) => {
+      if (!v) settings.set('pace', S[this.pace.value()]);
+      settings.set('paceAuto', v);
+      if (!v) this.paceVal.html(`every ${S[this.pace.value()]} bars`);
+    });
 
     g = this.group('variation', 'how big each change is');
     const variation = p.createSlider(0, 100, settings.get('variation') * 100, 1).parent(g);
@@ -100,20 +110,35 @@ RA.ControlPanel = class ControlPanel {
     g = this.group('volume', 'master volume');
     const vol = p.createSlider(0, 100, settings.get('volume') * 100, 1).parent(g);
     vol.input(() => settings.set('volume', vol.value() / 100));
+
+    // Right-aligned: LOCK (the `freeze` setting), then the buttons (the panel's) right against it.
+    this.tail = p.createDiv().addClass('tail').parent(this.root);
+    this.checkbox(this.tail, 'lock', settings.get('freeze'), (v) => settings.set('freeze', v))
+      .attribute('title', 'lock the code of every layer: no swaps or mutations (a manual density still works)');
   }
 
   addButton(label, onClick) {
-    const b = this.p.createButton(label).addClass('btn').parent(this.root);
+    const b = this.p.createButton(label).addClass('btn').parent(this.tail);
     b.mousePressed(onClick);
     return b;
   }
 
   // Keeps the sliders showing what's live. Density: on auto the slider sits on the number
   // of layers playing; the label shows where it's heading ("auto 2 → 5") until it gets there.
-  sync(bpm, playing, target) {
+  // `muted`: how many of the layers are muted (M); shown apart. Pace: on auto, the slider
+  // and label follow the pace the composer is using (`pace`).
+  sync(bpm, playing, target, muted = 0, pace = null) {
+    if (pace != null && this.settings.get('paceAuto')) {
+      const label = `auto: every ${pace} bars`;
+      if (this.paceVal.html() !== label) {
+        this.paceVal.html(label);
+        const k = ControlPanel.PACE_STEPS.indexOf(pace);
+        if (k >= 0) this.pace.value(k);
+      }
+    }
     if (playing != null) {
       const auto = this.settings.get('densityAuto');
-      const count = playing === target ? `${playing}` : `${playing} → ${target}`;
+      const count = (playing === target ? `${playing}` : `${playing} → ${target}`) + (muted ? ` (${muted} M)` : '');
       const label = auto ? `auto ${count}` : `${count} layer${target === 1 ? '' : 's'}`;
       if (this.denVal.html() !== label) this.denVal.html(label);
       if (auto && +this.density.value() !== playing) this.density.value(playing);

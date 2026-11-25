@@ -215,7 +215,8 @@ RA.SynthVoice = class SynthVoice {
     mod.frequency.value = freq * ratio;
     const depth = this.node(this.ac.createGain());
     depth.gain.setValueAtTime(freq * index, time);
-    depth.gain.setTargetAtTime(freq * index * 0.1, time, decay / 3);
+    // with a decay the brightness fades to a tenth; without, it stays (FM pads, drones)
+    if (decay) depth.gain.setTargetAtTime(freq * index * 0.1, time, decay / 3);
     mod.connect(depth);
     depth.connect(carrier.frequency);
     mod.start(time);

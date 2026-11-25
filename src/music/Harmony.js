@@ -16,18 +16,32 @@ RA.Harmony = class Harmony {
     ae: ['phrygian', 'locrian', 'dorian'],
   };
 
-  // fog and dub barely move (one chord for minutes); space wanders; atmos has jazzy ii-i motion.
+  // fog and dub barely move (one chord for minutes); space wanders; atmos has jazzy ii-i
+  // motion. The composer changes progression now and then within a mood (reharm()).
   static PROGRESSIONS = {
-    fog: [[0], [0, 0, 5, 5], [0, 0, 0, 3]],
-    dub: [[0], [0, 0, 0, 3], [0, 0, 5, 0]],
-    deep: [[0, 4], [0, 5, 3, 4], [0, 3, 4, 3], [0, 0, 5, 4]],
-    space: [[0, 4], [0, 1, 0, 4], [0, 5, 3, 4], [0, 2, 3, 1], [0, 3]],
-    atmos: [[0, 3], [0, 5, 3, 4], [1, 0], [0, 2, 3, 4]],
-    rave: [[0, 5, 3, 4], [0, 3, 4, 5], [0, 0, 5, 6]],
-    dark: [[0, 1], [0, 0, 1, 0], [0, 5, 1, 0], [0]],
-    industrial: [[0], [0, 0, 1, 0], [0, 0, 0, 6]],
-    ae: [[0], [0, 1], [0, 4, 1]],
+    fog: [[0], [0, 0, 5, 5], [0, 0, 0, 3], [0, 5], [0, 0, 3, 3], [0, 6], [0, 0, 0, 4], [0, 3, 0, 5], [5, 0], [0, 0, 6, 0]],
+    dub: [[0], [0, 0, 0, 3], [0, 0, 5, 0], [0, 3], [0, 0, 0, 6], [0, 5], [0, 0, 3, 5], [3, 0], [0, 6, 0, 0], [0, 4, 0, 0]],
+    deep: [[0, 4], [0, 5, 3, 4], [0, 3, 4, 3], [0, 0, 5, 4], [0, 1, 4, 0], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5, 1, 4], [3, 4, 0, 0], [0, 6, 5, 4]],
+    space: [[0, 4], [0, 1, 0, 4], [0, 5, 3, 4], [0, 2, 3, 1], [0, 3], [0, 1], [3, 0], [0, 5, 4, 3], [0, 2], [0, 4, 5, 3], [1, 0, 3, 0], [0, 6]],
+    atmos: [[0, 3], [0, 5, 3, 4], [1, 0], [0, 2, 3, 4], [1, 4, 0, 0], [0, 5, 1, 4], [3, 4, 0, 5], [0, 6, 5, 4], [1, 4, 2, 5], [0, 3, 6, 2]],
+    rave: [[0, 5, 3, 4], [0, 3, 4, 5], [0, 0, 5, 6], [0, 5, 6, 4], [0, 3, 6, 4], [5, 6, 0, 0], [0, 4, 5, 3], [0, 6, 5, 6], [3, 4, 5, 5]],
+    dark: [[0, 1], [0, 0, 1, 0], [0, 5, 1, 0], [0], [0, 6], [0, 1, 6, 0], [0, 0, 4, 1], [0, 3, 1, 0], [0, 5, 4, 1]],
+    industrial: [[0], [0, 0, 1, 0], [0, 0, 0, 6], [0, 1], [0, 6, 0, 1], [0, 0, 5, 1], [0, 4, 0, 1], [0, 0, 3, 0]],
+    ae: [[0], [0, 1], [0, 4, 1], [0, 3, 6], [0, 6, 1, 5], [1, 0, 5], [0, 2, 1], [0, 5, 2, 6]],
   };
+
+  // Key moves for a modulation: up a fourth or fifth, a tone, a minor third.
+  static MODULATIONS = [5, 7, -5, 2, -2, 3, -3];
+
+  // A change within the mood, never the same progression as now: usually a new
+  // progression, sometimes (`canModulate`) a key move as well.
+  reharm(flavour, rng, canModulate = true) {
+    const current = this.prog.join();
+    const others = Harmony.PROGRESSIONS[flavour].filter((p) => p.join() !== current);
+    const change = { prog: rng.pick(others.length ? others : Harmony.PROGRESSIONS[flavour]) };
+    if (canModulate && rng.chance(0.3)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
+    return change;
+  }
 
   constructor() {
     this.key = 45;          // midi root in the bass register (40..51)

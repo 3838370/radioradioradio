@@ -48,7 +48,7 @@ RA.PatternBank = class PatternBank {
     if (this.cycleCache.size > 400) this.cycleCache.clear(); // live code keeps changing
     if (!this.cycleCache.has(p.code)) {
       const set = new Set();
-      for (let run = 0; run < 5; run++) {
+      for (let run = 0; run < 8; run++) {
         const r = probe(p.code);
         for (const ls of Object.values((r && r.lengths) || {})) for (const l of ls) {
           const n = Math.round(l * 4);
@@ -73,19 +73,21 @@ RA.PatternBank = class PatternBank {
   // Weighted pick among the best six, so good fits are likelier but it's rarely predictable.
   // meter ({ steps, probe }): the listener chose a step count; only patterns that fit it,
   // from any mood (the mood still weighs in). null when none fit.
-  pick(role, weights, intensity, rng, exclude = [], meter = null) {
+  // weightOf(p): an extra factor per pattern (the session memory's fatigue).
+  pick(role, weights, intensity, rng, exclude = [], meter = null, weightOf = null) {
+    const extra = (p) => (weightOf ? weightOf(p) : 1);
     if (meter) {
       const fitting = this.byRole(role)
         .filter((p) => !exclude.includes(p.id) && PatternBank.fits(this.cycles(p, meter.probe), meter.steps))
-        .map((p) => [p, (this.fit(p, weights) + 0.15) * this.energyFit(p, intensity)])
+        .map((p) => [p, (this.fit(p, weights) + 0.15) * this.energyFit(p, intensity) * extra(p)])
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6);
       return fitting.length ? rng.weighted(fitting) : null;
     }
     const scored = this.byRole(role)
       .filter((p) => !exclude.includes(p.id))
-      .map((p) => [p, this.fit(p, weights) * this.energyFit(p, intensity)])
-      .filter(([, s]) => s > 0.05)
+      .filter((p) => this.fit(p, weights) * this.energyFit(p, intensity) > 0.05)
+      .map((p) => [p, this.fit(p, weights) * this.energyFit(p, intensity) * extra(p)])
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6);
     if (!scored.length) return null;
