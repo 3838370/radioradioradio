@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BROKEN-RADIO</title>
+  <meta name="description" content="BROKEN-RADIO: an endless ambient and IDM radio written as live code in the browser. Watch it compose, edit the code, play the sequencer.">
+  <meta property="og:title" content="BROKEN-RADIO">
+  <meta property="og:description" content="Endless JS coded ambient radio: live code you can watch, edit and sequence.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Cpath d='M3 4h10M3 8h7M3 12h10' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>
+  <style>
+    /* 1-bit handheld screen: black and white, greys for hierarchy, small type, hairlines */
+    :root { --bg: #000000; --panel: #000000; --text: #e4e4e4; --bright: #ffffff; --dim: #969696; --faint: #3e3e3e; --line: #4a4a4a; --err: #ff5a4a; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
+      font: 11.5px/1.4 "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", monospace; letter-spacing: 0.02em;
+      text-shadow: none; }
+    ::selection { background: var(--text); color: var(--bg); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: var(--faint); }
+    ::-webkit-scrollbar-track { background: transparent; }
+    #app { display: flex; flex-direction: column; height: 100vh; }
+    #top { flex: none; border-bottom: 1px solid var(--line); background: var(--panel); }
+    #main { flex: 1; display: flex; min-height: 0; }
+    #stage { flex: 1; position: relative; min-height: 0; min-width: 0; }
+    canvas { display: block; }
+    #drawer { display: none; flex: none; width: 340px; overflow-y: auto; border-left: 1px solid var(--line); background: var(--panel); }
+    #drawer.open { display: block; }
+    @media (max-width: 760px) { #drawer.open { position: fixed; right: 0; top: 0; bottom: 0; width: min(340px, 100vw); z-index: 10; } }
+
+    /* shared controls */
+    button, select, input { font: inherit; color: inherit; text-shadow: inherit; }
+    input[type=range] { -webkit-appearance: none; appearance: none; height: 11px; background: transparent; cursor: pointer; }
+    input[type=range]::-webkit-slider-runnable-track { height: 1px; background: var(--dim); }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 5px; height: 11px; margin-top: -5px; background: var(--bright); border: none; }
+    input[type=range]::-moz-range-track { height: 1px; background: var(--dim); }
+    input[type=range]::-moz-range-thumb { width: 5px; height: 11px; background: var(--bright); border: none; border-radius: 0; }
+    select { background: var(--bg); border: 1px solid var(--line); border-radius: 0; padding: 1px 4px; color: var(--text); }
+    option { background: var(--bg); }
+    /* checkbox: a dot; on = filled white, off = white outline */
+    input[type=checkbox] { -webkit-appearance: none; appearance: none; flex: none; margin: 0; width: 10px; height: 10px;
+      box-sizing: border-box; border: 1px solid var(--bright); border-radius: 50%; background: var(--bg); cursor: pointer; }
+    input[type=checkbox]:checked { background: var(--bright); }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 0; padding: 3px 8px;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+    .btn:hover, .chip:hover { background: var(--text); color: var(--bg); text-shadow: none; }
+    .btn.small { padding: 1px 6px; }
+    .btn.danger { color: var(--err); }
+    .chip { background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 0; padding: 1px 6px; font-size: 11px; cursor: pointer; }
+    .chip.active { color: var(--bright); border-color: var(--dim); }
+
+    /* top control strip */
+    /* each control is one tight unit (name, slider, value, its AUTO), units split by a line */
+    .controls { display: flex; flex-wrap: wrap; gap: 4px 0; padding: 7px 12px; align-items: center; font-size: 11px; }
+    .control { display: flex; align-items: center; gap: 6px; padding: 0 14px; border-left: 1px solid var(--line); }
+    .controls > .control:first-child, .fxctl > .control:first-child { padding-left: 0; border-left: none; }
+    .control .name { color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; }
+    .control .value { color: var(--text); white-space: nowrap; }
+    .control .check { margin-left: 2px; }
+    .control input[type=range] { width: 90px; }
+    .controls .btn { margin-left: auto; }
+    .check { display: inline-flex; }
+    .check label { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+
+    /* side panel */
+    .tabs { display: flex; position: sticky; top: 0; z-index: 1; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .tab { flex: 1; padding: 8px 2px; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid transparent; }
+    .tab.active { color: var(--bright); border-bottom-color: var(--text); }
+    .tab.close { flex: none; width: 30px; }
+    .panel { padding: 10px 12px 18px; }
+    .panel .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .panel .label { width: 96px; flex: none; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .panel .label.wide { width: auto; flex: 1; color: var(--text); text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .panel input[type=range] { flex: 1; min-width: 0; }
+    .panel .out { width: 48px; flex: none; text-align: right; font-size: 11px; color: var(--bright); }
+    .panel select, .panel input[type=text], .panel input:not([type]) { flex: 1; min-width: 0; background: var(--bg); color: var(--text);
+      border: 1px solid var(--line); border-radius: 0; padding: 3px 5px; }
+    .panel > input { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
+    .section { margin: 12px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line); color: var(--text); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.12em; }
+    .hint { color: var(--dim); font-size: 11px; line-height: 1.5; margin: 6px 0; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin: 6px 0; }
+    .list, .variants, .links { display: flex; flex-wrap: wrap; gap: 3px; margin: 5px 0; }
+    .list { max-height: 160px; overflow-y: auto; }
+    .snippet { background: transparent; border: 1px solid var(--line); padding: 6px; white-space: pre-wrap; word-break: break-all;
+      font-size: 11px; color: var(--bright); min-height: 14px; margin: 6px 0; }
+
+    /* code editor laid over a card */
+    .editor { position: absolute; display: flex; flex-direction: column; z-index: 5; box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.97); border: 1px solid var(--dim); }
+    .editor textarea { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; resize: none; border: none; outline: none;
+      background: transparent; color: var(--bright); caret-color: var(--bright);
+      font: 12px/1.45 "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", monospace; padding: 10px; tab-size: 2; white-space: pre; }
+    .editor-status { flex: none; padding: 4px 10px; border-top: 1px solid var(--line); font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    .editor-status.ok { color: var(--text); }
+    .editor-status.err { color: var(--err); }
+
+    .start { position: absolute; left: 50%; top: 50%; transform: translate(-50%, 14px); padding: 9px 20px; z-index: 7;
+      background: transparent; color: var(--text); border: 1px solid var(--text); border-radius: 0;
+      font-size: 12px; letter-spacing: 0.25em; cursor: pointer; }
+    .start:hover { background: var(--text); color: var(--bg); text-shadow: none; }
+
+    /* effect pads and delay controls at the bottom */
+    #fxbar { flex: none; border-top: 1px solid var(--line); background: var(--panel); }
+    .fxbar { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 8px 12px; align-items: center; }
+    .pads { display: grid; grid-template-columns: repeat(8, minmax(58px, 1fr)); gap: 4px; flex: 1 1 520px; }
+    .pad { position: relative; height: 42px; background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 0;
+      font-size: 10px; letter-spacing: 0.08em; cursor: pointer; user-select: none; touch-action: none; padding: 12px 2px 2px; }
+    .pad .k { position: absolute; top: 3px; left: 5px; color: var(--dim); font-size: 10px; }
+    .pad:hover { border-color: var(--dim); color: var(--text); }
+    .pad.on { background: var(--text); color: var(--bg); border-color: var(--text); text-shadow: none; }
+    .pad.on .k { color: var(--bg); }
+    .pad.latched { box-shadow: inset 0 0 0 2px var(--bright); }
+    .pad.auto:not(.latched) { border-style: dashed; }
+    .fxctl { display: flex; flex-wrap: wrap; gap: 4px 0; align-items: center; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="top"></div>
+    <div id="main">
+      <div id="stage"></div>
+      <div id="drawer"></div>
+    </div>
+    <div id="fxbar"></div>
+  </div>
+
+  <script src="src/core/RA.js"></script>
+  <script src="src/core/Emitter.js"></script>
+  <script src="src/core/Settings.js"></script>
+  <script src="src/core/Store.js"></script>
+  <script src="src/core/Rng.js"></script>
+  <script src="src/core/Logger.js"></script>
+
+  <script src="src/audio/Clock.js"></script>
+  <script src="src/audio/Scheduler.js"></script>
+  <script src="src/audio/SampleLibrary.js"></script>
+  <script src="src/audio/TapeFx.js"></script>
+  <script src="src/audio/Bus.js"></script>
+  <script src="src/audio/Reverb.js"></script>
+  <script src="src/audio/Equalizer.js"></script>
+  <script src="src/audio/SynthPresets.js"></script>
+  <script src="src/audio/InstrumentLibrary.js"></script>
+  <script src="src/audio/SynthVoice.js"></script>
+  <script src="src/audio/SampleVoice.js"></script>
+  <script src="src/audio/AudioEngine.js"></script>
+  <script src="src/audio/FxRack.js"></script>
+
+  <script src="src/lang/Theory.js"></script>
+  <script src="src/lang/Ring.js"></script>
+  <script src="src/lang/Loop.js"></script>
+  <script src="src/lang/Iteration.js"></script>
+  <script src="src/lang/Layer.js"></script>
+  <script src="src/lang/LiveCoder.js"></script>
+  <script src="src/lang/LanguageApi.js"></script>
+  <script src="src/lang/CodeTools.js"></script>
+
+  <script src="src/music/Harmony.js"></script>
+  <script src="src/music/MelodyGen.js"></script>
+  <script src="src/music/Phrase.js"></script>
+  <script src="src/music/BeatGen.js"></script>
+  <script src="src/music/Arc.js"></script>
+  <script src="src/music/Automation.js"></script>
+  <script src="src/music/Mood.js"></script>
+  <script src="src/music/PatternBank.js"></script>
+  <script src="src/music/Mutator.js"></script>
+  <script src="src/music/Composer.js"></script>
+
+  <script src="patterns/fog.js"></script>
+  <script src="patterns/dub.js"></script>
+  <script src="patterns/deep.js"></script>
+  <script src="patterns/space.js"></script>
+  <script src="patterns/atmos.js"></script>
+  <script src="patterns/rave.js"></script>
+  <script src="patterns/dark.js"></script>
+  <script src="patterns/industrial.js"></script>
+  <script src="patterns/ae.js"></script>
+  <script src="patterns/piano.js"></script>
+  <script src="patterns/pulse.js"></script>
+
+  <script src="src/ui/Theme.js"></script>
+  <script src="src/ui/CodeHighlighter.js"></script>
+  <script src="src/ui/CodeCard.js"></script>
+  <script src="src/ui/CardGrid.js"></script>
+  <script src="src/ui/FullCodeView.js"></script>
+  <script src="src/ui/SequencerView.js"></script>
+  <script src="src/ui/CodeEditor.js"></script>
+  <script src="src/ui/SliderRow.js"></script>
+  <script src="src/ui/XYPad.js"></script>
+  <script src="src/ui/EqCurve.js"></script>
+  <script src="src/ui/Drawer.js"></script>
+  <script src="src/ui/LayerPanel.js"></script>
+  <script src="src/ui/InstrumentPanel.js"></script>
+  <script src="src/ui/SamplePanel.js"></script>
+  <script src="src/ui/SavePanel.js"></script>
+  <script src="src/ui/FxBar.js"></script>
+  <script src="src/ui/ControlPanel.js"></script>
+  <script src="src/ui/Hud.js"></script>
+  <script src="src/ui/LogView.js"></script>
+  <script src="src/ui/Spectrum.js"></script>
+  <script src="src/App.js"></script>
+
+  <script>
+    window.radio = new RA.App();
+    window.radio.mount();
+  </script>
+</body>
+</html>
