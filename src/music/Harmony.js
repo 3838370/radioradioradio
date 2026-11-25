@@ -10,14 +10,15 @@ RA.Harmony = class Harmony {
   // Key moves for a modulation: up a fourth or fifth, a tone, a minor third.
   static MODULATIONS = [5, 7, -5, 2, -2, 3, -3];
 
-  // A change within the genre, never the same progression as now: usually a new
-  // progression, sometimes (`canModulate`) a key move as well.
-  reharm(genre, rng, canModulate = true) {
+  // A change within the genre, never the same progression as now: a new progression, and
+  // with chance `modulate` (0..1; true = 0.3) a key move as well.
+  reharm(genre, rng, modulate = 0.3) {
     const current = this.prog.join();
     const all = RA.Genres.of(genre).progressions;
     const others = all.filter((p) => p.join() !== current);
     const change = { prog: rng.pick(others.length ? others : all) };
-    if (canModulate && rng.chance(0.3)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
+    const chance = modulate === true ? 0.3 : +modulate || 0;
+    if (chance > 0 && rng.chance(chance)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
     return change;
   }
 

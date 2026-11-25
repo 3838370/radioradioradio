@@ -16,7 +16,8 @@
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 RA.LanguageApi = class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, rng = new RA.Rng() }) {
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new RA.Rng() }) {
+    this.settings = settings; // the feel parameters (humanTime, humanVel)
     this.genres = genres;   // () => the genre weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
     this.coder = coder;
@@ -31,6 +32,12 @@ RA.LanguageApi = class LanguageApi {
     this.globalVars = new Map();
     this.env = this.buildEnv();
   }
+
+  // A feel parameter from Settings (1 without settings, as in the tests).
+  param(id) { return this.settings ? this.settings.get(id) : 1; }
+
+  // A melody note's velocity with its variation scaled by humanVel (around 0.8).
+  human(vel) { return RA.MathUtil.clamp(0.8 + (vel - 0.8) * this.param('humanVel'), 0.1, 1.1); }
 
   // Per-layer variable store (layers keep it across iterations and hot-swaps).
   vars() {
@@ -101,8 +108,8 @@ RA.LanguageApi = class LanguageApi {
       return {
         note,
         dur: n.dur,
-        vel: RA.MathUtil.clamp(n.vel * rng.float(0.9, 1.08), 0.2, 1.1),
-        nudge: rng.float(0, 0.03) * edge,
+        vel: RA.MathUtil.clamp(n.vel * (0.99 + (rng.float(0.9, 1.08) - 0.99) * this.param('humanVel')), 0.2, 1.1),
+        nudge: rng.float(0, 0.03) * edge * this.param('humanTime'),
         grace: note != null && n.grace ? this.harmony.degree(step + n.grace, octave) : null,
         last: k === all.length - 1,
       };
@@ -326,7 +333,7 @@ RA.LanguageApi = class LanguageApi {
           if (e.steps) notes = e.steps.map((s) => harmony.degree(s, octave));
           else if (e.semi != null) notes = [harmony.key + 12 * octave + e.semi];
           else if (e.step != null) notes = [harmony.degree(root + e.step, octave)];
-          return { note: notes[0] == null ? null : notes[0], notes, len: e.len || e.dur, vel: e.vel, detune: e.detune || 0, ratchet: !!e.ratchet, dur: e.dur };
+          return { note: notes[0] == null ? null : notes[0], notes, len: e.len || e.dur, vel: self.human(e.vel), detune: e.detune || 0, ratchet: !!e.ratchet, dur: e.dur };
         });
       },
 

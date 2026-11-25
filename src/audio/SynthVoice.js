@@ -22,6 +22,8 @@
 RA.SynthVoice = class SynthVoice {
   static noiseBuffers = new WeakMap();
   static driveCurves = new Map();
+  // Scales every note's random drift and its own detune (Settings: detune; 0 = in tune).
+  static detuneScale = 1;
 
   static noise(ac) {
     let b = SynthVoice.noiseBuffers.get(ac);
@@ -58,7 +60,7 @@ RA.SynthVoice = class SynthVoice {
   start(time, destination, onEnd) {
     const { ac, P, o } = this;
     const clamp = RA.MathUtil.clamp;
-    const drift = (Math.random() * 2 - 1) * (P.drift || 0);
+    const drift = (Math.random() * 2 - 1) * (P.drift || 0) * SynthVoice.detuneScale;
     const freq = 440 * Math.pow(2, (this.midi - 69) / 12);
     const vel = o.vel == null ? 1 : clamp(+o.vel, 0, 1.5);
     const amp = clamp(o.amp == null ? 0.5 : +o.amp, 0, 2) * P.gain * vel;
@@ -157,7 +159,7 @@ RA.SynthVoice = class SynthVoice {
       osc.frequency.value = freq * Math.pow(2, spec.octave || 0) * (spec.ratio || 1);
       const offset = voices > 1 ? (v / (voices - 1) - 0.5) * 2 * spread : 0;
       // o.detune: this note's own detune in cents (melody() drift and probability styles)
-      const base = (spec.detune || 0) + drift + offset + (+this.o.detune || 0);
+      const base = (spec.detune || 0) + drift + offset + (+this.o.detune || 0) * SynthVoice.detuneScale;
       if (P.pitch) {
         osc.detune.setValueAtTime(base + P.pitch.from * 100, time);
         osc.detune.setTargetAtTime(base, time, P.pitch.time / 3);

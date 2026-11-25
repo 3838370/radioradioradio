@@ -113,7 +113,41 @@ RA.Genres = class Genres {
   // The genres of earlier versions, and where they went (saved choices and your patterns).
   static OLD = { fog: ['dub'], deep: ['saw', 'boc'], atmos: ['boc', 'drill'], rave: ['acid'], industrial: ['ae', 'dark'] };
 
-  static of(name) { return Genres.TABLE[name] || null; }
+  // The listener's values for some fields (Settings: GENRE_SCHEMA, set in the PARAMS row),
+  // { genre: { id: value } }, laid over the table by of().
+  static tuning = {};
+  static tuned = new Map();
+
+  static tune(tuning) {
+    Genres.tuning = tuning || {};
+    Genres.tuned.clear();
+  }
+
+  // A genre's table with the listener's values in place.
+  static of(name) {
+    const base = Genres.TABLE[name];
+    if (!base) return null;
+    const t = Genres.tuning[name];
+    if (!t || !Object.keys(t).length) return base;
+    if (!Genres.tuned.has(name)) {
+      const out = JSON.parse(JSON.stringify(base));
+      for (const [id, value] of Object.entries(t)) {
+        const spec = RA.Settings.genreSpec(id);
+        if (!spec) continue;
+        const keys = spec.path.split('.');
+        const last = keys.pop();
+        keys.reduce((o, k) => o[k], out)[last] = value;
+      }
+      Genres.tuned.set(name, out);
+    }
+    return Genres.tuned.get(name);
+  }
+
+  // One field of a genre's table by its path ('sections.cap'), with the listener's value.
+  static get(name, path) { return path.split('.').reduce((o, k) => (o == null ? o : o[k]), Genres.of(name)); }
+
+  // The table's own value (the default), without the listener's.
+  static base(name, path) { return path.split('.').reduce((o, k) => (o == null ? o : o[k]), Genres.TABLE[name]); }
 
   static label(name) { return (Genres.TABLE[name] || {}).label || name; }
 
@@ -141,7 +175,7 @@ RA.Genres = class Genres {
   // A value per genre blended by the weights ({ genre: 0..1 }), e.g. blend(w, (g) => g.tempo).
   static blend(weights, get) {
     let s = 0, total = 0;
-    for (const [g, w] of Object.entries(weights || {})) if (w && Genres.TABLE[g]) { s += w * get(Genres.TABLE[g]); total += w; }
+    for (const [g, w] of Object.entries(weights || {})) if (w && Genres.TABLE[g]) { s += w * get(Genres.of(g)); total += w; }
     return total ? s / total : 0;
   }
 };

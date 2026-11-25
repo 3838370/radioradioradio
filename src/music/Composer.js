@@ -72,7 +72,7 @@ RA.Composer = class Composer {
       }
       if (this.settings.get('bpmAuto')) {
         const t = Math.round(this.drift.tempo() * this.arc.tempo * (this.push ? this.push.factor : 1));
-        if (Math.abs(t - this.clock.target) >= 1) this.clock.glideTo(t, this.push ? 8 : 32);
+        if (Math.abs(t - this.clock.target) >= 1) this.clock.glideTo(t, this.push ? 8 : 4 * this.settings.get('tempoGlide'));
       }
     }
     // the last bar of a section: a break or a fill (not while frozen or steered by hand)
@@ -335,7 +335,9 @@ RA.Composer = class Composer {
   candidates(bar, free, w) {
     const v = this.settings.get('variation');
     const sec = this.arc.section;
-    const I = (kind) => Composer.intent(kind, sec);
+    // the section's intent for a kind of move, times the listener's weight for it (PARAMS)
+    const W = { swap: 'wSwap', reroll: 'wReroll', timbre: 'wTimbre', mutate: 'wMutate', reset: 'wMutate', dropout: 'wDropout', reharm: 'wReharm', collage: 'wCollage' };
+    const I = (kind) => Composer.intent(kind, sec) * (W[kind] ? this.settings.get(W[kind]) : 1);
     const age = (l) => bar - (l.enteredBar == null ? bar : l.enteredBar);
     const dubby = (w.dub || 0) + 0.8 * (w.minimal || 0) + 0.4 * (w.boc || 0);
     const collagey = (w.space || 0) + (w.boc || 0) + 0.6 * (w.saw || 0) + 0.5 * (w.dark || 0) + 0.3 * (w.ae || 0);
@@ -346,8 +348,8 @@ RA.Composer = class Composer {
       if (RA.CodeTools.synthsUsed(l.code).some((n) => RA.Families.synthFamily(n))) {
         out.push({ score: 0.12 * (0.5 + v) * I('timbre') / free.length, run: () => this.timbre(l, bar) });
       }
-      out.push({ score: 0.35 / free.length, run: () => this.mutate(l, bar) });
-      if (l.code !== this.fullCode(l.base || l.pattern.code)) out.push({ score: 0.15 * (1 - v) / free.length, run: () => this.reset(l, bar) });
+      out.push({ score: 0.35 * I('mutate') / free.length, run: () => this.mutate(l, bar) });
+      if (l.code !== this.fullCode(l.base || l.pattern.code)) out.push({ score: 0.15 * (1 - v) * I('reset') / free.length, run: () => this.reset(l, bar) });
       if (free.length >= 2 && !l.muted) out.push({ score: (0.04 + 0.25 * dubby) * I('dropout') / free.length, run: () => this.dropout(l, bar) });
     }
     if (this.settings.get('key') === 'auto' || this.settings.get('mode') === 'auto') {
@@ -403,7 +405,7 @@ RA.Composer = class Composer {
 
   // A new progression within the genre (sometimes a key move too), from the next 4 bars.
   reharmonize(bar) {
-    const change = this.harmony.reharm(this.genre, this.rng, this.settings.get('key') === 'auto');
+    const change = this.harmony.reharm(this.genre, this.rng, this.settings.get('key') === 'auto' ? this.settings.get('modulate') : 0);
     if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
     this.harmony.request(change);
     this.lastHarmBar = bar;
@@ -555,18 +557,18 @@ RA.Composer = class Composer {
     this.memory.note(pattern.id, base === r.code ? r.sig : null, startBar);
     const quick = role === 'drums' || role === 'bass' || startBar === 0;
     const at = Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat));
-    this.audio.bus(layer.id).fade(1, quick ? 0.03 : 4 * this.clock.spb(), at);
+    this.audio.bus(layer.id).fade(1, quick ? 0.03 : Math.max(0.03, 4 * this.settings.get('fadeIn') * this.clock.spb()), at);
     this.layers.set(role, layer);
     this.remember(pattern.id);
     this.emitter.emit('layer:add', { layer });
     return layer;
   }
 
-  exit(layer, startBar, fadeBars = 2) {
+  exit(layer, startBar, fadeBars = this.settings.get('fadeOut')) {
     if (this.layers.get(layer.role) === layer) this.layers.delete(layer.role);
     const startBeat = startBar * 4;
     const bus = this.audio.bus(layer.id);
-    if (bus) bus.fade(0, fadeBars * 4 * this.clock.spb(), Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat)));
+    if (bus) bus.fade(0, Math.max(0.03, fadeBars * 4 * this.clock.spb()), Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat)));
     this.scheduler.at(startBeat + fadeBars * 4 + 1, () => {
       this.coder.remove(layer);
       this.audio.dropBus(layer.id);

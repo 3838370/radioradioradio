@@ -33,6 +33,55 @@
     equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100 }), { bpm: 100, genres: ['acid'] });
   });
 
+  runner.test('Settings: one schema; PARAMS defaults within their ranges and as before', () => {
+    const S = RA.Settings;
+    const ids = S.SCHEMA.map((s) => s.id);
+    equal(ids.length, new Set(ids).size, 'unique ids');
+    for (const s of S.SCHEMA.filter((x) => x.ui === 'params')) {
+      assert(s.group && s.label && s.hint && s.min <= s.def && s.def <= s.max && s.step > 0, s.id);
+    }
+    // the knobs that existed before keep their defaults
+    const d = S.DEFAULTS;
+    equal([d.pace, d.variation, d.density, d.delayBeats, d.feedback, d.fxAuto, d.bpm, d.volume], [32, 0.3, 5, 0.75, 0.42, 0.4, 116, 0.8]);
+    // ...and the new ones reproduce the old behaviour
+    equal([d.modulate, d.legMin, d.legMax, d.fadeIn, d.fadeOut, d.tempoGlide, d.sectionLength, d.detune], [0.3, 8, 20, 1, 2, 8, 1, 1]);
+    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint, g.id);
+  });
+
+  runner.test('Settings: a genre\'s own parameters lay over the Genres table, reset and export', () => {
+    const s = new RA.Settings();
+    equal(s.genre('boc', 'tempo'), 90);
+    s.setGenre('boc', 'tempo', 99);
+    s.setGenre('dub', 'cap', 3);
+    equal([RA.Genres.of('boc').tempo, RA.Genres.get('dub', 'sections.cap'), RA.Genres.base('boc', 'tempo')], [99, 3, 90]);
+    equal(RA.Arc.cap(Object.assign(RA.Genres.zeroWeights(), { dub: 1 })), 3);
+    const d = new RA.GenreDrift(new RA.Rng(1), { allowed: ['boc'] });
+    assert(Math.abs(d.tempo() - 99) <= 7, 'the drift follows the tuned tempo: ' + d.tempo());
+    s.setGenre('boc', 'modes', []); // refused: a genre keeps a mode
+    assert(RA.Genres.of('boc').modes.length > 0, 'modes kept');
+    s.set('wSwap', 2);
+    const snap = s.paramsSnapshot();
+    const t = new RA.Settings();
+    equal(RA.Genres.of('boc').tempo, 90, 'a fresh Settings starts from the table');
+    t.loadParams(snap);
+    equal([t.get('wSwap'), RA.Genres.of('boc').tempo, t.isGenreDefault('boc', 'tempo'), t.isGenreDefault('saw', 'tempo')], [2, 99, false, true]);
+    t.resetGenre('boc', 'tempo');
+    equal(RA.Genres.of('boc').tempo, 90);
+    t.resetParams();
+    equal([t.get('wSwap'), RA.Genres.get('dub', 'sections.cap'), t.get('genreTune')], [1, 5, {}]);
+  });
+
+  runner.test('Harmony: the modulate parameter sets how often a reharmonisation changes key', () => {
+    const h = new RA.Harmony();
+    const rng = new RA.Rng(9);
+    let never = 0, always = 0;
+    for (let k = 0; k < 100; k++) {
+      if (h.reharm('saw', rng, 0).key != null) never++;
+      if (h.reharm('saw', rng, 1).key != null) always++;
+    }
+    equal([never, always], [0, 100]);
+  });
+
   runner.test('Theory.note parses names', () => {
     equal(RA.Theory.note('a2'), 45);
     equal(RA.Theory.note('c4'), 60);

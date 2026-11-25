@@ -24,7 +24,7 @@ RA.App = class App {
       if (pat && pat.code && pat.role) this.bank.upsert(pat);
     }
     this.harmony = new RA.Harmony();
-    this.drift = new RA.GenreDrift(this.rng, { legMinutes: this.fast ? [1, 1.5] : [8, 20], allowed: this.settings.get('genres') });
+    this.drift = new RA.GenreDrift(this.rng, { legMinutes: this.legMinutes(), allowed: this.settings.get('genres') });
     this.hud = new RA.Hud();
     this.grid = new RA.CardGrid(this.emitter);
     // The stage shows the same code three ways; the ⇄ button (or V) cycles through them.
@@ -34,10 +34,28 @@ RA.App = class App {
     this.viewButton = null;
     this.log = new RA.LogView(this.logger);
     this.xy = new RA.XYPad((v) => { if (this.fx) this.fx.setXY(v); });
-    this.arc = new RA.Arc(this.rng, { scale: this.fast ? 0.25 : 1 });
+    this.arc = new RA.Arc(this.rng, { scale: this.sectionScale() });
+    RA.SynthVoice.detuneScale = this.settings.get('detune');
     this.state = 'idle'; // idle | loading | playing
     this.muted = false;
     this.drag = null;    // { type: 'xy' } or { type: 'scrub', ... } while the mouse is down
+  }
+
+  // How long each genre lasts (PARAMS: genre min / max, minutes); ?fast=1 makes it ~1 minute.
+  legMinutes() {
+    if (this.fast) return [1, 1.5];
+    const a = this.settings.get('legMin'), b = this.settings.get('legMax');
+    return [Math.min(a, b), Math.max(a, b)];
+  }
+
+  // How long the arc's sections last (PARAMS: sections ×); ?fast=1 shortens them.
+  sectionScale() { return (this.fast ? 0.25 : 1) * this.settings.get('sectionLength'); }
+
+  // A PARAMS value that isn't read live where it acts: pass it on.
+  applyParam(name) {
+    if (name === 'legMin' || name === 'legMax') this.drift.legMinutes = this.legMinutes();
+    if (name === 'sectionLength') this.arc.scale = this.sectionScale();
+    if (name === 'detune') RA.SynthVoice.detuneScale = this.settings.get('detune');
   }
 
   mount() {
@@ -116,6 +134,7 @@ RA.App = class App {
     this.instruments.on('change', ({ name }) => { this.save(); this.savePanel.render(); this.syncInstrument(name); });
     this.settings.on('change', ({ name, value }) => {
       if (name === 'volume' && this.state === 'playing') p.outputVolume(this.muted ? 0 : value, 0.1);
+      this.applyParam(name);
       this.save();
     });
   }
@@ -142,7 +161,7 @@ RA.App = class App {
     this.coder = new RA.LiveCoder({ scheduler: this.scheduler, audio: this.audio, emitter: this.emitter, logger: this.logger });
     this.coder.attach(new RA.LanguageApi({
       coder: this.coder, audio: this.audio, harmony: this.harmony, clock: this.clock, fx: this.fx, rng: this.rng,
-      instruments: this.instruments,
+      instruments: this.instruments, settings: this.settings,
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
       genres: () => this.drift.weights(),
@@ -177,7 +196,7 @@ RA.App = class App {
 
   snapshot() {
     return {
-      version: 2,
+      version: 3,
       settings: this.settings.values,
       instruments: this.instruments.serialize(),
       userPatterns: this.bank.userPatterns(),
@@ -191,11 +210,11 @@ RA.App = class App {
   async importState(file) {
     try {
       const data = await this.store.readJson(file);
-      if (!data || data.version !== 2) throw new Error('não é um ficheiro do Radio AI');
+      if (!data || ![2, 3].includes(data.version)) throw new Error('não é um ficheiro do Radio AI');
       const current = this.snapshot();
       this.store.save({
-        version: 2,
-        settings: Object.assign({}, current.settings, data.settings),
+        version: 3,
+        settings: Object.assign({}, current.settings, RA.Settings.migrate(data.settings)),
         instruments: Object.assign({}, current.instruments, data.instruments),
         userPatterns: current.userPatterns.concat(data.userPatterns || []),
       });

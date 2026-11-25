@@ -2,7 +2,8 @@
 // localStorage; dropped audio files (too big for that) go to IndexedDB. Everything is
 // best-effort: private windows or blocked storage just mean nothing is remembered.
 RA.Store = class Store {
-  static KEY = 'radio-ai-v2';
+  static KEY = 'radio-ai-v3';
+  static OLD_KEYS = ['radio-ai-v2']; // read once if there's nothing under KEY yet (Settings.migrate does the rest)
 
   constructor() {
     this.timer = null;
@@ -10,7 +11,13 @@ RA.Store = class Store {
   }
 
   load() {
-    try { return JSON.parse(localStorage.getItem(Store.KEY)) || {}; } catch (e) { return {}; }
+    for (const key of [Store.KEY, ...Store.OLD_KEYS]) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        if (data) return data;
+      } catch (e) { /* unreadable: try the next */ }
+    }
+    return {};
   }
 
   save(state) {
