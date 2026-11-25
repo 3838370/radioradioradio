@@ -1,7 +1,7 @@
 # BROKEN-RADIO: running it, how it's built, and growing the pattern bank
 
 The radio never plays AI audio. It plays **code**. The `patterns/` files hold the bank of
-AI-written code layers, and the composer picks, mutates and chains them while the mood
+AI-written code layers, and the composer picks, mutates and chains them while the genre
 drifts slowly (8–20 minutes each) through nine IDM genres, each at its own tempo:
 - **saw** (~96 BPM): Aphex Twin's ambient side (*Selected Ambient Works 85-92* and *II*, the *Drukqs* prepared pianos). FM pads, loose 808, ostinatos, tape.
 - **acid** (~132 BPM): Aphex Twin's acid and braindance (*Analord*, *Richard D. James Album*). Raw 303, 808/909, odd-interval motifs.
@@ -13,9 +13,9 @@ drifts slowly (8–20 minutes each) through nine IDM genres, each at its own tem
 - **dark** (~76 BPM): slow tension. Half-time weight, drones, low brass, detuned pianos, the metro.
 - **ae** (~118 BPM): Autechre (*AE_LIVE 2016–2018*). Generated, shifting rhythms, harsh FM, lines with no tonic.
 
-The order is drawn at random, leaning on `Mood.TENDS` (ambient into acid, acid into drill, drill into dark or ae...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours.
+The order is drawn at random, leaning on each genre's `tends` (`src/music/Genres.js`) (ambient into acid, acid into drill, drill into dark or ae...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours.
 
-On top of the mood, an **arc** moves through sections. Tension comes two ways, fast or slow:
+On top of the genre, an **arc** moves through sections. Tension comes two ways, fast or slow:
 
 | Section | Layers | Tempo | Character |
 |---|---|---|---|
@@ -30,8 +30,8 @@ On top of the mood, an **arc** moves through sections. Tension comes two ways, f
 | release | 2–4 | ×0.95 | thinning out |
 | collapse | 2–3 | ×0.84 | after a peak: dark, wet, wobbly |
 
-- With density on **auto**, the section gives the range of layers and the mood's energy picks within it.
-- Each mood prefers some sections and avoids others, and caps the layers:
+- With density on **auto**, the section gives the range of layers and the genre's energy picks within it.
+- Each genre prefers some sections and avoids others, and caps the layers:
   - dark → dread and suspense;
   - drill → surge, peak and collapse;
   - saw, boc and space → drift, sparse, suspense (space at most 4 layers);
@@ -39,7 +39,7 @@ On top of the mood, an **arc** moves through sections. Tension comes two ways, f
 - Over hours, auto spends about a quarter of the time on 1–2 layers, 45% on 3–4 and 30% on 5–6, and over 40% in tense sections.
 
 **Steering by hand.** When density or tempo is on manual, the radio reads what you're doing and holds the arc in the matching section. The HUD shows it with **MANUAL** next to the section name.
-- **Layers** are read together with the tempo, if that's on manual too (against the mood's tempo):
+- **Layers** are read together with the tempo, if that's on manual too (against the genre's tempo):
 
   | | slower | normal | faster |
   |---|---|---|---|
@@ -53,7 +53,7 @@ On top of the mood, an **arc** moves through sections. Tension comes two ways, f
 When you tick auto again, the arc carries on from that section and keeps your **register**:
 - The next sections are drawn close to it in level and tempo, staying in the same one included.
 - The tempo stays near yours.
-- The next mood leans towards moods of similar intensity and tempo (slow and sparse → dark, space, saw; full and fast → drill, acid).
+- The next genre leans towards genres of similar intensity and tempo (slow and sparse → dark, space, saw; full and fast → drill, acid).
 
 The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½ minutes, gone at 5. After that the radio wanders freely again.
 
@@ -64,9 +64,9 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
   ```bash
   python "C:\Users\pedro\Documents\Claude\2026-11 Radio AI\Scripts\serve.py"
   ```
-  Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files; if that happens, use Ctrl+Shift+R.
-- `test.html` on the same server runs the checks.
-- **URL flags:** `?fast=1` (each mood lasts about 1 minute and the pace is divided by 8), `?seed=123` (repeatable choices).
+  Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files (use Ctrl+Shift+R), and on Windows it may serve `.js` as plain text, which the browser refuses for modules; `serve.py` sends the right type.
+- `test.html` on the same server runs the checks. `python Scripts\testar.py` runs them in a headless Chrome; `python Scripts\testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.
+- **URL flags:** `?fast=1` (each genre lasts about 1 minute and the pace is divided by 8), `?seed=123` (repeatable choices).
 - **Controls:**
   - **Pace:** how often something changes (every 4–64 bars).
   - **Lock** (right, next to the panel button; the `freeze` setting in code): see below.
@@ -76,15 +76,22 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
     - A manual density still adds or drops layers while locked; on auto, the count stays as it is.
   - **Variation:** how big each change is.
   - **Density:** the number of layers, 1–6 (one per role).
-    - On **auto** the slider sits on the number of layers playing; the arc chooses (up to 4–6, depending on the mood). While the count is moving, the label shows where it's heading, e.g. `auto 2 → 5`. Muted layers are counted apart, e.g. `auto 4 (1 M)`.
+    - On **auto** the slider sits on the number of layers playing; the arc chooses (up to 4–6, depending on the genre). While the count is moving, the label shows where it's heading, e.g. `auto 2 → 5`. Muted layers are counted apart, e.g. `auto 4 (1 M)`.
     - Moving the slider turns auto off and holds exactly that many layers.
     - Layers enter or leave two at a time, every 2 bars, until the count is reached.
-  - **Tempo:** set it yourself, or tick **auto** to follow the mood. Moving the slider turns auto off.
+  - **Tempo:** set it yourself, or tick **auto** to follow the genre. Moving the slider turns auto off.
   - **Steps:** the loops' cycle in 16th steps. Choose **auto** (whatever the patterns bring), a straight count (**4, 8, 16, 32**, the pattern's longest short loop) or an odd IDM one (**7, 11, 12, 14, 17, 18, 20, 22, 24, 28**).
-    - The radio then picks only patterns that have that cycle, from any mood, and swaps the free layers that don't. Long loops (pads, drones) fit any count.
+    - The radio then picks only patterns that have that cycle, from any genre, and swaps the free layers that don't. Long loops (pads, drones) fit any count.
     - The odd counts have only a few patterns, mostly drums, perc and lead; roles with none fall back to the usual choice.
   - **Key and mode:** pick them, or leave them on auto.
   - **Volume.**
+- **[PARAMS]** (top right) opens a second row with what the radio decides by itself, built from `Settings.SCHEMA`:
+  - **variation:** how often it swaps patterns, plays new versions, swaps timbres, tweaks numbers, drops layers out, scatters collage, changes progression (×, 1 = as designed);
+  - **feel:** timing (rubato), dynamics, detune (0 = in tune; 0.5 by default);
+  - **harmony:** chance to modulate, and whether key changes wait for a calm moment;
+  - **transitions:** calm hand-over between genres, how long each genre lasts (min/max minutes), fade in/out bars, tempo glide bars, section length;
+  - **genre** (the one playing, or one you pick): tempo, energy, max layers, tape wow, modes and bars per chord.
+  - **↺** resets one; **export / import** a .json; **reset all**. Saved in the browser with the rest.
 - **Styles:** click a style's name in the top bar (DEEP, SPACE, RAVE…) to turn it on or off.
   - Struck-through styles never play, and at least one stays on. The choice is saved.
   - Turning off the style playing now moves to another one at once.
@@ -127,32 +134,38 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
   - **time** in note values; with **auto**, the radio changes it now and then, and the **glide** bends the echoes' pitch, Aphex-style
   - **feedback**
   - **fx auto:** how often the radio plays the pads by itself
-- **Keys:** **N** changes something now, **T** skips the mood forward, **S** skips the section, **M** mutes everything.
+- **Keys:** **N** changes something now, **T** skips the genre forward, **S** skips the section, **M** mutes everything.
 
-## Code map (one class per file, everything under the `RA` namespace)
-- `src/core`: Emitter, Settings, Rng, Logger, MathUtil
+## Code map (ES modules: one class per file, each importing what it uses)
+- `src/main.js` starts the radio; `src/all.js` re-exports everything (the tests use it).
+- `src/core`: Emitter, Settings (every knob and PARAMS parameter, described once in `SCHEMA` and `GENRE_SCHEMA`), Store (localStorage `radio-ai-v3`), Rng, Logger, MathUtil
 - `src/audio`:
   - Clock and Scheduler (lookahead timing)
   - SampleLibrary (Dirt-Samples)
-  - AudioEngine, Bus and TapeFx (the master and per-layer chains)
+  - AudioEngine, Bus and TapeFx (the master and per-layer chains; TapeFx's wow is scaled per genre)
   - Reverb: an algorithmic Freeverb-style reverb. It replaced p5.Reverb, whose long convolution caused crackling.
   - FxRack: the 8 effect pads and the master delay
-  - SynthVoice, SampleVoice and SynthPresets
-- `src/lang`: the language itself. LiveCoder compiles, hot-swaps and rolls back code, LanguageApi is what code can call, plus Layer, Loop, Iteration, Ring and Theory.
+  - SynthVoice (its random drift and notes' detune scaled by PARAMS detune), SampleVoice and SynthPresets
+- `src/lang`: the language itself. LiveCoder compiles, hot-swaps and rolls back code (and captures `fx()`, `params()` and `mute()`), LanguageApi is what code can call, plus CodeTools (the head lines: inst, params, fx, mute, hits), Layer, Loop, Iteration, Ring and Theory.
 - `src/music`:
-  - Harmony: key, mode and progression (8–12 per mood; `reharm()` changes it within a mood, sometimes with a modulation)
-  - Mood: the slow drift
-  - Arc: the sections, fast and slow tension, mood preferences
-  - MelodyGen and Phrase: evolving melodies
+  - Genres: everything that makes each genre itself, in one table: tempo, intensity, where it tends to go, the sections it prefers and its layer cap, modes, progressions, chord length (`chordBars`), tape wow, role order, collage pool, and its **palette** (instruments per family) and **kits** (sample folders per family). The PARAMS row lays the listener's values over it.
+  - GenreDrift: the slow journey between genres
+  - Arc: the sections, fast and slow tension, the genres' section preferences
+  - Harmony: key, mode, progression and chord length; a key change can wait for a calm moment
+  - MelodyGen, Phrase, Melodies: evolving melodies
   - Generators: ChordGen, BassGen, CollageGen, DroneGen, MotifGen (behind `chords()`, `bassline()`, `collage()`, `drone()`, `motif()`)
-  - Families: synths and sample folders that can stand in for each other, and the collage pools per mood
-  - Recipe: every pattern comes in as a fresh version of itself (slots, family swaps, sample variants)
+  - Families: synths and sample folders that can stand in for each other
+  - Variation: new values for a layer's `params()` (a version, a timbre move, a tweak); never touches the rest of the code
   - Memory: what the session has heard (fatigue per pattern, versions heard)
-  - PatternBank, Mutator
-  - Composer: decides every move. Count changes come first, then a misfit for the mood, then one move drawn by score from: swap, new version, timbre, mutate, reset, dropout (dub drop for 1–4 bars), reharmonise, collage phrase, tempo push or drag. Scores depend on the variation knob, the section (`Composer.INTENT`), the mood and the layer's age. Before a section changes there's a break or a fill.
-- `src/ui`: ControlPanel (HTML), CardGrid, CodeCard, CodeHighlighter, Hud, LogView, Spectrum, Theme
+  - PatternLoader (reads `patterns/**/*.rad`), PatternBank
+  - Composer: decides every move. Count changes come first, then a misfit for the genre, then one move drawn by score from: swap, new version, timbre, tweak, reset, dropout (dub drop for 1–4 bars), reharmonise, collage phrase, tempo push or drag. Scores depend on the variation knob, the section (`Composer.INTENT`), the genre, the PARAMS weights and the layer's age. Before a section changes there's a break or a fill. It shares the work out to:
+    - Layers: the layers playing and their life (enter, fade out, replace, params, mute, lock, edits)
+    - Transitions: genre hand-overs (through a quiet section), key changes when calm, fade times (replaced drums and bass stop at once)
+    - Steering: what the listener does by hand (manual layers and tempo pick a section)
+    - FxAuto: effect pads, delay jumps, breaks and fills
+- `src/ui`: ControlPanel and ParamsBar (HTML: the top bar and the PARAMS row), Input (mouse and keys), CardGrid, CodeCard, CodeHighlighter, Hud, LogView, Spectrum, Theme, and the side panels
 - `src/App.js`: wires everything and runs p5 in instance mode
-- `patterns/*.js`: data only
+- `patterns/<genre>/<id>.rad`: the bank, one file per pattern, listed in `patterns/index.txt` (made by `Scripts\indexar_padroes.py`)
 
 ---
 
@@ -170,21 +183,27 @@ minimal/dub).
 Write each pattern in 4-beat bars at its own genre's tempo.
 
 ### Output format
-Return only objects like this one, separated by commas:
+Return each pattern as a `.rad` file: a short header in comments, then the code. Name it
+`<id>.rad` (it goes in `patterns/<genre>/`, and its path in `patterns/index.txt`).
 
 ```js
-{ id: 'dub_my_layer', role: 'perc', flavours: { dub: 1, minimal: 0.3 }, energy: [0.2, 0.9], code: `
+// role: perc
+// genres: dub 1, minimal 0.3
+// energy: 0.2-0.9
+params({ rim: 'rs', odds: 3 })
 fx({ lpf: 1800, rev: 0.45, crush: 0.2 })
 loop('name', (i) => {
   sleep(0.75)
-  s('click', { n: 0, amp: 0.12 })
+  if (!one_in(P.odds)) s(P.rim, { n: 0, amp: 0.12 })
   sleep(0.25)
-})` },
+})
 ```
-- `id`: prefixed with the genre (`saw_`, `acid_`, `drill_`, `boc_`, `min_`, `dub_`, `space_`, `dark_`, `ae_`), snake_case, unique.
-- `flavours`: how well the layer fits each flavour, 0..1. Use crossover weights so layers can bridge between moods.
-- `energy`: the [min, max] range of intensity (0..1) where it fits.
-- `code`: a template string. **Never use backticks or `${` inside it.**
+- the file name (the id): prefixed with the genre (`saw_`, `acid_`, `drill_`, `boc_`, `min_`, `dub_`, `space_`, `dark_`, `ae_`), snake_case, unique.
+- `role`: `drums`, `perc`, `bass`, `keys`, `lead` or `texture`.
+- `genres`: how well the layer fits each genre, 0..1. Use crossover weights so layers can bridge between genres.
+- `energy`: the min-max range of intensity (0..1) where it fits.
+- `odd: true` (an extra header line) for patterns with odd-meter loops.
+- `params({ ... })`: what the radio may vary. Name each instrument by its **family** and each sample folder by its **kit family** (see `src/music/Families.js`: `pad`, `bell`, `lead`, `sub`, `acid`... and `kick`, `snare`, `hat`, `rim`, `kit`, `perc`...), and read them in the code as `P.pad`, `P.kick`. The radio swaps them for others of the family that the genre playing allows (Genres: `palette`, `kits`). Numbers may vary too (`odds` for `one_in(P.odds)`). Sounds with no family stay written in the code.
 
 ### Language
 - `loop('name', (i) => { ... })`: repeats forever, and `i` is the iteration count. **Each iteration must sleep a total of 1, 2, 4, 8 or 16 beats.**
@@ -225,8 +244,9 @@ loop('name', (i) => {
   - **Collage (FSOL):** `radio_tune`, `tape_warble`, `formant_voice`, `shortwave`
 - `fx({ lpf, res, rev, delay, amp, wobble, crush })`: the layer's filter, reverb send (0..0.7), delay send (0..0.6), level, tape wobble (0..0.9, pitch drift) and bit-crush (0..0.6). At the top level it sets the layer. Inside a loop it changes it at that moment.
 - `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or overrides an instrument (same fields as the presets). The radio writes these lines itself, so patterns don't need them.
+- `params({ name: value, ... })`: top level, what the radio may vary in this layer; the code reads `P.name`.
 - **Harmony.** Always use these; never write note names.
-  - `harm(octave, '' | '7' | '9')`: the current chord (it changes every 4 bars).
+  - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 2-4 bars in saw and boc, 8-16 in acid, minimal, dub and ae).
   - `ROOT`: its root in the bass register. `QUAL`: `'minor'` or `'major'`.
   - `degree(d, octave)`: a note of the current mode, where 0 is the key's root.
   - `modal(octave, octaves)`: the mode's notes.
@@ -265,7 +285,7 @@ loop('name', (i) => {
       - `style`: `dub`, `sub`, `808`, `acid` (16ths with accents and slides), `walk`, `pedal`.
     - `collage(name, { pool, rate, beats })` returns `[{ s, n, rate, begin, pan, amp, dur }]`.
       - A scene of 2–4 sounds (voices, radio, field recordings) scattered over the bar; the scene changes one sound at a time. FSOL-style.
-      - `pool` defaults to the mood's.
+      - `pool` defaults to the genre's.
     - `drone(name, { voices, octave })` returns `{ notes, changed }`: chord tones held for minutes, with one voice moving a step now and then.
     - `motif(name, { beats, density, octave })` returns `[{ note, dur, vel }]`: a short melody that repeats and changes one detail at a time (Selected Ambient Works-style). Two motifs on alternate bars make a call and response.
     - `melody(name, { style, octave, beats, chord })` returns `[{ note, notes, len, vel, detune, ratchet, dur }]`. The melody styles, built on a bank of 63 original cells (`src/music/Melodies.js`):
@@ -280,7 +300,7 @@ loop('name', (i) => {
       sleep(c.dur)
     }
     ```
-  - `slots: { name: [options] }` on a pattern, written as `$name` in its code, is drawn each time the pattern comes in (an instrument, a kit, a voicing).
+  - `params({ ... })` and `P`: see the output format above.
   - Loops may last 1, 2, 3, 4, 5, 6, 7, 8 or 16 beats. Odd lengths run against the 4-beat bar (polymeter).
 - **Live values:** `ENERGY` (0..1, the current intensity), `BAR`, `BPM`, `SECTION` (`sparse`, `drift`, `build`, `tension`, `surge`, `peak`, `dread`, `suspense`, `release` or `collapse`).
   - After a euphoric, accelerating `peak` the radio usually `collapse`s: slower, darker and wetter.
