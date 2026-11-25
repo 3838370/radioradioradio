@@ -1,0 +1,11 @@
+// role: bass
+// genres: ae 1
+// energy: 0.3-1
+params({ acid_bass: 'sh_bass' })
+fx({ lpf: 900, delay: 0.08 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: '808' })) {
+    if (b.note) synth(P.acid_bass, b.note, { dur: b.len * 0.7, amp: 0.35 * b.vel, cutoff: 600 })
+    sleep(b.dur)
+  }
+})

@@ -1,0 +1,9 @@
+// role: texture
+// genres: dark 1
+// energy: 0-1
+params({ pad_dark: 'noise_drone' })
+fx({ rev: 0.4 })
+loop('noise', (i) => {
+  synth(P.pad_dark, ROOT + 24, { dur: 12, attack: 4, release: 4, amp: 0.4 })
+  sleep(16)
+})

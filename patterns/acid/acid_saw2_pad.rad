@@ -1,0 +1,11 @@
+// role: keys
+// genres: acid 1, saw 0.7
+// energy: 0.2-1
+params({ lead: 'saw2_square' })
+fx({ rev: 0.4, lpf: 1800, wobble: 0.1 })
+loop('pad', (i) => {
+  for (const c of chords('c', { voicing: 'fifths', rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.lead, c.notes, { dur: c.len, attack: 0.5, amp: 0.14 * c.vel })
+    sleep(c.dur)
+  }
+})

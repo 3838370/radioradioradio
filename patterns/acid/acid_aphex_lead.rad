@@ -1,0 +1,11 @@
+// role: lead
+// genres: acid 1, saw 0.5
+// energy: 0.35-1
+params({ lead: 'aphex_lead' })
+fx({ rev: 0.3, delay: 0.2 })
+loop('lead', (i) => {
+  for (const n of melody('m', { style: 'ostinato', octave: 2 })) {
+    if (n.note) synth(P.lead, n.note, { dur: n.len * 0.8, amp: 0.2 * n.vel })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,15 @@
+// role: bass
+// genres: space 1
+// energy: 0.3-1
+params({ sub: 'sub' })
+fx({ lpf: 800 })
+loop('bass', (i) => {
+  const groove = vary('groove', [[0, 2.5], [0, 1.5, 3], [0, 3]], 8)
+  let t = 0
+  for (const g of groove) {
+    sleep(g - t)
+    synth(P.sub, g == 0 ? ROOT : ROOT + vary('up', [7, 12, 10], 8), { dur: 0.8, amp: g == 0 ? 0.5 : 0.3 })
+    t = g
+  }
+  sleep(4 - t)
+})

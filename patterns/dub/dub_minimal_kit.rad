@@ -1,0 +1,16 @@
+// role: drums
+// genres: dub 1, minimal 0.7
+// energy: 0.4-1
+params({ kick: 'bd', rim: 'rs' })
+fx({ lpf: 6000, rev: 0.2, delay: 0.1 })
+loop('kick', (i) => {
+  s(P.kick, { n: 9, amp: 0.9 })
+  sleep(1)
+})
+loop('rim', (i) => {
+  const hits = spread(vary('hits', [3, 5, 7], 8), 16, vary('rot', [2, 6, 10], 8))
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) s(P.rim, { n: 0, amp: 0.14, pan: -0.3 })
+    sleep(0.25)
+  }
+})

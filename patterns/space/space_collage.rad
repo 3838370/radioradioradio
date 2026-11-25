@@ -1,0 +1,12 @@
+// role: texture
+// genres: space 1
+// energy: 0-1
+params({ odds: 2, odds2: 3 })
+fx({ rev: 0.55, delay: 0.35, lpf: 4500, wobble: 0.3 })
+loop('collage', (i) => {
+  const src = vary('src', ['speech', 'space', 'birds', 'mouth', 'outdoor'], 4)
+  for (let k = 0; k < 4; k++) {
+    if (one_in(P.odds)) s(src, { n: rrand_i(0, 5), begin: rrand(0, 0.7), cut: choose([0.5, 1, 2]), rate: choose([0.5, 0.75, 1, 1.5]), amp: 0.12, reverse: one_in(P.odds2), pan: rrand(-0.8, 0.8), attack: 0.05, release: 0.2 })
+    sleep(1)
+  }
+})

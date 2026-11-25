@@ -1,0 +1,9 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+params({ nature: 'wind' })
+fx({ lpf: 2400, rev: 0.45 })
+loop('wind', (i) => {
+  s(P.nature, { n: vary('n', [0, 3, 6, 8], 16), amp: walk('a', 0.12, 0.3, 0.1), rate: choose([0.5, 0.75, 1]), pan: rrand(-0.5, 0.5) })
+  sleep(8)
+})

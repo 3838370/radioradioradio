@@ -1,0 +1,10 @@
+// role: texture
+// genres: ae 1
+// energy: 0.2-1
+fx({ crush: 0.2, delay: 0.25, rev: 0.2 })
+loop('sid', (i) => {
+  for (const e of collage('c', { pool: ['sid', 'feel', 'bev'], rate: walk('r', 0.3, 0.8, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * choose([1, 2, 0.5]), pan: e.pan, amp: e.amp * 0.4, cut: 0.3 })
+    sleep(e.dur)
+  }
+})

@@ -1,0 +1,10 @@
+// role: keys
+// genres: boc 1, saw 0.7
+// energy: 0-0.9
+fx({ rev: 0.45, lpf: 2200, wobble: 0.15, delay: 0.15 })
+loop('chords', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['add9', 'sus2', 'wide'], 16), rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(vary('inst', ['juno_pad', 'warm_pad', 'pwm_pad'], 32), c.notes, { dur: c.len, attack: 1, release: 2, amp: 0.22 * c.vel })
+    sleep(c.dur)
+  }
+})

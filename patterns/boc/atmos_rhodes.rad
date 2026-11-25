@@ -1,0 +1,11 @@
+// role: keys
+// genres: boc 1
+// energy: 0.2-1
+params({ keys: 'epiano' })
+fx({ rev: 0.4, delay: 0.25, lpf: 3500, wobble: 0.15 })
+loop('rhodes', (i) => {
+  synth(P.keys, harm(1, '9'), { dur: 2, amp: 0.28 })
+  sleep(2.75)
+  synth(P.keys, harm(1, '7'), { dur: 0.8, amp: 0.18 })
+  sleep(1.25)
+})

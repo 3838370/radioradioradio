@@ -1,0 +1,11 @@
+// role: lead
+// genres: dub 1, saw 0.7
+// energy: 0-0.8
+params({ keys: 'felt' })
+fx({ delay: 0.45, rev: 0.45, lpf: 3000, wobble: 0.15 })
+loop('piano', (i) => {
+  for (const n of phrase('p', { beats: 8, density: 0.25, octave: 2, rest: 0.3 })) {
+    if (n.note) synth(P.keys, n.note, { amp: 0.3 * n.vel })
+    sleep(n.dur)
+  }
+})

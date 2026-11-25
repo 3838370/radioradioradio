@@ -1,0 +1,11 @@
+// role: perc
+// genres: ae 1, drill 0.5
+// energy: 0.3-1
+params({ metal: 'ae_fm_perc' })
+fx({ delay: 0.15, crush: 0.15 })
+loop('perc', (i) => {
+  for (const n of melody('p', { style: 'probability', octave: 1 })) {
+    if (n.note && n.ratchet) { synth(P.metal, n.note, { amp: 0.2 }); sleep(n.dur / 2); synth(P.metal, n.note, { amp: 0.15 }); sleep(n.dur / 2) }
+    else { if (n.note) synth(P.metal, n.note, { amp: 0.22 * n.vel, detune: n.detune }); sleep(n.dur) }
+  }
+})

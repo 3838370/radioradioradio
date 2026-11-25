@@ -57,8 +57,10 @@ RA.Store = class Store {
   deleteSample(name) { return this.tx('readwrite', (s) => s.delete(name)); }
   clearSamples() { return this.tx('readwrite', (s) => s.clear()); }
 
-  download(filename, data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  download(filename, data) { this.downloadText(filename, JSON.stringify(data, null, 2), 'application/json'); }
+
+  downloadText(filename, text, type = 'text/plain') {
+    const blob = new Blob([text], { type });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;

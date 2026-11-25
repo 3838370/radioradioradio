@@ -1,0 +1,16 @@
+// role: drums
+// genres: dub 1, minimal 0.7
+// energy: 0.25-1
+params({ kick: 'clubkick', rim: 'rs', hat: 'hh', perc: 'perc' })
+fx({ lpf: 5500, rev: 0.15, delay: 0.08 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'dubtechno', density: walk('dens', 0.3, 0.75, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 1, amp: 0.8 * st.v })
+    if (st.s) s(P.rim, { n: 0, amp: 0.18 * st.v, pan: -0.25 })
+    if (st.h) s(P.hat, { n: 3, amp: 0.14 * st.v, pan: 0.2 })
+    if (st.p) s(P.perc, { n: 2, amp: 0.07 * st.v, pan: -0.4 })
+    sleep(0.25)
+  }
+})

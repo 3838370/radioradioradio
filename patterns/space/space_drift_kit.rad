@@ -1,0 +1,16 @@
+// role: drums
+// genres: space 1
+// energy: 0-0.8
+params({ kick: 'bd', rim: 'rs', hat: 'hh', space: 'cosmicg' })
+fx({ lpf: 3500, rev: 0.5, delay: 0.3, wobble: 0.1 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'drift_free', density: walk('dens', 0.3, 0.7, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 20, amp: 0.6 * st.v })
+    if (st.s) s(P.rim, { n: 0, amp: 0.15 * st.v, pan: rrand(-0.5, 0.5) })
+    if (st.h) s(P.hat, { n: 6, amp: 0.08 * st.v, pan: 0.3 })
+    if (st.p) s(P.space, { n: 2, amp: 0.08 * st.v, rate: 2 })
+    sleep(0.25)
+  }
+})

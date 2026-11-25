@@ -1,0 +1,15 @@
+// role: drums
+// genres: dub 1, minimal 0.7
+// energy: 0.3-1
+params({ kit: 'dr55' })
+fx({ lpf: 7000, delay: 0.12, rev: 0.1 })
+loop('kit', (i) => {
+  const b = beat('b', { style: vary('style', ['dubtechno', 'four'], 32), density: 0.5 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kit, { n: 0, amp: 0.85 * st.v })
+    if (st.s) s(P.kit, { n: 3, amp: 0.2 * st.v })
+    if (st.h) s(P.kit, { n: 2, amp: 0.12 * st.v, pan: 0.15 })
+    sleep(0.25)
+  }
+})

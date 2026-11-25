@@ -1,0 +1,11 @@
+// role: lead
+// genres: ae 1, acid 0.5
+// energy: 0.2-1
+params({ pluck: 'ae_blip' })
+fx({ delay: 0.25, rev: 0.2 })
+loop('blips', (i) => {
+  for (const n of melody('m', { style: 'probability', octave: 2 })) {
+    if (n.note && n.ratchet) { synth(P.pluck, n.note, { amp: 0.18, detune: n.detune }); sleep(n.dur / 2); synth(P.pluck, n.note, { amp: 0.14, detune: n.detune }); sleep(n.dur / 2) }
+    else { if (n.note) synth(P.pluck, n.note, { amp: 0.2 * n.vel, detune: n.detune }); sleep(n.dur) }
+  }
+})

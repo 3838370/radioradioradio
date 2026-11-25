@@ -1,0 +1,9 @@
+// role: bass
+// genres: space 1, dark 0.5
+// energy: 0-0.8
+params({ pad_dark: 'space_drone_slow' })
+fx({ lpf: 500, rev: 0.3 })
+loop('drone', (i) => {
+  synth(P.pad_dark, ROOT, { dur: 14, amp: 0.35 })
+  sleep(16)
+})

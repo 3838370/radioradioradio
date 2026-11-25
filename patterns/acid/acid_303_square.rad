@@ -1,0 +1,11 @@
+// role: bass
+// genres: acid 1, ae 0.5
+// energy: 0.4-1
+params({ acid: 'tb303_square' })
+fx({ lpf: 4000, crush: 0.06 })
+loop('acid', (i) => {
+  for (const b of bassline('b', { style: 'acid' })) {
+    if (b.note) synth(P.acid, b.note, { dur: b.len * 0.7, amp: 0.34 * b.vel, cutoff: b.accent ? 1400 : walk('cut', 220, 900, 0.15) })
+    sleep(b.dur)
+  }
+})

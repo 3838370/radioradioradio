@@ -1,0 +1,11 @@
+// role: lead
+// genres: space 1, boc 0.5
+// energy: 0-1
+params({ bell: 'fm_glass' })
+fx({ rev: 0.55, delay: 0.4 })
+loop('glass', (i) => {
+  for (const n of melody('d', { style: 'drift', octave: 3 })) {
+    if (n.note) synth(P.bell, n.note, { amp: 0.16 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

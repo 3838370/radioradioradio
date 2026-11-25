@@ -1,0 +1,11 @@
+// role: lead
+// genres: ae 1, dark 0.5
+// energy: 0.2-1
+params({ machine: 'ae_grain' })
+fx({ rev: 0.3, delay: 0.3 })
+loop('grain', (i) => {
+  for (const n of melody('g', { style: 'probability', octave: 2 })) {
+    if (n.note) synth(P.machine, n.note, { dur: n.len * 2, amp: 0.16 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

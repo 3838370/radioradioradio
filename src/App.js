@@ -18,11 +18,15 @@ RA.App = class App {
     this.logger = new RA.Logger();
     this.instruments = new RA.InstrumentLibrary(RA.SynthPresets);
     this.instruments.load(saved.instruments);
-    this.bank = new RA.PatternBank(RA.PATTERNS);
-    // your saved patterns (the bank moves older genre names to today's: fog → dub, deep → saw/boc...)
+    // your saved patterns now (the bank moves older genre names to today's: fog → dub, deep →
+    // saw/boc...); the bank's own .rad files load in the background (see PatternLoader)
+    this.bank = new RA.PatternBank([]);
     for (const pat of saved.userPatterns || []) {
       if (pat && pat.code && pat.role) this.bank.upsert(pat);
     }
+    this.patternsLoaded = [0, 0];
+    this.patternsReady = RA.PatternLoader.load({ logger: this.logger, onProgress: (n, total) => { this.patternsLoaded = [n, total]; } })
+      .then((list) => { for (const p of list) if (!this.bank.get(p.id)) this.bank.upsert(p); });
     this.harmony = new RA.Harmony();
     this.drift = new RA.GenreDrift(this.rng, { legMinutes: this.legMinutes(), allowed: this.settings.get('genres') });
     this.hud = new RA.Hud();
@@ -152,6 +156,7 @@ RA.App = class App {
     const ac = p.getAudioContext();
 
     await this.indexReady;
+    await this.patternsReady;
     this.clock = new RA.Clock(this.drift.tempo());
     this.scheduler = new RA.Scheduler(ac, this.clock, this.logger);
     this.audio = new RA.AudioEngine(ac, this.samples, this.instruments);
@@ -222,6 +227,25 @@ RA.App = class App {
     } catch (e) {
       alert('Não consegui importar: ' + e.message);
     }
+  }
+
+  // One of your patterns as a .rad file (the bank's own format).
+  exportPattern(pat) { this.store.downloadText(`${pat.id}.rad`, RA.PatternLoader.format(pat)); }
+
+  // .rad files become your patterns (user_<name>), saved and picked by the composer.
+  async importPatterns(files) {
+    for (const file of files) {
+      try {
+        const p = RA.PatternLoader.parse(await file.text(), file.name);
+        const id = p.id.startsWith('user_') ? p.id : 'user_' + p.id;
+        this.bank.upsert(Object.assign(p, { id, user: true, edited: true }));
+        this.logger.add(`pattern imported: ${id}`, 'event');
+      } catch (e) {
+        alert('Não consegui importar ' + file.name + ': ' + e.message);
+      }
+    }
+    this.save();
+    this.savePanel.render();
   }
 
   async clearState() {
@@ -696,6 +720,9 @@ RA.App = class App {
       const blink = (performance.now() >> 9) % 2 ? '_' : ' ';
       p.fill(T.text);
       p.text((s && s.index ? `LOADING SAMPLES ${s.loaded} / ${s.loaded + s.pendingCount}` : 'CONNECTING') + blink, cx, cy + 56);
+    } else if (this.patternsLoaded[0] < this.patternsLoaded[1]) {
+      p.fill(T.dim);
+      p.text(`LOADING PATTERNS ${this.patternsLoaded[0]} / ${this.patternsLoaded[1]}`, cx, cy + 56);
     }
     p.textAlign(p.LEFT);
   }

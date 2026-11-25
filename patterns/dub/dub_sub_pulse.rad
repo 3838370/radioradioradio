@@ -1,0 +1,11 @@
+// role: bass
+// genres: dub 1
+// energy: 0.2-1
+params({ sub: 'dub_sub' })
+fx({ lpf: 700 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('st', ['pedal', 'sub', 'dub'], 16) })) {
+    if (b.note) synth(P.sub, b.note, { dur: b.len * 0.9, amp: 0.5 * b.vel })
+    sleep(b.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: texture
+// genres: ae 1
+// energy: 0.3-1
+fx({ rev: 0.3, delay: 0.2 })
+loop('bursts', (i) => {
+  const hits = spread(vary('h', [2, 3], 4), 7, vary('r', [0, 2, 4], 4))
+  for (let k = 0; k < 7; k++) {
+    if (hits[k]) synth(vary('v', ['grind', 'noise_drone'], 4), ROOT + 24, { dur: choose([0.1, 0.3, 0.8]), attack: 0.01, release: 0.2, amp: 0.3 })
+    sleep(1)
+  }
+})

@@ -1,0 +1,13 @@
+// role: perc
+// genres: saw 1, boc 0.7
+// energy: 0-0.7
+params({ prepared: 'toy_piano', odds: 5 })
+fx({ rev: 0.5, delay: 0.45, wobble: 0.35 })
+loop('box', (i) => {
+  const notes = modal(3, 1)
+  const order = ring(0, 2, 4, 6, 4, 2, 1, 3)
+  for (let k = 0; k < 8; k++) {
+    if (!one_in(P.odds)) synth(P.prepared, notes[order.tick() % notes.length], { vel: rrand(0.5, 0.9), nudge: rrand(0, 0.05) })
+    sleep(vary('step', [0.5, 0.75], 16))
+  }
+})

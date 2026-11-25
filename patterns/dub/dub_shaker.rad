@@ -1,0 +1,12 @@
+// role: perc
+// genres: dub 1
+// energy: 0.4-1
+params({ hat: 'hh27' })
+fx({ lpf: 6000, rev: 0.2 })
+loop('shaker', (i) => {
+  const dens = vary('dens', [2, 3, 4], 8)
+  for (let k = 0; k < 16; k++) {
+    if (k % 4 == 2 || one_in(dens)) s(P.hat, { n: 0, amp: k % 4 == 2 ? 0.08 : 0.04, rate: 1.2, pan: 0.4 })
+    sleep(0.25)
+  }
+})

@@ -1,0 +1,9 @@
+// role: keys
+// genres: dub 1
+// energy: 0-0.8
+params({ stab: 'brass' })
+fx({ rev: 0.6, lpf: 900, wobble: 0.6 })
+loop('swell', (i) => {
+  synth(P.stab, harm(1, ''), { dur: 4, attack: 2.5, release: 3, amp: 0.3 })
+  sleep(8)
+})

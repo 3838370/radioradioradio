@@ -1,0 +1,11 @@
+// role: lead
+// genres: dark 1
+// energy: 0-1
+params({ voice: 'formant_voice' })
+fx({ rev: 0.5, delay: 0.3, lpf: 3000 })
+loop('voice', (i) => {
+  for (const n of motif('m', { beats: 8, density: 0.25, octave: 1 })) {
+    if (n.note) synth(P.voice, n.note, { dur: n.dur, amp: 0.24 * n.vel })
+    sleep(n.dur)
+  }
+})

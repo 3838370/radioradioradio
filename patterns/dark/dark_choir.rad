@@ -1,0 +1,9 @@
+// role: keys
+// genres: dark 1
+// energy: 0-0.8
+params({ pad_dark: 'choir_dark' })
+fx({ rev: 0.65, lpf: 1600 })
+loop('choir', (i) => {
+  synth(P.pad_dark, [ROOT + 12, ROOT + 13, ROOT + 19], { dur: 12, attack: 4, release: 6, amp: 0.4 })
+  sleep(16)
+})

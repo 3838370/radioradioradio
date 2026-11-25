@@ -1,0 +1,11 @@
+// role: keys
+// genres: boc 1
+// energy: 0.15-1
+params({ keys: 'rhodes' })
+fx({ rev: 0.3, wobble: 0.25, lpf: 2600 })
+loop('rhodes', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['m7', 'add9'], 16), rhythm: 'push', octave: 1, density: 0.4 })) {
+    if (c.notes) synth(P.keys, c.notes, { dur: Math.max(0.5, c.len), vel: 0.5 + 0.3 * c.vel, strum: 0.04 })
+    sleep(c.dur)
+  }
+})

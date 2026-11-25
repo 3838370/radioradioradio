@@ -1,0 +1,29 @@
+// role: drums
+// genres: space 1
+// energy: 0.3-1
+params({ kick: '808bd', snare: '808sd' })
+fx({ lpf: 6000, rev: 0.2 })
+loop('kick', (i) => {
+  const kicks = vary('kicks', [[0, 2.5], [0, 1.5, 2.5], [0, 3], [0, 0.75, 2.5]], 8)
+  let t = 0
+  for (const k of kicks) {
+    sleep(k - t)
+    s(P.kick, { n: 3, amp: 0.8 })
+    t = k
+  }
+  sleep(4 - t)
+})
+loop('snare', (i) => {
+  sleep(1)
+  s(P.snare, { n: vary('sn', [3, 6, 9], 16), amp: 0.3 })
+  sleep(2)
+  s(P.snare, { n: 6, amp: 0.26 })
+  sleep(1)
+})
+loop('hats', (i) => {
+  const dens = vary('dens', [2, 4], 8)
+  for (let k = 0; k < 8; k++) {
+    if (k % 2 == 1 || one_in(dens)) s('808', { n: 1, amp: k % 2 == 1 ? 0.12 : 0.06 })
+    sleep(0.5)
+  }
+})

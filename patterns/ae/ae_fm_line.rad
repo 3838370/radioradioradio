@@ -1,0 +1,11 @@
+// role: lead
+// genres: ae 1
+// energy: 0.3-1
+params({ lead_harsh: 'fm_metal' })
+fx({ crush: 0.1, delay: 0.2 })
+loop('fm', (i) => {
+  for (const n of melody('f', { style: 'probability', octave: 2 })) {
+    if (n.note) synth(P.lead_harsh, n.note, { amp: 0.16 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

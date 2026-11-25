@@ -1,0 +1,9 @@
+// role: keys
+// genres: saw 1
+// energy: 0-1
+params({ pad: 'choir' })
+fx({ rev: 0.6, lpf: 2600, wobble: 0.2 })
+loop('pad', (i) => {
+  synth(P.pad, harm(1, '9'), { dur: 12, attack: 3, release: 5, amp: 0.45 })
+  sleep(16)
+})

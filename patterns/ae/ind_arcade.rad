@@ -1,0 +1,10 @@
+// role: perc
+// genres: ae 1
+// energy: 0.3-1
+params({ odds: 2 })
+fx({ delay: 0.3, lpf: 6000, crush: 0.3 })
+loop('arcade', (i) => {
+  sleep(2)
+  if (one_in(P.odds)) s(vary('src', ['invaders', 'tacscan', 'subroc3d'], 8), { n: rrand_i(0, 10), amp: 0.14, rate: choose([0.5, 1, 1.5]), pan: rrand(-0.8, 0.8) })
+  sleep(2)
+})

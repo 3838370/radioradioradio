@@ -1,0 +1,11 @@
+// role: keys
+// genres: ae 1
+// energy: 0.2-1
+params({ pad_dark: 'dark_pad' })
+fx({ lpf: 1800, crush: 0.12, delay: 0.2 })
+loop('push', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['quartal', 'fifths'], 16), rhythm: 'push', octave: 1, density: 0.7 })) {
+    if (c.notes) synth(P.pad_dark, c.notes, { dur: Math.max(0.25, c.len), amp: 0.24 * c.vel })
+    sleep(c.dur)
+  }
+})

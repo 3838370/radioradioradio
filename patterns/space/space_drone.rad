@@ -1,0 +1,9 @@
+// role: bass
+// genres: space 1
+// energy: 0-0.7
+params({ sub: 'sub' })
+fx({ lpf: 700, wobble: 0.2 })
+loop('drone', (i) => {
+  synth(P.sub, ROOT, { dur: 13, attack: 2, release: 3, amp: 0.4 })
+  sleep(16)
+})

@@ -1,0 +1,11 @@
+// role: keys
+// genres: dark 1
+// energy: 0-1
+params({ pad_dark: 'dread_pad' })
+fx({ rev: 0.4, lpf: 1200, crush: 0.05 })
+loop('pad', (i) => {
+  for (const c of chords('c', { voicing: 'fifths', rhythm: 'long', octave: 0 })) {
+    if (c.notes) synth(P.pad_dark, c.notes, { dur: c.len, attack: 1.5, amp: 0.24 * c.vel })
+    sleep(c.dur)
+  }
+})

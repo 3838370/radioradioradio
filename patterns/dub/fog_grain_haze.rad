@@ -1,0 +1,11 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+fx({ lpf: 1500, rev: 0.6, wobble: 0.5 })
+loop('grain', (i) => {
+  const starts = ring(0.1, 0.3, 0.2, 0.5)
+  for (let k = 0; k < 8; k++) {
+    s('pad', { n: 1, begin: starts.tick(), cut: 0.6, amp: 0.12, rate: 0.5, attack: 0.2, release: 0.3, pan: k / 4 - 1 })
+    sleep(0.5)
+  }
+})

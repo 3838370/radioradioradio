@@ -1,0 +1,11 @@
+// role: texture
+// genres: saw 1
+// energy: 0-0.7
+params({ nature: 'wind', nature2: 'birds' })
+fx({ lpf: 3000, rev: 0.55 })
+loop('air', (i) => {
+  if (i % 2 == 0) s(P.nature, { n: 7, amp: 0.12, rate: 0.7, attack: 1, release: 2 })
+  sleep(4)
+  if (i % 3 == 1) s(P.nature2, { n: 2, amp: 0.08, pan: 0.6 })
+  sleep(4)
+})

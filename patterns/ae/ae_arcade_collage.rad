@@ -1,0 +1,10 @@
+// role: texture
+// genres: ae 1
+// energy: 0.2-1
+fx({ crush: 0.15, delay: 0.25, rev: 0.25 })
+loop('arcade', (i) => {
+  for (const e of collage('c', { pool: ['tacscan', 'subroc3d', 'invaders', 'glitch'], rate: walk('r', 0.3, 0.8, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, begin: e.begin, pan: e.pan, amp: e.amp * 0.6, cut: 0.6 })
+    sleep(e.dur)
+  }
+})

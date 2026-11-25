@@ -1,0 +1,10 @@
+// role: lead
+// genres: saw 1
+// energy: 0.2-1
+fx({ rev: 0.5, delay: 0.35, wobble: 0.3 })
+loop('lead', (i) => {
+  for (const n of phrase('xtal', { beats: 4, density: 0.45, octave: 2, evolve: 3 })) {
+    if (n.note) synth(vary('voice', ['bell', 'glass', 'mono'], 32), n.note, { amp: 0.2 * n.vel, release: 1.5 })
+    sleep(n.dur)
+  }
+})

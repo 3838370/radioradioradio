@@ -1,0 +1,11 @@
+// role: lead
+// genres: boc 1
+// energy: 0.3-1
+params({ keys: 'rhodes' })
+fx({ rev: 0.35, delay: 0.4 })
+loop('lead', (i) => {
+  for (const n of phrase('l', { beats: 4, density: vary('d', [0.4, 0.6], 16), octave: 2, rest: 0.2 })) {
+    if (n.note) synth(P.keys, n.note, { vel: n.vel, nudge: n.nudge })
+    sleep(n.dur)
+  }
+})

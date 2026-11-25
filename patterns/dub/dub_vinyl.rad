@@ -1,0 +1,11 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+params({ rim: 'click', odds: 3 })
+fx({ lpf: 5000, rev: 0.3 })
+loop('crackle', (i) => {
+  for (let k = 0; k < 16; k++) {
+    if (one_in(P.odds)) s(P.rim, { n: rrand_i(0, 3), amp: rrand(0.01, 0.04), rate: rrand(0.5, 2), pan: rrand(-1, 1) })
+    sleep(0.25)
+  }
+})

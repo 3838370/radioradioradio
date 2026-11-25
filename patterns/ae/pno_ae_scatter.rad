@@ -1,0 +1,10 @@
+// role: lead
+// genres: ae 1
+// energy: 0.2-1
+fx({ rev: 0.35, delay: 0.3 })
+loop('scatter', (i) => {
+  for (const n of phrase('s', { beats: vary('len', [5, 6, 7], 8), density: 0.75, octave: vary('o', [1, 2, 3], 4), rest: 0.3, evolve: 1 })) {
+    if (n.note) synth(vary('v', ['piano', 'toy_piano', 'rhodes'], 8), n.note, { vel: rrand(0.3, 1), pan: rrand(-0.6, 0.6) })
+    sleep(n.dur)
+  }
+})

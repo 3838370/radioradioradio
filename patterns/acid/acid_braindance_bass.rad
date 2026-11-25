@@ -1,0 +1,11 @@
+// role: bass
+// genres: acid 1, saw 0.5
+// energy: 0.35-1
+params({ acid_bass: 'braindance_bass' })
+fx({ lpf: 1800 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('st', ['808', 'pedal'], 16) })) {
+    if (b.note) synth(P.acid_bass, b.note, { dur: b.len * 0.8, amp: 0.36 * b.vel })
+    sleep(b.dur)
+  }
+})

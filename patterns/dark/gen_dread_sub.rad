@@ -1,0 +1,11 @@
+// role: bass
+// genres: dark 1
+// energy: 0.3-1
+params({ dread: 'dread_sub' })
+fx({ lpf: 600, crush: 0.1, rev: 0.1 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('style', ['sub', 'pedal', 'sub'], 16) })) {
+    if (b.note) synth(P.dread, b.note, { dur: b.len, amp: 0.5 * b.vel })
+    sleep(b.dur)
+  }
+})

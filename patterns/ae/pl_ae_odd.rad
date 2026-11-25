@@ -1,0 +1,16 @@
+// role: perc
+// genres: ae 1
+// energy: 0.2-1
+// odd: true
+params({ bell: 'dx_marimba', pluck: 'glitch_blip', glitch: 'glitch' })
+fx({ rev: 0.2, delay: 0.2, crush: 0.1 })
+loop('odd', (i) => {
+  const b = beat('o', { style: 'ae_odd', density: 0.6 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) synth(P.bell, KEY + choose([0, 3, 7]), { amp: 0.6 * st.v })
+    if (st.s) synth(P.pluck, KEY + 36, { amp: 0.5 * st.v, pan: rrand(-0.7, 0.7) })
+    if (st.h) s(P.glitch, { n: rrand_i(0, 7), amp: 0.12 * st.v, rate: rrand(0.8, 2) })
+    sleep(vary('grain', [0.25, 0.1875, 1 / 6], 8))
+  }
+})

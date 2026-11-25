@@ -1,0 +1,11 @@
+// role: bass
+// genres: ae 1
+// energy: 0.4-1
+params({ sub: 'dx_bass', odds: 3 })
+fx({ lpf: 1600, crush: 0.12 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: 'pedal' })) {
+    if (b.note && !one_in(P.odds)) synth(P.sub, b.note, { dur: b.len * 0.5, amp: 0.38 * b.vel })
+    sleep(b.dur)
+  }
+})

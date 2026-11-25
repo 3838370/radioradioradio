@@ -1,0 +1,14 @@
+// role: drums
+// genres: dub 1
+// energy: 0.4-1
+params({ kick: 'bd', hat: 'hh27' })
+fx({ lpf: 900, rev: 0.3, crush: 0.2 })
+loop('kick', (i) => {
+  s(P.kick, { n: 2, amp: 1.0 })
+  sleep(1)
+})
+loop('hat', (i) => {
+  sleep(0.5)
+  s(P.hat, { n: 0, amp: 0.07, pan: 0.2 })
+  sleep(0.5)
+})

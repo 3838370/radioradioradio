@@ -1,0 +1,10 @@
+// role: texture
+// genres: acid 1, drill 0.6
+// energy: 0.3-1
+fx({ delay: 0.2, crush: 0.1, lpf: 6000 })
+loop('mouth', (i) => {
+  for (const e of collage('c', { pool: ['mouth', 'diphone', 'glitch'], rate: walk('r', 0.3, 0.7, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, begin: e.begin, pan: e.pan, amp: e.amp * 0.6, cut: 0.3 })
+    sleep(e.dur)
+  }
+})

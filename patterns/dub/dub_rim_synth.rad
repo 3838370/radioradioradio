@@ -1,0 +1,11 @@
+// role: perc
+// genres: dub 1
+// energy: 0.2-1
+fx({ delay: 0.5, rev: 0.25, lpf: 4000 })
+loop('rim', (i) => {
+  const hits = spread(vary('n', [2, 3, 5], 8), 16, vary('rot', [3, 6, 10], 8))
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) synth('dub_rim', KEY + 36, { amp: 0.35, pan: vary('pan', [-0.4, 0.3], 4) })
+    sleep(0.25)
+  }
+})

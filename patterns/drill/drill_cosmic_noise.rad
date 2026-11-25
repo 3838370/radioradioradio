@@ -1,0 +1,9 @@
+// role: texture
+// genres: drill 1, space 0.6
+// energy: 0-1
+params({ drone: 'cosmic_sweep' })
+fx({ rev: 0.5, lpf: 4000 })
+loop('sweep', (i) => {
+  synth(P.drone, degree(0, 1), { dur: 7, attack: 2, release: 3, amp: 0.2 })
+  sleep(8)
+})

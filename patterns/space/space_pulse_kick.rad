@@ -1,0 +1,15 @@
+// role: drums
+// genres: space 1
+// energy: 0-0.7
+params({ kick: '808bd', space: 'cosmicg', space2: 'bubble' })
+fx({ lpf: 2000, rev: 0.45, delay: 0.25 })
+loop('pulse', (i) => {
+  const b = beat('b', { style: 'pulse_sparse', density: 0.4 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 12, amp: 0.75 * st.v })
+    if (st.h) s(P.space, { n: 5, amp: 0.06 * st.v, rate: 1.5, pan: 0.4 })
+    if (st.p) s(P.space2, { n: 3, amp: 0.08 * st.v, pan: -0.4 })
+    sleep(0.25)
+  }
+})

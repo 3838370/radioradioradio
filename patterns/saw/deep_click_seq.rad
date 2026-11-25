@@ -1,0 +1,12 @@
+// role: perc
+// genres: saw 1
+// energy: 0.2-1
+params({ rim: 'click' })
+fx({ delay: 0.3, rev: 0.3, lpf: 6000 })
+loop('clicks', (i) => {
+  const hits = spread(5, 16, i % 2)
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) s(P.rim, { n: 1, amp: 0.1, pan: -0.4 })
+    sleep(0.25)
+  }
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: saw 1, minimal 0.5
+// energy: 0-1
+params({ prepared: 'prepared_mute' })
+fx({ rev: 0.3, delay: 0.3 })
+loop('mute', (i) => {
+  for (const n of melody('c', { style: 'cells', octave: 2 })) {
+    if (n.notes.length) synth(P.prepared, n.notes, { vel: n.vel })
+    sleep(n.dur)
+  }
+})

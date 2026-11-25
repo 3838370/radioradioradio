@@ -1,0 +1,13 @@
+// role: perc
+// genres: space 1
+// energy: 0.1-1
+params({ bell: 'glass' })
+fx({ delay: 0.4, rev: 0.5, lpf: 7000 })
+loop('bleeps', (i) => {
+  const notes = modal(2, 1)
+  const sparse = vary('sparse', [3, 4, 6], 8)
+  for (let k = 0; k < 8; k++) {
+    if (one_in(sparse)) synth(P.bell, notes[Math.round(walk('idx', 0, notes.length - 1, 0.25))], { amp: 0.1, pan: rrand(-0.7, 0.7) })
+    sleep(0.5)
+  }
+})

@@ -1,0 +1,12 @@
+// role: perc
+// genres: minimal 1
+// energy: 0.3-1
+params({ kit: 'odx' })
+fx({ lpf: 8000, delay: 0.1 })
+loop('shaker', (i) => {
+  const vel = ring(0.09, 0.04, 0.06, 0.04)
+  for (let k = 0; k < 8; k++) {
+    s(P.kit, { n: 2, amp: vel.tick(), pan: 0.4 })
+    sleep(0.5)
+  }
+})

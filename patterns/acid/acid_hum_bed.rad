@@ -1,0 +1,8 @@
+// role: texture
+// genres: acid 1, dark 0.5
+// energy: 0-1
+fx({ lpf: 700 })
+loop('hum', (i) => {
+  synth('hum_bed', ROOT - 12, { dur: 14, attack: 3, release: 4, amp: 0.35 })
+  sleep(16)
+})

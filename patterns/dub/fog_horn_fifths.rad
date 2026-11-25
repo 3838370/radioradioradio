@@ -1,0 +1,10 @@
+// role: lead
+// genres: dub 1
+// energy: 0-0.9
+fx({ rev: 0.5, lpf: 1300, wobble: 0.15 })
+loop('horns', (i) => {
+  for (const c of chords('c', { voicing: 'fifths', rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(vary('inst', ['brass', 'low_brass'], 32), c.notes, { dur: c.len * 0.9, attack: 0.8, amp: 0.2 * c.vel })
+    sleep(c.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: perc
+// genres: space 1
+// energy: 0-0.9
+params({ metal: 'glasstap' })
+fx({ delay: 0.5, rev: 0.45, lpf: 7000 })
+loop('glass', (i) => {
+  for (let k = 0; k < 8; k++) {
+    if (one_in(vary('odds', [3, 4, 6], 8))) s(P.metal, { n: choose([0, 1, 2]), amp: 0.14, rate: choose([1, 1.5, 2]), pan: rrand(-0.7, 0.7) })
+    sleep(0.5)
+  }
+})

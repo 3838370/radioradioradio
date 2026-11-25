@@ -1,0 +1,15 @@
+// role: drums
+// genres: saw 1, dark 0.7
+// energy: 0.2-1
+params({ kick: '808bd', snare: '808sd' })
+fx({ lpf: 3000, rev: 0.35 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'halftime', density: 0.45 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 15, amp: 0.8 * st.v })
+    if (st.s) s(P.snare, { n: 10, amp: 0.35 * st.v })
+    if (st.h) s('808', { n: 1, amp: 0.08 * st.v, pan: -0.2 })
+    sleep(0.25)
+  }
+})

@@ -1,0 +1,11 @@
+// role: keys
+// genres: ae 1
+// energy: 0.15-1
+params({ pad: 'pwm_pad' })
+fx({ lpf: 2200, rev: 0.25, crush: 0.08 })
+loop('cluster', (i) => {
+  for (const c of chords('c', { voicing: 'cluster', rhythm: 'push', octave: 1, density: 0.5 })) {
+    if (c.notes) synth(P.pad, c.notes, { dur: Math.max(0.25, c.len), amp: 0.2 * c.vel })
+    sleep(c.dur)
+  }
+})

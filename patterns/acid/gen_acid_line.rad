@@ -1,0 +1,11 @@
+// role: bass
+// genres: acid 1
+// energy: 0.45-1
+params({ acid: 'acid_303' })
+fx({ lpf: 4000, res: 0.6, delay: 0.1 })
+loop('acid', (i) => {
+  for (const b of bassline('b', { style: 'acid' })) {
+    if (b.note) synth(P.acid, b.note + 12, { dur: b.len * 0.9, amp: 0.38 * b.vel, cutoff: b.accent ? 2600 : walk('cut', 500, 1800, 0.15) })
+    sleep(b.dur)
+  }
+})

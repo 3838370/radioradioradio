@@ -1,0 +1,10 @@
+// role: texture
+// genres: space 1
+// energy: 0-1
+fx({ rev: 0.55, delay: 0.3, lpf: 4500 })
+loop('voices', (i) => {
+  for (const e of collage('c', { pool: ['speech', 'alphabet', 'east', 'outdoor'], rate: walk('r', 0.15, 0.4, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, begin: e.begin, pan: e.pan, amp: e.amp * 0.6, cut: 2 })
+    sleep(e.dur)
+  }
+})

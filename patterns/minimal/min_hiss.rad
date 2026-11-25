@@ -1,0 +1,9 @@
+// role: texture
+// genres: minimal 1
+// energy: 0-1
+fx({ lpf: 9000 })
+loop('hiss', (i) => {
+  const t = tape('t')
+  synth('hiss_bed', 74, { dur: 3.5, attack: 0.5, release: 1, amp: 0.2 * t.level })
+  sleep(4)
+})

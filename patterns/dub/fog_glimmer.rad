@@ -1,0 +1,10 @@
+// role: lead
+// genres: dub 1
+// energy: 0-0.7
+params({ bell: 'glass' })
+fx({ rev: 0.65, delay: 0.4, lpf: 4000, wobble: 0.3 })
+loop('glimmer', (i) => {
+  sleep(6)
+  if (i % 2 == 0) synth(P.bell, degree(ring(4, 6, 2).tick(), 2), { amp: 0.1 })
+  sleep(2)
+})

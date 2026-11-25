@@ -1,0 +1,15 @@
+// role: drums
+// genres: dub 1
+// energy: 0-0.8
+params({ kick: '808bd' })
+fx({ lpf: 2500, rev: 0.4, wobble: 0.1 })
+loop('pulse', (i) => {
+  const b = beat('b', { style: 'pulse_sparse', density: walk('dens', 0.2, 0.6, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 3, amp: 0.8 * st.v })
+    if (st.h) s('808', { n: 1, amp: 0.08 * st.v, pan: 0.3 })
+    if (st.p) s('808mt', { n: 0, amp: 0.1 * st.v, pan: -0.3 })
+    sleep(0.25)
+  }
+})

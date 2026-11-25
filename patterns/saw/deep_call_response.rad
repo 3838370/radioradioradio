@@ -1,0 +1,12 @@
+// role: lead
+// genres: saw 1
+// energy: 0.1-1
+fx({ rev: 0.4, delay: 0.3 })
+loop('talk', (i) => {
+  // a call on even bars, the answer on odd bars, an octave lower, on another instrument
+  const call = i % 2 == 0
+  for (const n of motif(call ? 'call' : 'answer', { beats: 4, density: 0.35, octave: call ? 2 : 1 })) {
+    if (n.note) synth(call ? 'dx_bell' : 'soft_saw', n.note, { dur: n.dur * (call ? 1.5 : 0.8), amp: (call ? 0.26 : 0.18) * n.vel })
+    sleep(n.dur)
+  }
+})

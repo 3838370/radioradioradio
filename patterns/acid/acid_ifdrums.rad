@@ -1,0 +1,14 @@
+// role: drums
+// genres: acid 1, drill 0.5
+// energy: 0.45-1
+fx({ lpf: 7000, crush: 0.1 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'braindance', density: 0.55 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s('ifdrums', { n: 0, amp: 0.8 * st.v })
+    if (st.s) s('ifdrums', { n: 1, amp: 0.45 * st.v })
+    if (st.h) s('ifdrums', { n: 2, amp: 0.12 * st.v, pan: rrand(-0.3, 0.3) })
+    sleep(0.25)
+  }
+})

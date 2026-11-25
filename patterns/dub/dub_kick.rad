@@ -1,0 +1,17 @@
+// role: drums
+// genres: dub 1
+// energy: 0.2-1
+params({ kick: 'bd', hat: 'hh27' })
+fx({ lpf: 7000, rev: 0.15 })
+loop('kick', (i) => {
+  s(P.kick, { n: 4, amp: 0.95 })
+  sleep(1)
+})
+loop('hats', (i) => {
+  const open = vary('open', [0, 0, 1], 8)
+  for (let k = 0; k < 4; k++) {
+    sleep(0.5)
+    s(P.hat, { n: open && k == 3 ? 7 : 0, amp: walk('hamp', 0.06, 0.16, 0.1), pan: 0.2 })
+    sleep(0.5)
+  }
+})

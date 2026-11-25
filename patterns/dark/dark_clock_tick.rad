@@ -1,0 +1,11 @@
+// role: perc
+// genres: dark 1
+// energy: 0-0.9
+params({ rim: 'click' })
+fx({ rev: 0.35, lpf: 3000, delay: 0.2 })
+loop('tick', (i) => {
+  for (let k = 0; k < 4; k++) {
+    s(P.rim, { n: k % 2, amp: 0.08, pan: k % 2 ? 0.4 : -0.4, rate: 0.8 })
+    sleep(1)
+  }
+})

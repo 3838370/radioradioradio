@@ -1,0 +1,11 @@
+// role: lead
+// genres: dark 1
+// energy: 0-1
+params({ bell: 'dx_bell', odds: 3 })
+fx({ delay: 0.55, rev: 0.5 })
+loop('bell', (i) => {
+  for (const n of motif('m', { beats: 8, density: 0.2, octave: 1 })) {
+    if (n.note && !one_in(P.odds)) synth(P.bell, n.note, { amp: 0.24 * n.vel })
+    sleep(n.dur)
+  }
+})

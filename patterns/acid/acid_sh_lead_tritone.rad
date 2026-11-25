@@ -1,0 +1,12 @@
+// role: lead
+// genres: acid 1, drill 0.5
+// energy: 0.35-1
+params({ lead: 'sh_lead' })
+fx({ delay: 0.3, rev: 0.25 })
+loop('lead', (i) => {
+  // the line from the probability style leaves the mode (tritones, minor seconds)
+  for (const n of melody('m', { style: 'probability', octave: 2 })) {
+    if (n.note) synth(P.lead, n.note, { dur: n.len, amp: 0.2 * n.vel, detune: n.detune * 0.5 })
+    sleep(n.dur)
+  }
+})

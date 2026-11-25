@@ -1,0 +1,11 @@
+// role: lead
+// genres: boc 1, dark 0.4
+// energy: 0-0.9
+params({ boc_lead: 'tape_warble' })
+fx({ rev: 0.45, wobble: 0.4, lpf: 2400 })
+loop('warble', (i) => {
+  for (const n of melody('w', { style: 'drift', octave: 2 })) {
+    if (n.note) synth(P.boc_lead, n.note, { dur: n.len, amp: 0.22 * n.vel, detune: n.detune * 1.5 })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: acid 1
+// energy: 0.4-1
+params({ acid: 'tb303_saw' })
+fx({ delay: 0.25, lpf: 5000 })
+loop('lead', (i) => {
+  for (const n of melody('m', { style: 'ostinato', octave: 2, chord: false })) {
+    if (n.note) synth(P.acid, n.note, { dur: n.len * 0.6, amp: 0.26 * n.vel, cutoff: walk('cut', 400, 2000, 0.12) })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: acid 1, ae 0.5
+// energy: 0.4-1
+params({ acid: 'acid_sq', odds: 5 })
+fx({ crush: 0.08, delay: 0.2, lpf: 4500 })
+loop('lead', (i) => {
+  for (const n of melody('m', { style: 'ostinato', octave: 3, chord: false })) {
+    if (n.note && !one_in(P.odds)) synth(P.acid, n.note, { dur: n.len * 0.5, amp: 0.2 * n.vel })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: dark 1, saw 0.5
+// energy: 0-1
+params({ prepared: 'prepared_piano' })
+fx({ rev: 0.5, lpf: 2500 })
+loop('piano', (i) => {
+  for (const n of melody('d', { style: 'drift', octave: 1 })) {
+    if (n.note) synth(P.prepared, n.note, { vel: 0.4 + 0.4 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

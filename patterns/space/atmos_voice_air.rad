@@ -1,0 +1,10 @@
+// role: texture
+// genres: space 1
+// energy: 0-1
+params({ voice: 'mouth' })
+fx({ lpf: 3000, rev: 0.65, delay: 0.3, wobble: 0.3 })
+loop('voice', (i) => {
+  sleep(12)
+  if (i % 2 == 1) s(P.voice, { n: 5, amp: 0.12, rate: 0.8, pan: -0.4 })
+  sleep(4)
+})

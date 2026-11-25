@@ -1,0 +1,9 @@
+// role: keys
+// genres: saw 1
+// energy: 0-0.7
+params({ pad_dark: 'drone' })
+fx({ rev: 0.5, lpf: 1400, wobble: 0.2 })
+loop('drone', (i) => {
+  synth(P.pad_dark, [ROOT + 12, ROOT + 19], { dur: 12, attack: 4, release: 4, amp: 0.5 })
+  sleep(16)
+})

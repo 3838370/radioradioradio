@@ -1,0 +1,11 @@
+// role: lead
+// genres: acid 1, ae 0.7
+// energy: 0.4-1
+params({ lead: 'sync_lead' })
+fx({ delay: 0.3, rev: 0.25, crush: 0.15 })
+loop('lead', (i) => {
+  for (const n of phrase('l', { beats: 4, density: 0.55, octave: 2 })) {
+    if (n.note) synth(P.lead, n.note, { dur: n.dur * 0.7, amp: 0.3 * n.vel })
+    sleep(n.dur)
+  }
+})

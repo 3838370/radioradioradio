@@ -1,0 +1,11 @@
+// role: keys
+// genres: space 1, dark 0.4
+// energy: 0-0.9
+params({ pad: 'space_choir' })
+fx({ rev: 0.6, lpf: 2400 })
+loop('choir', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['sus2', 'wide'], 16), rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.pad, c.notes, { dur: c.len, amp: 0.18 * c.vel })
+    sleep(c.dur)
+  }
+})

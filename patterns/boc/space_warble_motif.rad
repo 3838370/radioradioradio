@@ -1,0 +1,11 @@
+// role: lead
+// genres: boc 1
+// energy: 0-0.9
+params({ boc_lead: 'tape_warble' })
+fx({ rev: 0.5, delay: 0.25, wobble: 0.25 })
+loop('motif', (i) => {
+  for (const n of motif('m', { beats: 8, density: 0.3, octave: 2 })) {
+    if (n.note) synth(P.boc_lead, n.note, { dur: n.dur, amp: 0.24 * n.vel })
+    sleep(n.dur)
+  }
+})

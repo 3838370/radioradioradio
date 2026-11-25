@@ -1,0 +1,11 @@
+// role: keys
+// genres: ae 1
+// energy: 0.2-1
+params({ bell: 'fm_glass' })
+fx({ delay: 0.3, rev: 0.3 })
+loop('glass', (i) => {
+  for (const c of chords('c', { voicing: 'quartal', rhythm: 'stab', octave: 2, density: 0.7 })) {
+    if (c.notes) synth(P.bell, c.notes, { dur: c.len, amp: 0.16 * c.vel, strum: rrand(-0.1, 0.1) })
+    sleep(c.dur)
+  }
+})

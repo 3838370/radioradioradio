@@ -1,0 +1,15 @@
+// role: drums
+// genres: minimal 1, acid 0.5
+// energy: 0.4-1
+params({ clap: 'realclaps', hat: 'linnhats' })
+fx({ lpf: 9000 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'efdemin', density: 0.55 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s('909', { n: 0, amp: 0.8 * st.v })
+    if (st.s) s(P.clap, { n: 0, amp: 0.15 * st.v })
+    if (st.h) s(P.hat, { n: 0, amp: 0.1 * st.v, pan: 0.2 })
+    sleep(swing(0.25, k, 0.06))
+  }
+})

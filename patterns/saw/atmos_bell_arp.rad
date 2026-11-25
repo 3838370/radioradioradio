@@ -1,0 +1,12 @@
+// role: lead
+// genres: saw 1
+// energy: 0.4-1
+params({ bell: 'glass' })
+fx({ rev: 0.45, delay: 0.3, lpf: 6000 })
+loop('arp', (i) => {
+  const notes = ring(...harm(2, '9'))
+  for (let k = 0; k < 8; k++) {
+    if (k % 3 != 2) synth(P.bell, notes.tick(), { amp: 0.11, pan: Math.sin(k) * 0.5 })
+    sleep(0.5)
+  }
+})

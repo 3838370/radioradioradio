@@ -1,0 +1,25 @@
+// role: drums
+// genres: boc 1
+// energy: 0.3-1
+params({ kick: '808bd', snare: 'sn' })
+fx({ lpf: 7000, rev: 0.2 })
+loop('kick', (i) => {
+  s(P.kick, { n: 5, amp: 0.85 })
+  sleep(1.75)
+  s(P.kick, { n: 5, amp: 0.5 })
+  sleep(2.25)
+})
+loop('snare', (i) => {
+  sleep(1)
+  s(P.snare, { n: 14, amp: 0.32 })
+  sleep(2)
+  s(P.snare, { n: 14, amp: 0.32 })
+  sleep(1)
+})
+loop('hats', (i) => {
+  const vel = ring(0.14, 0.07, 0.1, 0.07)
+  for (let k = 0; k < 8; k++) {
+    s('808', { n: 1, amp: vel.tick() })
+    sleep(0.5)
+  }
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: space 1, saw 0.6
+// energy: 0-0.9
+params({ bell: 'dx_bell', odds: 3 })
+fx({ rev: 0.6, delay: 0.35 })
+loop('shimmer', (i) => {
+  for (const n of melody('o', { style: 'ostinato', octave: 3 })) {
+    if (n.note && !one_in(P.odds)) synth(P.bell, n.note, { amp: 0.12 * n.vel, pan: rrand(-0.6, 0.6) })
+    sleep(n.dur)
+  }
+})

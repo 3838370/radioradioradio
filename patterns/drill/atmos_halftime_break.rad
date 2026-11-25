@@ -1,0 +1,10 @@
+// role: drums
+// genres: drill 1
+// energy: 0.2-0.7
+fx({ lpf: 6000, rev: 0.25, crush: 0.2 })
+loop('break', (i) => {
+  for (let k = 0; k < 8; k++) {
+    s('amencutup', { n: k * 2 + 16 * (i % 2), amp: 0.5, rate: 1.25, cut: 0.5 })
+    sleep(0.5)
+  }
+})

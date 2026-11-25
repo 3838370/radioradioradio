@@ -1,0 +1,13 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+params({ space: 'space', odds: 3, odds2: 2 })
+fx({ delay: 0.5, rev: 0.5, lpf: 3000 })
+loop('echo', (i) => {
+  sleep(6)
+  if (one_in(P.odds)) {
+    s(P.space, { n: vary('n', [2, 5, 9], 8), amp: 0.15, rate: 0.5, reverse: one_in(P.odds2) })
+    pad('dub', 6)
+  }
+  sleep(2)
+})

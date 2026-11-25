@@ -1,0 +1,10 @@
+// role: lead
+// genres: ae 1
+// energy: 0.2-1
+fx({ delay: 0.35, rev: 0.3 })
+loop('lead', (i) => {
+  for (const n of phrase('m', { beats: 6, density: 0.5, octave: 2, evolve: 1 })) {
+    if (n.note) synth(vary('v', ['metal_lead', 'screech', 'chip'], 8), n.note, { dur: n.dur * 0.6, amp: 0.25 * n.vel })
+    sleep(n.dur)
+  }
+})

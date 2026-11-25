@@ -1,0 +1,15 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+fx({ lpf: 9000, rev: 0.1 })
+loop('hiss', (i) => {
+  const t = tape('t')
+  synth('hiss_bed', 72, { dur: 3.5, attack: 0.5, release: 1, amp: 0.4 * t.level })
+  sleep(4)
+})
+loop('crackle', (i) => {
+  for (const c of tape('c').crackles) {
+    if (c.amp) synth('vinyl_bed', 84, { dur: 0.02, attack: 0.001, release: 0.04, amp: c.amp })
+    sleep(c.dur)
+  }
+})

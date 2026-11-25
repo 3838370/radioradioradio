@@ -1,0 +1,14 @@
+// role: bass
+// genres: acid 1
+// energy: 0.4-1
+params({ odds: 6 })
+fx({ rev: 0.1, delay: 0.25 })
+loop('303', (i) => {
+  const notes = ring(0, 0, 12, 0, 3, 0, 7, 10, 0, 12, 0, 5, 0, 3, 15, 0)
+  const acc = spread(vary('acc', [3, 5, 7], 8), 16, vary('r', [0, 2, 5], 4))
+  const slide = vary('slide', [0.05, 0.12, 0.2], 8)
+  for (let k = 0; k < 16; k++) {
+    if (!one_in(P.odds)) synth(vary('osc', ['acid_303', 'acid_sq'], 32), ROOT - 12 + notes[k], { vel: acc[k] ? 1.1 : 0.55, dur: slide, cutoff: walk('cut', 250, 900, 0.1) })
+    sleep(0.25)
+  }
+})

@@ -1,0 +1,10 @@
+// role: bass
+// genres: space 1
+// energy: 0-0.7
+params({ sub: 'dub_sub' })
+fx({ lpf: 600, rev: 0.25, wobble: 0.1 })
+loop('drone', (i) => {
+  const d = drone('d', { voices: 1, octave: 0 })
+  synth(P.sub, d.notes, { dur: 14, attack: 2, release: 3, amp: 0.4 })
+  sleep(16)
+})

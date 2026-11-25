@@ -1,0 +1,11 @@
+// role: bass
+// genres: ae 1
+// energy: 0.3-1
+params({ fm_bass: 'ae_bass' })
+fx({ lpf: 1200, crush: 0.08 })
+loop('bass', (i) => {
+  for (const n of melody('b', { style: 'probability', octave: 0 })) {
+    if (n.note) synth(P.fm_bass, n.note, { dur: n.len, amp: 0.34 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

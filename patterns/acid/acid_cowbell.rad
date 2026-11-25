@@ -1,0 +1,11 @@
+// role: perc
+// genres: acid 1
+// energy: 0.4-1
+fx({ delay: 0.25, lpf: 7000 })
+loop('bell', (i) => {
+  const hits = spread(vary('h', [3, 5, 7], 8), 16, vary('r', [2, 5], 8))
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) s('cb', { n: 0, amp: 0.1, rate: vary('rate', [1, 1.12, 0.89], 16), pan: 0.3 })
+    sleep(0.25)
+  }
+})

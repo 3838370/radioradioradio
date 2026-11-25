@@ -1,0 +1,10 @@
+// role: texture
+// genres: drill 1, boc 0.5
+// energy: 0.2-1
+fx({ delay: 0.3, rev: 0.3, lpf: 4000 })
+loop('letters', (i) => {
+  for (const e of collage('c', { pool: ['alphabet', 'numbers'], rate: walk('r', 0.2, 0.5, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, pan: e.pan, amp: e.amp * 0.5, cut: 0.6 })
+    sleep(e.dur)
+  }
+})

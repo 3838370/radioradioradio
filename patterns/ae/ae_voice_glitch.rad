@@ -1,0 +1,12 @@
+// role: texture
+// genres: ae 1
+// energy: 0.2-1
+params({ odds: 3 })
+fx({ delay: 0.3, rev: 0.25, crush: 0.3 })
+loop('voice', (i) => {
+  const src = vary('src', ['diphone', 'speechless', 'numbers'], 4)
+  for (let k = 0; k < 10; k++) {
+    if (one_in(P.odds)) s(src, { n: rrand_i(0, 9), begin: rrand(0, 0.6), cut: choose([0.1, 0.2]), amp: 0.2, rate: choose([0.7, 1, 1.4]), pan: rrand(-0.8, 0.8) })
+    sleep(0.5)
+  }
+})

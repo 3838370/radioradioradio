@@ -1,0 +1,10 @@
+// role: texture
+// genres: minimal 1, dub 0.5
+// energy: 0-1
+fx({ rev: 0.3, lpf: 4000 })
+loop('room', (i) => {
+  for (const e of collage('c', { pool: ['outdoor', 'east', 'noise2'], rate: walk('r', 0.1, 0.3, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * 0.8, pan: e.pan, amp: e.amp * 0.35, cut: 2 })
+    sleep(e.dur)
+  }
+})

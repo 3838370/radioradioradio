@@ -1,0 +1,10 @@
+// role: keys
+// genres: space 1
+// energy: 0-0.8
+params({ pad: 'haze' })
+fx({ rev: 0.6, delay: 0.3, wobble: 0.2, lpf: 3000 })
+loop('drone', (i) => {
+  const d = drone('d', { voices: 4, octave: 1 })
+  synth(P.pad, d.notes, { dur: 16, attack: 3, release: 6, amp: 0.2 })
+  sleep(16)
+})

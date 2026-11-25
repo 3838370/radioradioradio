@@ -1,0 +1,10 @@
+// role: lead
+// genres: ae 1
+// energy: 0.2-1
+fx({ rev: 0.3, delay: 0.25, lpf: 5000 })
+loop('radio', (i) => {
+  for (const n of motif('m', { beats: 8, density: 0.3, octave: 2 })) {
+    if (n.note) synth(vary('inst', ['shortwave', 'radio_tune'], 16), n.note, { dur: n.dur, amp: 0.22 * n.vel })
+    sleep(n.dur)
+  }
+})

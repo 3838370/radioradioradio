@@ -1,0 +1,11 @@
+// role: bass
+// genres: drill 1, saw 0.5
+// energy: 0.35-1
+params({ sub: 'dx_bass' })
+fx({ lpf: 700 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('st', ['dub', 'sub'], 16) })) {
+    if (b.note) synth(P.sub, b.note, { dur: b.len, amp: 0.4 * b.vel })
+    sleep(b.dur)
+  }
+})

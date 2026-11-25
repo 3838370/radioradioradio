@@ -1,0 +1,10 @@
+// role: lead
+// genres: dub 1
+// energy: 0.2-1
+params({ stab: 'brass' })
+fx({ wobble: 0.4, rev: 0.55, delay: 0.2, lpf: 1100 })
+loop('horns', (i) => {
+  const line = ring(4, 3, 2, 3)
+  synth(P.stab, degree(line.tick(), 1), { dur: 1.6, attack: 0.5, release: 1.5, amp: 0.32 })
+  sleep(2)
+})

@@ -1,0 +1,17 @@
+// role: drums
+// genres: ae 1
+// energy: 0.3-1
+// odd: true
+params({ metal: 'ae_fm_perc', machine: 'ae_grain' })
+fx({ lpf: 9000, crush: 0.12 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'ae_live', density: walk('d', 0.4, 0.8, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) synth('kick_synth', KEY - 12, { amp: 0.8 * st.v })
+    if (st.s) synth(P.metal, KEY + 12, { amp: 0.4 * st.v })
+    if (st.h) s('sid', { n: rrand_i(0, 11), amp: 0.06 * st.v, cut: 0.05, pan: rrand(-0.6, 0.6) })
+    if (st.p) synth(P.machine, KEY + 24, { dur: 0.05, amp: 0.15 * st.v })
+    sleep(0.25)
+  }
+})

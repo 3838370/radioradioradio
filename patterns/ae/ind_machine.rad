@@ -1,0 +1,10 @@
+// role: keys
+// genres: ae 1
+// energy: 0-1
+params({ machine: 'machine', odds: 3 })
+fx({ rev: 0.3, lpf: 3000 })
+loop('machine', (i) => {
+  synth(P.machine, [ROOT + 12, ROOT + 19], { dur: 7, attack: 0.5, release: 1, amp: 0.4 })
+  if (one_in(P.odds)) s('feelfx', { n: 5, amp: 0.2, rate: 0.8 })
+  sleep(8)
+})

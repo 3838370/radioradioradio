@@ -1,0 +1,12 @@
+// role: perc
+// genres: minimal 1
+// energy: 0.35-1
+params({ hat: 'hh', odds: 3 })
+fx({ lpf: 9000, rev: 0.2 })
+loop('ride', (i) => {
+  for (let k = 0; k < 16; k++) {
+    if (k % 2 == 0) s('ho', { n: 2, amp: 0.08 * walk('a', 0.7, 1.2, 0.1), pan: 0.35 })
+    else if (one_in(P.odds)) s(P.hat, { n: 4, amp: 0.05, pan: 0.35 })
+    sleep(swing(0.25, k, 0.12))
+  }
+})

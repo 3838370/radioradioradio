@@ -1,0 +1,15 @@
+// role: drums
+// genres: boc 1, saw 0.5
+// energy: 0.25-1
+params({ kit: 'dr' })
+fx({ lpf: 3200, crush: 0.1, rev: 0.15, wobble: 0.12 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'boc_hiphop', density: walk('d', 0.35, 0.65, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kit, { n: 4, amp: 0.85 * st.v })
+    if (st.s) s(P.kit, { n: 15, amp: 0.45 * st.v })
+    if (st.h) s(P.kit, { n: 27, amp: 0.1 * st.v, pan: 0.2 })
+    sleep(swing(0.25, k, 0.1))
+  }
+})

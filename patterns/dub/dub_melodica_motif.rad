@@ -1,0 +1,11 @@
+// role: lead
+// genres: dub 1
+// energy: 0.2-1
+params({ lead: 'sh_lead', odds: 3 })
+fx({ delay: 0.5, rev: 0.3, lpf: 2600 })
+loop('motif', (i) => {
+  for (const n of motif('m', { beats: 8, density: 0.25, octave: 2 })) {
+    if (n.note && !one_in(P.odds)) synth(P.lead, n.note, { dur: n.dur * 0.6, amp: 0.22 * n.vel })
+    sleep(n.dur)
+  }
+})

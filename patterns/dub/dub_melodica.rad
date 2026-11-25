@@ -1,0 +1,15 @@
+// role: lead
+// genres: dub 1
+// energy: 0.2-1
+params({ lead: 'mono' })
+fx({ delay: 0.5, rev: 0.4, lpf: 2400, wobble: 0.2 })
+loop('melodica', (i) => {
+  if (i % 2 == 1) {
+    sleep(4)
+    return
+  }
+  for (const n of phrase('m', { beats: 4, density: 0.3, octave: 1 })) {
+    if (n.note) synth(P.lead, n.note, { dur: n.dur * 0.8, amp: 0.2 * n.vel })
+    sleep(n.dur)
+  }
+})

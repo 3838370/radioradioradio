@@ -1,0 +1,12 @@
+// role: perc
+// genres: ae 1
+// energy: 0.3-1
+params({ metal: 'anvil', metal2: 'metal', odds: 3 })
+fx({ rev: 0.2, delay: 0.15, lpf: 7000 })
+loop('anvil', (i) => {
+  const hits = spread(vary('h', [3, 5, 7], 8), 16, vary('r', [0, 2, 5], 8))
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) { if (one_in(P.odds)) synth(P.metal, degree(choose([0, 3]), 2), { amp: 0.18 }); else s(P.metal2, { n: vary('mn', [0, 5, 8], 8), amp: 0.12, pan: rrand(-0.5, 0.5) }) }
+    sleep(0.25)
+  }
+})

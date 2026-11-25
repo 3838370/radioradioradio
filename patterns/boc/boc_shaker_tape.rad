@@ -1,0 +1,11 @@
+// role: perc
+// genres: boc 1
+// energy: 0.2-1
+params({ perc: 'perc' })
+fx({ lpf: 4000, crush: 0.1, wobble: 0.2 })
+loop('shake', (i) => {
+  for (let k = 0; k < 8; k++) {
+    s(P.perc, { n: 5, amp: k % 2 ? 0.04 : 0.07, pan: 0.3 })
+    sleep(swing(0.5, k, 0.1))
+  }
+})

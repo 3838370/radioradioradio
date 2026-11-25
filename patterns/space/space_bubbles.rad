@@ -1,0 +1,11 @@
+// role: perc
+// genres: space 1
+// energy: 0-1
+params({ space: 'bubble', odds: 3 })
+fx({ rev: 0.45, delay: 0.3 })
+loop('bubbles', (i) => {
+  for (let k = 0; k < 8; k++) {
+    if (one_in(P.odds)) s(P.space, { n: rrand_i(0, 7), amp: 0.1, rate: choose([0.75, 1, 1.5]), pan: rrand(-0.7, 0.7) })
+    sleep(0.5)
+  }
+})

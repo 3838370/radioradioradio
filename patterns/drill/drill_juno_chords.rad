@@ -1,0 +1,11 @@
+// role: keys
+// genres: drill 1, boc 0.6
+// energy: 0.2-1
+params({ boc_pad: 'juno_pad' })
+fx({ rev: 0.4, lpf: 2000, wobble: 0.15 })
+loop('juno', (i) => {
+  for (const c of chords('c', { voicing: 'sus2', rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.boc_pad, c.notes, { dur: c.len, attack: 0.8, amp: 0.2 * c.vel })
+    sleep(c.dur)
+  }
+})

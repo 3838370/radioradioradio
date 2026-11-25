@@ -1,0 +1,9 @@
+// role: texture
+// genres: acid 1
+// energy: 0.3-1
+params({ acid: 'tb303_square' })
+fx({ rev: 0.4, delay: 0.3, lpf: 3000 })
+loop('squelch', (i) => {
+  synth(P.acid, degree(choose([0, 4]), 1), { dur: 3, attack: 0.5, amp: 0.12, cutoff: walk('cut', 300, 1500, 0.2) })
+  sleep(4)
+})

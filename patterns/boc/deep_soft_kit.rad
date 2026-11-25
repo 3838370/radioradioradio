@@ -1,0 +1,18 @@
+// role: drums
+// genres: boc 1
+// energy: 0.2-0.9
+params({ kit: 'drumtraks' })
+fx({ lpf: 5000, rev: 0.25, crush: 0.15 })
+loop('kit', (i) => {
+  s(P.kit, { n: 6, amp: 0.75 })
+  sleep(1.5)
+  s(P.kit, { n: 6, amp: 0.4 })
+  sleep(0.5)
+  s(P.kit, { n: 9, amp: 0.35 })
+  sleep(2)
+})
+loop('cabasa', (i) => {
+  sleep(0.5)
+  s(P.kit, { n: 0, amp: 0.08, pan: 0.3 })
+  sleep(0.5)
+})

@@ -1,0 +1,10 @@
+// role: perc
+// genres: dub 1
+// energy: 0.3-1
+params({ rim: 'click' })
+fx({ lpf: 1800, rev: 0.45, crush: 0.25 })
+loop('rim', (i) => {
+  sleep(0.75)
+  s(P.rim, { n: 0, amp: 0.12, rate: 0.7 })
+  sleep(0.25)
+})

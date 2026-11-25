@@ -1,0 +1,10 @@
+// role: lead
+// genres: dark 1
+// energy: 0.4-1
+params({ lead_harsh: 'screech', odds: 2 })
+fx({ rev: 0.5, delay: 0.3 })
+loop('screech', (i) => {
+  sleep(8)
+  if (one_in(P.odds)) synth(P.lead_harsh, ROOT + 36 + choose([0, 1, 6]), { dur: 3, attack: 1.5, release: 2, amp: 0.3 })
+  sleep(8)
+})

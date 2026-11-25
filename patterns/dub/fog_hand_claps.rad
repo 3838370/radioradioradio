@@ -1,0 +1,12 @@
+// role: perc
+// genres: dub 1
+// energy: 0.25-1
+params({ clap: 'hand', odds: 3 })
+fx({ rev: 0.55, lpf: 3000, delay: 0.2 })
+loop('clap', (i) => {
+  sleep(1)
+  s(P.clap, { n: vary('n', [2, 7, 11], 16), amp: 0.12, pan: -0.2 })
+  sleep(2)
+  if (one_in(P.odds)) s(P.clap, { n: 4, amp: 0.07, pan: 0.3 })
+  sleep(1)
+})

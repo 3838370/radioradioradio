@@ -1,0 +1,11 @@
+// role: keys
+// genres: dub 1
+// energy: 0.15-1
+params({ stab: 'dub_chord' })
+fx({ delay: 0.6, rev: 0.35, lpf: 3000 })
+loop('chords', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['dub', 'm7', 'sus2'], 16), rhythm: vary('r', ['offbeat', 'stab'], 32), density: walk('d', 0.3, 0.8, 0.1) })) {
+    if (c.notes) synth(P.stab, c.notes, { dur: c.len, amp: 0.34 * c.vel, cutoff: walk('cut', 500, 1800, 0.12) })
+    sleep(c.dur)
+  }
+})

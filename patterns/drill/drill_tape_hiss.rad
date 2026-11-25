@@ -1,0 +1,9 @@
+// role: texture
+// genres: drill 1, saw 0.5
+// energy: 0-1
+fx({ lpf: 9000 })
+loop('tape', (i) => {
+  const t = tape('t')
+  synth('hiss_bed', 72, { dur: 3.5, attack: 0.3, release: 0.8, amp: 0.25 * t.level })
+  sleep(4)
+})

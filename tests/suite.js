@@ -16,6 +16,20 @@
     return coder;
   }
 
+  runner.test('Pattern files: every .rad in the index loads, and the format round-trips', () => {
+    const P = RA.PatternLoader;
+    assert(RA.PATTERNS.length >= 341, 'loaded: ' + RA.PATTERNS.length);
+    for (const p of RA.PATTERNS) {
+      const back = P.parse(P.format(p), p.id + '.rad');
+      equal([back.id, back.role, back.genres, back.energy, !!back.odd, back.code], [p.id, p.role, p.genres, p.energy, !!p.odd, p.code], p.id);
+    }
+    const mine = P.parse(P.format({ id: 'user_x', user: true, role: 'lead', genres: { boc: 0.5 }, energy: [0, 1], code: "loop('a', () => sleep(4))" }), 'whatever.rad');
+    equal(mine.id, 'user_x', 'your patterns keep their id');
+    let bad = null;
+    try { P.parse('// role: nope\nloop()', 'x.rad'); } catch (e) { bad = e.message; }
+    assert(bad && /role/.test(bad), 'a file without a valid role is refused');
+  });
+
   runner.test('Genres: one table, every genre complete and consistent', () => {
     const G = RA.Genres;
     const sections = Object.keys(RA.Arc.SECTIONS);
@@ -930,5 +944,6 @@
     equal(strip(c), strip(code));
   });
 
-  window.addEventListener('load', () => runner.run(document.getElementById('results')));
+  // the pattern bank (patterns/*.rad) loads first
+  window.addEventListener('load', () => RA.PatternLoader.load().then(() => runner.run(document.getElementById('results'))));
 })();

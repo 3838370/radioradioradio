@@ -1,0 +1,11 @@
+// role: perc
+// genres: acid 1, drill 0.5
+// energy: 0.45-1
+params({ clap: 'realclaps', odds: 2, odds2: 12 })
+fx({ rev: 0.2, lpf: 8000 })
+loop('claps', (i) => {
+  for (let k = 0; k < 16; k++) {
+    if (k == 12 || (k > 12 && one_in(P.odds)) || one_in(P.odds2)) s(P.clap, { n: 3, amp: 0.12 + (k > 12 ? 0.04 : 0), pan: -0.2 })
+    sleep(0.25)
+  }
+})

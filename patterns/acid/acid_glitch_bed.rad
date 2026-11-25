@@ -1,0 +1,10 @@
+// role: texture
+// genres: acid 1, ae 0.5
+// energy: 0.3-1
+fx({ crush: 0.15, delay: 0.2 })
+loop('glitch', (i) => {
+  for (const e of collage('c', { pool: ['glitch', 'glitch2', 'blip'], rate: walk('r', 0.4, 1, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * choose([1, 2]), pan: e.pan, amp: e.amp * 0.5, cut: 0.15 })
+    sleep(e.dur)
+  }
+})

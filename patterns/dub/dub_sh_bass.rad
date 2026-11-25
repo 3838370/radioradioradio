@@ -1,0 +1,11 @@
+// role: bass
+// genres: dub 1
+// energy: 0.3-1
+params({ acid_bass: 'sh_bass' })
+fx({ lpf: walk('lpf', 400, 900, 0.1), rev: 0.05 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: 'dub' })) {
+    if (b.note) synth(P.acid_bass, b.note, { dur: b.len * 0.8, amp: 0.4 * b.vel, cutoff: 500 })
+    sleep(b.dur)
+  }
+})

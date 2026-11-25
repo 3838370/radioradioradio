@@ -1,0 +1,11 @@
+// role: lead
+// genres: dub 1, minimal 0.7
+// energy: 0-1
+params({ bell: 'dx_bell' })
+fx({ delay: 0.6, rev: 0.4 })
+loop('bell', (i) => {
+  const wait = vary('wait', [1.5, 2.5, 3], 8)
+  sleep(wait)
+  synth(P.bell, degree(choose([0, 2, 4, 6]), 2), { amp: 0.25 })
+  sleep(4 - wait)
+})

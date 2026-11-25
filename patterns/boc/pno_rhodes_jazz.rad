@@ -1,0 +1,12 @@
+// role: keys
+// genres: boc 1
+// energy: 0.2-1
+params({ keys: 'rhodes' })
+fx({ rev: 0.3, delay: 0.2, wobble: 0.1 })
+loop('rhodes', (i) => {
+  const hits = spread(vary('h', [3, 5], 8), 8, vary('rot', [0, 2, 3], 4))
+  for (let k = 0; k < 8; k++) {
+    if (hits[k]) synth(P.keys, harm(1, vary('ext', ['7', '9'], 4)), { vel: k % 2 ? 0.55 : 0.8, strum: 0.02, dur: vary('len', [0.3, 0.8, 1.5], 8) })
+    sleep(0.5)
+  }
+})

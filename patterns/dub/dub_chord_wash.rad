@@ -1,0 +1,8 @@
+// role: keys
+// genres: dub 1
+// energy: 0-0.8
+fx({ delay: 0.45, rev: 0.55, lpf: 1800, wobble: 0.2 })
+loop('wash', (i) => {
+  synth(vary('voice', ['choir', 'strings'], 32), harm(1, '9'), { dur: 6, attack: 1.5, release: 4, amp: 0.4 })
+  sleep(8)
+})

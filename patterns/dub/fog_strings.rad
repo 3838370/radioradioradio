@@ -1,0 +1,9 @@
+// role: keys
+// genres: dub 1
+// energy: 0-1
+params({ pad: 'strings' })
+fx({ wobble: 0.5, rev: 0.6, lpf: 1300, crush: 0.1 })
+loop('strings', (i) => {
+  synth(P.pad, harm(1, '7'), { dur: 13, attack: 3, release: 4, amp: 0.45 })
+  sleep(16)
+})

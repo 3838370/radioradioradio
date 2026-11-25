@@ -1,0 +1,12 @@
+// role: lead
+// genres: saw 1
+// energy: 0-0.9
+params({ keys: 'piano' })
+fx({ rev: 0.45, delay: 0.25, lpf: 5000, wobble: 0.15 })
+loop('melody', (i) => {
+  for (const n of phrase('m', { beats: 8, density: vary('dens', [0.2, 0.35, 0.5], 16), octave: 2, rest: 0.25, evolve: 2 })) {
+    if (n.grace) synth(P.keys, n.grace, { vel: n.vel * 0.5, nudge: n.nudge })
+    if (n.note) synth(P.keys, n.note, { vel: n.vel, nudge: n.nudge + (n.grace ? 0.12 : 0), dur: n.last ? 3 : 1.6 })
+    sleep(n.dur)
+  }
+})

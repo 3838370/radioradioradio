@@ -1,0 +1,11 @@
+// role: keys
+// genres: dark 1
+// energy: 0-1
+params({ tension: 'tension_string' })
+fx({ rev: 0.45, lpf: 2000 })
+loop('cluster', (i) => {
+  for (const c of chords('c', { voicing: 'cluster', rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.tension, c.notes, { dur: c.len, amp: 0.18 * c.vel })
+    sleep(c.dur)
+  }
+})

@@ -1,0 +1,15 @@
+// role: drums
+// genres: saw 1, space 0.5
+// energy: 0-0.8
+params({ kick: '808bd', rim: 'tok', rim2: 'click' })
+fx({ lpf: 3500, rev: 0.4 })
+loop('tick', (i) => {
+  const b = beat('b', { style: 'drift_free', density: walk('d', 0.3, 0.7, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 20, amp: 0.55 * st.v })
+    if (st.s) s(P.rim, { n: 0, amp: 0.15 * st.v })
+    if (st.h) s(P.rim2, { n: 1, amp: 0.06 * st.v, pan: rrand(-0.4, 0.4) })
+    sleep(0.25)
+  }
+})

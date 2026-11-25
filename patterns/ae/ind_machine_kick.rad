@@ -1,0 +1,16 @@
+// role: drums
+// genres: ae 1
+// energy: 0.3-1
+params({ metal: 'metal' })
+fx({ lpf: 10000, crush: 0.08, rev: 0.12 })
+loop('kit', (i) => {
+  const b = beat('m', { style: 'four', density: 0.3 + 0.5 * ENERGY })
+  for (let k = 0; k < 16; k++) {
+    const st = b[k]
+    if (st.k) synth('kick_synth', KEY - 12, { amp: 0.9 * st.v })
+    if (st.s) s('sequential', { n: vary('sn', [0, 5], 16), amp: 0.45 * st.v })
+    if (st.h) synth('hat_synth', 60, { amp: 0.35 * st.v, pan: 0.2 })
+    if (st.p) s(P.metal, { n: vary('m', [2, 5], 8), amp: 0.07, rate: 1.5, pan: rrand(-0.5, 0.5) })
+    sleep(0.25)
+  }
+})

@@ -1,0 +1,10 @@
+// role: texture
+// genres: space 1
+// energy: 0-1
+fx({ rev: 0.5, delay: 0.35, lpf: 5000 })
+loop('collage', (i) => {
+  for (const e of collage('c', { rate: walk('rate', 0.25, 0.8, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, begin: e.begin, pan: e.pan, amp: e.amp, cut: 2.5 })
+    sleep(e.dur)
+  }
+})

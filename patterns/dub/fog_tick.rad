@@ -1,0 +1,11 @@
+// role: perc
+// genres: dub 1
+// energy: 0-0.9
+params({ odds: 4 })
+fx({ lpf: 2200, rev: 0.4 })
+loop('tick', (i) => {
+  for (let k = 0; k < 8; k++) {
+    if (k % 2 == 1 || one_in(P.odds)) s(vary('f', ['click', 'tok'], 16), { n: 0, amp: walk('a', 0.04, 0.1, 0.1), pan: 0.4 })
+    sleep(0.5)
+  }
+})

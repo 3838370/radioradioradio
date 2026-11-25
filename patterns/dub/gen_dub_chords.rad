@@ -1,0 +1,12 @@
+// role: keys
+// genres: dub 1, minimal 0.7
+// energy: 0.15-1
+params({ stab: 'stab' })
+fx({ delay: 0.55, rev: 0.3, lpf: 2600 })
+loop('stab', (i) => {
+  const voicing = vary('voicing', ['m7', 'dub', 'sus4', 'm7'], 16)
+  for (const c of chords('c', { voicing, rhythm: 'stab', density: 0.6 })) {
+    if (c.notes) synth(P.stab, c.notes, { dur: c.len, amp: 0.36 * c.vel, cutoff: walk('cut', 600, 2200, 0.12) })
+    sleep(c.dur)
+  }
+})

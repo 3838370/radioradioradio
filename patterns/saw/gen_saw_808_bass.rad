@@ -1,0 +1,11 @@
+// role: bass
+// genres: saw 1, boc 0.7
+// energy: 0.25-1
+params({ sub: 'sub808' })
+fx({ lpf: 1400, crush: 0.05 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: '808' })) {
+    if (b.note) synth(P.sub, b.note, { dur: b.len, amp: 0.5 * b.vel })
+    sleep(b.dur)
+  }
+})

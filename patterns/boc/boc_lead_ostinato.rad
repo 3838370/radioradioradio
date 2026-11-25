@@ -1,0 +1,11 @@
+// role: lead
+// genres: boc 1, saw 0.5
+// energy: 0.2-1
+params({ boc_lead: 'boc_lead' })
+fx({ rev: 0.35, delay: 0.3, wobble: 0.25 })
+loop('lead', (i) => {
+  for (const n of melody('o', { style: 'ostinato', octave: 2 })) {
+    if (n.note) synth(P.boc_lead, n.note, { dur: n.len * 1.3, amp: 0.2 * n.vel, detune: rrand(-12, 12) })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,11 @@
+// role: keys
+// genres: ae 1, minimal 0.4
+// energy: 0.2-1
+params({ bell: 'fm_glass' })
+fx({ delay: 0.3, rev: 0.3 })
+loop('glass', (i) => {
+  for (const n of melody('k', { style: 'probability', octave: 2 })) {
+    if (n.note) synth(P.bell, [n.note, n.note + 7], { amp: 0.12 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

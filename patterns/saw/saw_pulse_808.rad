@@ -1,0 +1,14 @@
+// role: drums
+// genres: saw 1, space 0.7
+// energy: 0-0.7
+params({ kick: '808bd' })
+fx({ lpf: 2200, rev: 0.45, delay: 0.2 })
+loop('pulse', (i) => {
+  const b = beat('b', { style: 'pulse_sparse', density: 0.4 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 2, amp: 0.7 * st.v })
+    if (st.h) s('808', { n: 1, amp: 0.06 * st.v })
+    sleep(0.25)
+  }
+})

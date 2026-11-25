@@ -1,0 +1,16 @@
+// role: perc
+// genres: minimal 1
+// energy: 0.4-1
+params({ hat: 'hh27', kit: 'odx' })
+fx({ lpf: 11000, rev: 0.15 })
+loop('hats', (i) => {
+  const vel = ring(0.12, 0.05, 0.08, 0.05)
+  for (let k = 0; k < 16; k++) {
+    s(P.hat, { n: 0, amp: vel.tick(), pan: 0.25, cut: 0.1 })
+    sleep(0.25)
+  }
+})
+loop('ride', (i) => {
+  s(P.kit, { n: 4, amp: 0.1, pan: -0.3 })
+  sleep(1)
+})

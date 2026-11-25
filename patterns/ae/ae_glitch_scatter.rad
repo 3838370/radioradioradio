@@ -1,0 +1,11 @@
+// role: perc
+// genres: ae 1
+// energy: 0.25-1
+fx({ crush: 0.2, delay: 0.15, lpf: 9000 })
+loop('glitch', (i) => {
+  const odds = vary('odds', [3, 4, 6], 4)
+  for (let k = 0; k < 32; k++) {
+    if (one_in(odds)) s(choose(['glitch2', 'blip', 'bleep']), { n: rrand_i(0, 6), amp: 0.08, rate: choose([1, 1.5, 2, 0.5]), pan: rrand(-0.8, 0.8), cut: 0.1 })
+    sleep(0.125)
+  }
+})

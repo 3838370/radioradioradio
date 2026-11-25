@@ -1,0 +1,8 @@
+// role: keys
+// genres: dub 1
+// energy: 0-0.9
+fx({ rev: 0.55, lpf: 1600, wobble: 0.12 })
+loop('wash', (i) => {
+  synth('dub_pad_wash', harm(1, vary('ext', ['7', ''], 16)), { dur: 7, attack: 2, release: 4, amp: 0.24 })
+  sleep(8)
+})

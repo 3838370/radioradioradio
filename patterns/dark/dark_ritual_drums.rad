@@ -1,0 +1,17 @@
+// role: drums
+// genres: dark 1
+// energy: 0.3-1
+// odd: true
+params({ kick: 'bd', perc: 'tabla' })
+fx({ lpf: 4500, rev: 0.3 })
+loop('ritual', (i) => {
+  const b = beat('b', { style: 'ritual', density: 0.55 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 7, amp: 0.75 * st.v })
+    if (st.s) s('tabla2', { n: 12, amp: 0.3 * st.v })
+    if (st.h) s('tabla2', { n: 30, amp: 0.08 * st.v, pan: 0.3 })
+    if (st.p) s(P.perc, { n: 5, amp: 0.14 * st.v, pan: -0.3 })
+    sleep(0.25)
+  }
+})

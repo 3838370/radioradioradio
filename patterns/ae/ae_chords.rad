@@ -1,0 +1,14 @@
+// role: keys
+// genres: ae 1
+// energy: 0.2-1
+fx({ rev: 0.4, delay: 0.3, lpf: 4000 })
+loop('chords', (i) => {
+  const pat = vary('pat', [[0, 1.5, 4], [0, 2.75], [0.5, 3, 4.5]], 4)
+  let t = 0
+  for (const p of pat) {
+    sleep(p - t)
+    synth(vary('v', ['sync_lead', 'fm_glass', 'metal_lead'], 8), harm(1, vary('e', ['', '7'], 4)), { dur: 0.3, amp: 0.25 })
+    t = p
+  }
+  sleep(6 - t)
+})

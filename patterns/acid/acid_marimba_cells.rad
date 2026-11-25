@@ -1,0 +1,11 @@
+// role: keys
+// genres: acid 1, ae 0.5
+// energy: 0.25-1
+params({ bell: 'dx_marimba' })
+fx({ delay: 0.2, rev: 0.25 })
+loop('marimba', (i) => {
+  for (const n of melody('c', { style: 'cells', octave: 2 })) {
+    if (n.notes.length) synth(P.bell, n.notes, { amp: 0.22 * n.vel })
+    sleep(n.dur)
+  }
+})

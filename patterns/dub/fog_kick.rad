@@ -1,0 +1,9 @@
+// role: drums
+// genres: dub 1
+// energy: 0-1
+params({ kick: 'bd' })
+fx({ lpf: 520, crush: 0.15, rev: 0.25, wobble: 0.1 })
+loop('kick', (i) => {
+  s(P.kick, { n: 2, amp: 1.1 })
+  sleep(1)
+})

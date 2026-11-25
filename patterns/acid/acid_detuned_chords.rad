@@ -1,0 +1,11 @@
+// role: keys
+// genres: acid 1, saw 0.6
+// energy: 0.3-1
+params({ lead: 'aphex_lead' })
+fx({ rev: 0.3, lpf: 3000 })
+loop('chords', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['cluster', 'm7'], 16), rhythm: 'push', octave: 1, density: 0.5 })) {
+    if (c.notes) synth(P.lead, c.notes, { dur: Math.max(0.3, c.len * 0.8), amp: 0.14 * c.vel })
+    sleep(c.dur)
+  }
+})

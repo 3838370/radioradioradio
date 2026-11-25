@@ -1,0 +1,9 @@
+// role: texture
+// genres: dub 1
+// energy: 0-1
+params({ nature: 'wind' })
+fx({ lpf: 2000, rev: 0.5, wobble: 0.2 })
+loop('wind', (i) => {
+  s(P.nature, { n: 4, amp: 0.12, rate: 0.5, attack: 2, release: 3 })
+  sleep(16)
+})

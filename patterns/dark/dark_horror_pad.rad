@@ -1,0 +1,9 @@
+// role: keys
+// genres: dark 1
+// energy: 0-1
+params({ pad_dark: 'horror' })
+fx({ rev: 0.6, wobble: 0.4 })
+loop('horror', (i) => {
+  synth(P.pad_dark, harm(1, vary('ext', ['', '7'], 16)), { dur: 10, attack: 4, release: 6, amp: 0.45 })
+  sleep(16)
+})

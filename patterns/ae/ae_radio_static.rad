@@ -1,0 +1,9 @@
+// role: texture
+// genres: ae 1
+// energy: 0-1
+params({ odds: 2 })
+fx({ rev: 0.3, delay: 0.3, lpf: 6000 })
+loop('static', (i) => {
+  if (one_in(P.odds)) synth(choose(['shortwave', 'radio_tune']), degree(rrand_i(0, 6), 2), { dur: rrand(0.5, 2), amp: 0.14, pan: rrand(-0.7, 0.7) })
+  sleep(2)
+})

@@ -1,0 +1,16 @@
+// role: texture
+// genres: dark 1
+// energy: 0-1
+fx({ rev: 0.45, delay: 0.2 })
+loop('station', (i) => {
+  synth('metro_chime', KEY + 19, { amp: 0.5 })
+  sleep(0.75)
+  synth('metro_chime', KEY + 15, { amp: 0.45 })
+  sleep(1.25)
+  synth('metro_doors', 60, { amp: 0.4 })
+  sleep(2)
+  synth('door_slam', 40, { amp: 0.5 })
+  sleep(4)
+  synth('metro_rumble', KEY - 24, { dur: 16, amp: 0.4 })
+  sleep(8)
+})

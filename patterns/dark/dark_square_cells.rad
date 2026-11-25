@@ -1,0 +1,11 @@
+// role: lead
+// genres: dark 1, ae 0.5
+// energy: 0-1
+params({ lead: 'saw2_square' })
+fx({ rev: 0.45, delay: 0.35, lpf: 1800 })
+loop('cells', (i) => {
+  for (const n of melody('c', { style: 'cells', octave: 1 })) {
+    if (n.notes.length) synth(P.lead, n.notes, { dur: 0.4, amp: 0.14 * n.vel })
+    sleep(n.dur)
+  }
+})

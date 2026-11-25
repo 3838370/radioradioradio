@@ -1,0 +1,11 @@
+// role: texture
+// genres: boc 1, saw 0.5
+// energy: 0-1
+params({ boc_lead: 'tape_warble' })
+fx({ lpf: 7000, wobble: 0.3 })
+loop('tape', (i) => {
+  const t = tape('t')
+  synth('hiss_bed', 70, { dur: 3.5, attack: 0.5, release: 1, amp: 0.3 * t.level })
+  if (t.wow > 0.25) synth(P.boc_lead, degree(4, 2), { dur: 3, amp: 0.07 })
+  sleep(4)
+})

@@ -1,0 +1,11 @@
+// role: lead
+// genres: saw 1
+// energy: 0-0.9
+params({ bell: 'glass' })
+fx({ rev: 0.4, delay: 0.25, wobble: 0.15 })
+loop('motif', (i) => {
+  for (const n of motif('m', { beats: 4, density: 0.35, octave: 2 })) {
+    if (n.note) synth(P.bell, n.note, { dur: n.dur * 1.5, amp: 0.28 * n.vel })
+    sleep(n.dur)
+  }
+})

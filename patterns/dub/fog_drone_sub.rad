@@ -1,0 +1,9 @@
+// role: bass
+// genres: dub 1
+// energy: 0-0.8
+params({ sub: 'dub_sub' })
+fx({ lpf: 500, rev: 0.2 })
+loop('drone', (i) => {
+  synth(P.sub, ROOT, { dur: 6, attack: 1, release: 2, amp: 0.45 })
+  sleep(8)
+})

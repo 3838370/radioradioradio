@@ -1,0 +1,10 @@
+// role: texture
+// genres: ae 1
+// energy: 0.2-1
+fx({ crush: 0.1, delay: 0.2, lpf: 5000 })
+loop('speech', (i) => {
+  for (const e of collage('c', { pool: ['diphone2', 'numbers'], rate: walk('r', 0.3, 0.7, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * choose([1, 1.5]), begin: e.begin, pan: e.pan, amp: e.amp * 0.6, cut: 0.25 })
+    sleep(e.dur)
+  }
+})

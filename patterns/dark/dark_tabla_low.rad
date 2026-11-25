@@ -1,0 +1,11 @@
+// role: perc
+// genres: dark 1
+// energy: 0.1-1
+fx({ rev: 0.4, lpf: 2500 })
+loop('tabla', (i) => {
+  const hits = spread(vary('h', [3, 5], 8), 16, vary('r', [2, 7], 8))
+  for (let k = 0; k < 16; k++) {
+    if (hits[k]) s('tabla2', { n: vary('n', [1, 8, 21], 8), amp: 0.18, rate: 0.6, pan: rrand(-0.3, 0.3) })
+    sleep(0.25)
+  }
+})

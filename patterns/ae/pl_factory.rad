@@ -1,0 +1,14 @@
+// role: perc
+// genres: ae 1
+// energy: 0.2-1
+params({ metal: 'anvil', machine: 'steam', metal2: 'welder', odds: 2, odds2: 3 })
+fx({ rev: 0.3, delay: 0.15 })
+loop('factory', (i) => {
+  const press = spread(vary('p', [2, 3], 8), 8)
+  for (let k = 0; k < 8; k++) {
+    if (press[k]) synth(P.metal, KEY + choose([-12, 0]), { amp: 0.4, pan: rrand(-0.4, 0.4) })
+    if (k === 4 && one_in(P.odds)) synth(P.machine, 60, { dur: 1, amp: 0.3 })
+    if (k === 6 && one_in(P.odds2)) synth(P.metal2, 60, { dur: rrand(0.3, 1.2), amp: 0.25, pan: 0.5 })
+    sleep(0.5)
+  }
+})

@@ -1,0 +1,11 @@
+// role: texture
+// genres: dark 1
+// energy: 0-0.7
+params({ machine: 'hum', voice: 'diphone', odds: 3 })
+fx({ rev: 0.6, delay: 0.3, wobble: 0.4 })
+loop('choir', (i) => {
+  synth(vary('v', ['voice_oo', 'voice_ah'], 8), harm(0, ''), { dur: 6, amp: 0.25, attack: 2, release: 3 })
+  synth(P.machine, KEY - 24, { dur: 8, amp: 0.4 })
+  if (one_in(P.odds)) s(P.voice, { n: rrand_i(0, 20), amp: 0.12, rate: rrand(0.5, 0.8), pan: rrand(-0.6, 0.6) })
+  sleep(8)
+})

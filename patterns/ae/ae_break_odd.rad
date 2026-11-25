@@ -1,0 +1,17 @@
+// role: drums
+// genres: ae 1
+// energy: 0.3-1
+// odd: true
+params({ kick: '808bd', glitch: 'glitch2', hat: 'hh27', glitch2: 'blip' })
+fx({ lpf: 8000, crush: 0.15, delay: 0.1 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'ae_odd', density: 0.6 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 9, amp: 0.85 * st.v })
+    if (st.s) s(P.glitch, { n: 3, amp: 0.3 * st.v })
+    if (st.h) s(P.hat, { n: 2, amp: 0.1 * st.v, pan: rrand(-0.5, 0.5) })
+    if (st.p) s(P.glitch2, { n: 0, amp: 0.1 * st.v, rate: choose([1, 2]) })
+    sleep(0.25)
+  }
+})

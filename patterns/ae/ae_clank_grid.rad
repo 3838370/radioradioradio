@@ -1,0 +1,11 @@
+// role: perc
+// genres: ae 1
+// energy: 0.2-1
+fx({ rev: 0.3, delay: 0.25 })
+loop('clank', (i) => {
+  const hits = spread(vary('h', [5, 7], 4), 12, vary('r', [0, 1, 4, 7], 2))
+  for (let k = 0; k < 12; k++) {
+    if (hits[k]) synth(vary('v', ['clank', 'zap', 'clank'], 4), ROOT + 24 + choose([0, 1, 6, 7]), { amp: 0.3, pan: rrand(-0.8, 0.8) })
+    sleep(0.25)
+  }
+})

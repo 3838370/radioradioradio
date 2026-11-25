@@ -1,0 +1,9 @@
+// role: keys
+// genres: space 1
+// energy: 0-1
+fx({ rev: 0.6, wobble: 0.25 })
+loop('pad', (i) => {
+  fx({ lpf: walk('lpf', 900, 3200, 0.2) })
+  synth(vary('voice', ['choir', 'haze', 'strings'], 32), harm(1, '9'), { dur: 12, attack: 3, release: 5, amp: 0.42 })
+  sleep(16)
+})

@@ -1,0 +1,10 @@
+// role: texture
+// genres: acid 1, saw 0.6
+// energy: 0-1
+fx({ lpf: 9000 })
+loop('crackle', (i) => {
+  for (const c of tape('c').crackles) {
+    if (c.amp) synth('vinyl_bed', 84, { dur: 0.02, attack: 0.001, release: 0.04, amp: c.amp })
+    sleep(c.dur)
+  }
+})

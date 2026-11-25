@@ -1,0 +1,10 @@
+// role: texture
+// genres: saw 1, boc 0.7
+// energy: 0-1
+fx({ rev: 0.5, delay: 0.35, lpf: 2600, crush: 0.08 })
+loop('radio', (i) => {
+  for (const e of collage('c', { pool: ['speechless', 'numbers', 'speech'], rate: walk('r', 0.08, 0.25, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * 0.85, begin: e.begin, pan: e.pan, amp: e.amp * 0.45, cut: 1.5 })
+    sleep(e.dur)
+  }
+})

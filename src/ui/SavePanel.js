@@ -1,5 +1,5 @@
 // SavePanel: what's saved in this browser (your patterns, instruments and sounds), plus
-// export / import as a .json file and a reset.
+// export / import as a .json file, your patterns one by one as .rad files, and a reset.
 RA.SavePanel = class SavePanel {
   constructor(p, parent, app) {
     this.p = p;
@@ -11,6 +11,10 @@ RA.SavePanel = class SavePanel {
     p.createButton('exportar .json').addClass('btn').parent(actions).mousePressed(() => this.app.exportState());
     const file = p.createFileInput((f) => this.app.importState(f.file), false).parent(actions).hide();
     p.createButton('importar .json').addClass('btn').parent(actions).mousePressed(() => file.elt.click());
+    const rad = p.createFileInput(() => {}, true).parent(actions).hide();
+    rad.elt.accept = '.rad';
+    rad.elt.onchange = () => { this.app.importPatterns([...rad.elt.files]); rad.elt.value = ''; };
+    p.createButton('importar .rad').addClass('btn').parent(actions).mousePressed(() => rad.elt.click());
     p.createButton('apagar tudo').addClass('btn danger').parent(actions).mousePressed(() => {
       if (confirm('Apagar os teus padrões, instrumentos e sons guardados neste browser?')) this.app.clearState();
     });
@@ -24,6 +28,7 @@ RA.SavePanel = class SavePanel {
     const row = this.p.createDiv().addClass('row').parent(this.content);
     this.p.createSpan(text).addClass('label wide').parent(row);
     this.p.createButton(buttonLabel).addClass('btn small').parent(row).mousePressed(onClick);
+    return row;
   }
 
   render() {
@@ -31,7 +36,10 @@ RA.SavePanel = class SavePanel {
     this.content.html('');
     const patterns = app.bank.userPatterns();
     this.section(`os teus padrões (${patterns.length})`);
-    for (const pat of patterns) this.item(`${pat.role} · ${pat.id}`, 'apagar', () => { app.bank.remove(pat.id); app.save(); this.render(); });
+    for (const pat of patterns) {
+      const row = this.item(`${pat.role} · ${pat.id}`, 'apagar', () => { app.bank.remove(pat.id); app.save(); this.render(); });
+      this.p.createButton('.rad').addClass('btn small').parent(row).mousePressed(() => app.exportPattern(pat));
+    }
 
     const custom = Object.keys(app.instruments.serialize());
     this.section(`instrumentos teus / alterados (${custom.length})`);

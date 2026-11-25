@@ -1,0 +1,14 @@
+// role: bass
+// genres: acid 1
+// energy: 0.3-1
+params({ sub: 'sub808' })
+loop('sub', (i) => {
+  const pat = vary('pat', [[0, 2.5], [0, 1.5, 2.5], [0, 3]], 8)
+  let t = 0
+  for (const p of pat) {
+    sleep(p - t)
+    synth(P.sub, ROOT, { dur: 0.5, amp: 0.6 })
+    t = p
+  }
+  sleep(4 - t)
+})

@@ -1,0 +1,13 @@
+// role: bass
+// genres: drill 1
+// energy: 0.2-1
+params({ sub: 'sub' })
+fx({ lpf: 600 })
+loop('sub', (i) => {
+  synth(P.sub, ROOT, { dur: 1.2, amp: 0.5 })
+  sleep(1.5)
+  synth(P.sub, ROOT, { dur: 0.6, amp: 0.4 })
+  sleep(1)
+  synth(P.sub, ROOT + 12, { dur: 0.3, amp: 0.25 })
+  sleep(1.5)
+})

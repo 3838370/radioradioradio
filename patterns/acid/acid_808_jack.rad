@@ -1,0 +1,16 @@
+// role: drums
+// genres: acid 1, saw 0.5
+// energy: 0.4-1
+params({ kick: '808bd', snare: '808sd', hat: '808oh' })
+fx({ lpf: 9000, crush: 0.05 })
+loop('kit', (i) => {
+  const b = beat('b', { style: 'braindance', density: walk('d', 0.4, 0.8, 0.1) })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s(P.kick, { n: 4, amp: 0.85 * st.v })
+    if (st.s) s(P.snare, { n: 12, amp: 0.4 * st.v })
+    if (st.h) s('808', { n: 1, amp: 0.12 * st.v, pan: 0.2 })
+    if (st.p) s(P.hat, { n: 0, amp: 0.1 * st.v, pan: -0.2 })
+    sleep(0.25)
+  }
+})

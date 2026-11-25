@@ -1,0 +1,13 @@
+// role: texture
+// genres: space 1
+// energy: 0.2-1
+params({ nature: 'wind' })
+fx({ rev: 0.45 })
+loop('sweep', (i) => {
+  fx({ lpf: 500 })
+  s(P.nature, { n: 2, amp: 0.18, rate: 0.8, attack: 2, release: 3 })
+  for (let k = 1; k <= 8; k++) {
+    sleep(2)
+    fx({ lpf: 500 + k * 500 })
+  }
+})

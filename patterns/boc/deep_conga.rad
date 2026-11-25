@@ -1,0 +1,12 @@
+// role: perc
+// genres: boc 1
+// energy: 0.3-1
+params({ space: 'future' })
+fx({ rev: 0.3, delay: 0.15, lpf: 5000 })
+loop('conga', (i) => {
+  const hits = spread(3, 8, 1)
+  for (let k = 0; k < 8; k++) {
+    if (hits[k]) s(P.space, { n: 15, amp: 0.2, pan: 0.35 })
+    sleep(0.5)
+  }
+})
