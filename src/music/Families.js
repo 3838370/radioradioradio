@@ -1,6 +1,7 @@
-// Families: instruments and sample folders that can stand in for each other. A recipe (see
-// Recipe) or a timbre move swaps a synth for another of its family, or a sample folder for
-// another of its kit, so a pattern keeps its role but changes colour.
+// Families: instruments and sample folders that can stand in for each other. A pattern's
+// params name them by family (params({ pad: 'dx_pad', kick: '808bd' })); a new version or a
+// timbre move swaps one for another of its family that the genre allows (Genres: palette,
+// kits; see Variation), so a pattern keeps its role but changes colour.
 RA.Families = class Families {
   static SYNTHS = {
     boc_pad: ['boc_pad', 'boc_choir', 'juno_pad', 'warm_pad'],
@@ -52,12 +53,6 @@ RA.Families = class Families {
   static kitFamily(folder) {
     for (const [f, list] of Object.entries(Families.KITS)) if (list.includes(folder)) return f;
     return null;
-  }
-
-  // Another member of the family, or null. `known` filters to names that exist.
-  static alt(list, name, rng, known = null) {
-    const others = list.filter((x) => x !== name && (!known || known(x)));
-    return others.length ? rng.pick(others) : null;
   }
 
   // The pool for collage() for the genre weights: the dominant genre's (Genres: collage),

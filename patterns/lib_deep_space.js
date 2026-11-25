@@ -5,48 +5,52 @@ RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   // ───── drums ─────
   { id: 'saw_808_kit', role: 'drums', flavours: { saw: 1, acid: 0.7 }, energy: [0.3, 1], code: `
+params({ kick: '808bd', snare: '808sd', hat: '808oh' })
 fx({ lpf: 6000, rev: 0.2, crush: 0.05 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'saw808', density: walk('dens', 0.35, 0.75, 0.1) })
   for (let k = 0; k < b.length; k++) {
     const st = b[k]
-    if (st.k) s('808bd', { n: 5, amp: 0.85 * st.v })
-    if (st.s) s('808sd', { n: 7, amp: 0.4 * st.v })
+    if (st.k) s(P.kick, { n: 5, amp: 0.85 * st.v })
+    if (st.s) s(P.snare, { n: 7, amp: 0.4 * st.v })
     if (st.h) s('808', { n: 1, amp: 0.12 * st.v, pan: 0.2 })
-    if (st.p) s('808oh', { n: 0, amp: 0.1 * st.v, pan: -0.2 })
+    if (st.p) s(P.hat, { n: 0, amp: 0.1 * st.v, pan: -0.2 })
     sleep(0.25)
   }
 })` },
 
   { id: 'deep_downtempo_kit', role: 'drums', flavours: { boc: 1 }, energy: [0.25, 1], code: `
+params({ kick: 'bd', snare: 'sn', hat: 'hh27', perc: 'perc' })
 fx({ lpf: 5000, rev: 0.25 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'downtempo', density: 0.5 })
   for (let k = 0; k < b.length; k++) {
     const st = b[k]
-    if (st.k) s('bd', { n: 3, amp: 0.8 * st.v })
-    if (st.s) s('sn', { n: 14, amp: 0.35 * st.v })
-    if (st.h) s('hh27', { n: 0, amp: 0.13 * st.v, pan: 0.25 })
-    if (st.p) s('perc', { n: 4, amp: 0.08 * st.v, pan: -0.3 })
+    if (st.k) s(P.kick, { n: 3, amp: 0.8 * st.v })
+    if (st.s) s(P.snare, { n: 14, amp: 0.35 * st.v })
+    if (st.h) s(P.hat, { n: 0, amp: 0.13 * st.v, pan: 0.25 })
+    if (st.p) s(P.perc, { n: 4, amp: 0.08 * st.v, pan: -0.3 })
     sleep(swing(0.25, k, 0.1))
   }
 })` },
 
   { id: 'space_drift_kit', role: 'drums', flavours: { space: 1 }, energy: [0, 0.8], code: `
+params({ kick: 'bd', rim: 'rs', hat: 'hh', space: 'cosmicg' })
 fx({ lpf: 3500, rev: 0.5, delay: 0.3, wobble: 0.1 })
 loop('kit', (i) => {
   const b = beat('b', { style: 'drift_free', density: walk('dens', 0.3, 0.7, 0.1) })
   for (let k = 0; k < b.length; k++) {
     const st = b[k]
-    if (st.k) s('bd', { n: 20, amp: 0.6 * st.v })
-    if (st.s) s('rs', { n: 0, amp: 0.15 * st.v, pan: rrand(-0.5, 0.5) })
-    if (st.h) s('hh', { n: 6, amp: 0.08 * st.v, pan: 0.3 })
-    if (st.p) s('cosmicg', { n: 2, amp: 0.08 * st.v, rate: 2 })
+    if (st.k) s(P.kick, { n: 20, amp: 0.6 * st.v })
+    if (st.s) s(P.rim, { n: 0, amp: 0.15 * st.v, pan: rrand(-0.5, 0.5) })
+    if (st.h) s(P.hat, { n: 6, amp: 0.08 * st.v, pan: 0.3 })
+    if (st.p) s(P.space, { n: 2, amp: 0.08 * st.v, rate: 2 })
     sleep(0.25)
   }
 })` },
 
   { id: 'space_fsol_break', role: 'drums', flavours: { boc: 1, space: 0.7 }, energy: [0.35, 1], code: `
+params({ perc: 'tabla' })
 fx({ lpf: walk('lpf', 2500, 7000, 0.1), rev: 0.2, delay: 0.1 })
 loop('break', (i) => {
   const b = beat('b', { style: 'fsol_break', density: 0.55 })
@@ -55,31 +59,33 @@ loop('break', (i) => {
     if (st.k) s('jungle', { n: 5, amp: 0.7 * st.v, rate: 0.85 })
     if (st.s) s('jungle', { n: 11, amp: 0.45 * st.v, rate: 0.85 })
     if (st.h) s('jungle', { n: 0, amp: 0.12 * st.v, rate: 0.85, pan: 0.2 })
-    if (st.p) s('tabla', { n: 9, amp: 0.12 * st.v, pan: -0.3 })
+    if (st.p) s(P.perc, { n: 9, amp: 0.12 * st.v, pan: -0.3 })
     sleep(0.25)
   }
 })` },
 
   { id: 'space_pulse_kick', role: 'drums', flavours: { space: 1 }, energy: [0, 0.7], code: `
+params({ kick: '808bd', space: 'cosmicg', space2: 'bubble' })
 fx({ lpf: 2000, rev: 0.45, delay: 0.25 })
 loop('pulse', (i) => {
   const b = beat('b', { style: 'pulse_sparse', density: 0.4 })
   for (let k = 0; k < b.length; k++) {
     const st = b[k]
-    if (st.k) s('808bd', { n: 12, amp: 0.75 * st.v })
-    if (st.h) s('cosmicg', { n: 5, amp: 0.06 * st.v, rate: 1.5, pan: 0.4 })
-    if (st.p) s('bubble', { n: 3, amp: 0.08 * st.v, pan: -0.4 })
+    if (st.k) s(P.kick, { n: 12, amp: 0.75 * st.v })
+    if (st.h) s(P.space, { n: 5, amp: 0.06 * st.v, rate: 1.5, pan: 0.4 })
+    if (st.p) s(P.space2, { n: 3, amp: 0.08 * st.v, pan: -0.4 })
     sleep(0.25)
   }
 })` },
 
   // ───── perc ─────
   { id: 'space_tabla_drift', role: 'perc', flavours: { space: 1 }, energy: [0.15, 1], code: `
+params({ perc: 'tabla' })
 fx({ rev: 0.35, delay: 0.2, lpf: 5000 })
 loop('tabla', (i) => {
   const hits = spread(vary('h', [5, 7, 9], 8), 16, vary('r', [0, 3, 5], 8))
   for (let k = 0; k < 16; k++) {
-    if (hits[k]) s('tabla', { n: vary('n' + (k % 3), [2, 7, 13, 18, 22], 8), amp: 0.16, rate: walk('rate', 0.9, 1.1, 0.05), pan: rrand(-0.5, 0.5) })
+    if (hits[k]) s(P.perc, { n: vary('n' + (k % 3), [2, 7, 13, 18, 22], 8), amp: 0.16, rate: walk('rate', 0.9, 1.1, 0.05), pan: rrand(-0.5, 0.5) })
     sleep(0.25)
   }
 })` },
@@ -96,47 +102,52 @@ loop('toms', (i) => {
 })` },
 
   { id: 'space_glasstap', role: 'perc', flavours: { space: 1 }, energy: [0, 0.9], code: `
+params({ metal: 'glasstap' })
 fx({ delay: 0.5, rev: 0.45, lpf: 7000 })
 loop('glass', (i) => {
   for (let k = 0; k < 8; k++) {
-    if (one_in(vary('odds', [3, 4, 6], 8))) s('glasstap', { n: choose([0, 1, 2]), amp: 0.14, rate: choose([1, 1.5, 2]), pan: rrand(-0.7, 0.7) })
+    if (one_in(vary('odds', [3, 4, 6], 8))) s(P.metal, { n: choose([0, 1, 2]), amp: 0.14, rate: choose([1, 1.5, 2]), pan: rrand(-0.7, 0.7) })
     sleep(0.5)
   }
 })` },
 
   { id: 'deep_shaker_swing', role: 'perc', flavours: { boc: 1 }, energy: [0.3, 1], code: `
+params({ perc: 'perc' })
 fx({ lpf: 6500, rev: 0.15 })
 loop('shaker', (i) => {
   for (let k = 0; k < 16; k++) {
-    s('perc', { n: 3, amp: (k % 2 ? 0.05 : 0.09) * walk('a', 0.7, 1.2, 0.1), pan: 0.3 })
+    s(P.perc, { n: 3, amp: (k % 2 ? 0.05 : 0.09) * walk('a', 0.7, 1.2, 0.1), pan: 0.3 })
     sleep(swing(0.25, k, 0.14))
   }
 })` },
 
   // ───── bass ─────
   { id: 'space_sh_bass', role: 'bass', flavours: { saw: 1 }, energy: [0.2, 1], code: `
+params({ acid_bass: 'sh_bass' })
 fx({ lpf: 800, rev: 0.1 })
 loop('bass', (i) => {
   for (const b of bassline('b', { style: vary('st', ['sub', '808'], 16) })) {
-    if (b.note) synth('sh_bass', b.note, { dur: b.len * 0.8, amp: 0.36 * b.vel, cutoff: 450 })
+    if (b.note) synth(P.acid_bass, b.note, { dur: b.len * 0.8, amp: 0.36 * b.vel, cutoff: 450 })
     sleep(b.dur)
   }
 })` },
 
   { id: 'deep_dx_walk', role: 'bass', flavours: { boc: 1 }, energy: [0.3, 1], code: `
+params({ sub: 'dx_bass' })
 fx({ lpf: 1300 })
 loop('walk', (i) => {
   for (const b of bassline('b', { style: vary('st', ['walk', 'dub', '808'], 16) })) {
-    if (b.note) synth('dx_bass', b.note, { dur: b.len * 0.8, amp: 0.38 * b.vel })
+    if (b.note) synth(P.sub, b.note, { dur: b.len * 0.8, amp: 0.38 * b.vel })
     sleep(b.dur)
   }
 })` },
 
   { id: 'space_drone_bass', role: 'bass', flavours: { space: 1 }, energy: [0, 0.7], code: `
+params({ sub: 'dub_sub' })
 fx({ lpf: 600, rev: 0.25, wobble: 0.1 })
 loop('drone', (i) => {
   const d = drone('d', { voices: 1, octave: 0 })
-  synth('dub_sub', d.notes, { dur: 14, attack: 2, release: 3, amp: 0.4 })
+  synth(P.sub, d.notes, { dur: 14, attack: 2, release: 3, amp: 0.4 })
   sleep(16)
 })` },
 
@@ -151,10 +162,11 @@ loop('chords', (i) => {
 })` },
 
   { id: 'deep_dx_chords', role: 'keys', flavours: { saw: 1 }, energy: [0.15, 1], code: `
+params({ pad: 'dx_pad' })
 fx({ rev: 0.35, delay: 0.2, lpf: 3500 })
 loop('chords', (i) => {
   for (const c of chords('c', { voicing: vary('v', ['m7', 'add9'], 16), rhythm: 'push', octave: 1, density: 0.6 })) {
-    if (c.notes) synth('dx_pad', c.notes, { dur: Math.max(0.5, c.len), amp: 0.2 * c.vel })
+    if (c.notes) synth(P.pad, c.notes, { dur: Math.max(0.5, c.len), amp: 0.2 * c.vel })
     sleep(c.dur)
   }
 })` },
@@ -172,19 +184,21 @@ loop('talk', (i) => {
 })` },
 
   { id: 'space_warble_motif', role: 'lead', flavours: { boc: 1 }, energy: [0, 0.9], code: `
+params({ boc_lead: 'tape_warble' })
 fx({ rev: 0.5, delay: 0.25, wobble: 0.25 })
 loop('motif', (i) => {
   for (const n of motif('m', { beats: 8, density: 0.3, octave: 2 })) {
-    if (n.note) synth('tape_warble', n.note, { dur: n.dur, amp: 0.24 * n.vel })
+    if (n.note) synth(P.boc_lead, n.note, { dur: n.dur, amp: 0.24 * n.vel })
     sleep(n.dur)
   }
 })` },
 
   // ───── texture ─────
   { id: 'space_cosmic_bed', role: 'texture', flavours: { space: 1 }, energy: [0, 0.9], code: `
+params({ drone: 'cosmic_sweep' })
 fx({ rev: 0.6, lpf: 4000 })
 loop('sweep', (i) => {
-  synth('cosmic_sweep', degree(choose([0, 4]), 1), { dur: 12, attack: 4, release: 4, amp: walk('a', 0.2, 0.4, 0.1) })
+  synth(P.drone, degree(choose([0, 4]), 1), { dur: 12, attack: 4, release: 4, amp: walk('a', 0.2, 0.4, 0.1) })
   sleep(16)
 })` },
 
@@ -198,11 +212,12 @@ loop('field', (i) => {
 })` },
 
   { id: 'deep_tape_warm', role: 'texture', flavours: { boc: 1 }, energy: [0, 1], code: `
+params({ boc_lead: 'tape_warble' })
 fx({ lpf: 7000, wobble: 0.2 })
 loop('tape', (i) => {
   const t = tape('t')
   synth('hiss_bed', 70, { dur: 3.5, attack: 0.5, release: 1, amp: 0.3 * t.level })
-  if (t.wow > 0.3) synth('tape_warble', degree(0, 2), { dur: 2, amp: 0.08 })
+  if (t.wow > 0.3) synth(P.boc_lead, degree(0, 2), { dur: 2, amp: 0.08 })
   sleep(4)
 })` },
 

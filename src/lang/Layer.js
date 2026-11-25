@@ -11,6 +11,7 @@ RA.Layer = class Layer {
     this.locked = false;
     this.lockedBeforeEdit = null; // lock state to restore when an unused editor closes
     this.vars = new Map();        // vary / walk / phrase state, kept across hot-swaps
+    this.params = {};             // its params({ ... }) values, read as P in the code
     this.fxAuto = true;           // let the Automation move this layer's sound settings
     this.mutes = new Set();       // sounds silenced by the code's mute(...) line
     this.hand = new Set();        // sounds played by hits(...) lines (the sequencer's rows)

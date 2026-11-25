@@ -220,42 +220,62 @@
     return `${count} sample uses checked`;
   });
 
-  runner.test('Mutator: low variation stays close to the original', () => {
-    const m = new RA.Mutator(new RA.Rng(7), () => 10);
-    const p = RA.PATTERNS.find((x) => x.id === 'fog_strings');
-    let code = p.code;
-    const kinds = new Set();
-    for (let k = 0; k < 300; k++) {
-      const r = m.mutate(code, p.code, 0);
-      if (!r) continue;
-      kinds.add(r.desc.split(' ')[0]);
-      code = r.code;
-    }
-    const lpf = +/lpf: (\d+)/.exec(code)[1];
-    assert(lpf >= 1300 * 0.6 && lpf <= 1300 * 1.4, 'lpf within ±40%: ' + lpf);
-    assert(!kinds.has('chord') && !kinds.has('wobble'), 'only tier-0 edits: ' + [...kinds]);
+  runner.test('params(): captured at compile time, read as P, kept per layer', () => {
+    const coder = makeCoder();
+    const code = "params({ pad: 'dx_pad', odds: 3 })\nloop('a', (i) => { if (one_in(P.odds)) synth(P.pad, 60); sleep(4) })";
+    const probe = coder.probe(code, 4);
+    assert(probe.ok, probe.error);
+    equal(probe.params, { pad: 'dx_pad', odds: 3 });
+    const layer = new RA.Layer({ id: 'L', role: 'keys', pattern: { id: 'x', code } });
+    assert(coder.load(layer, code, 0).ok, 'loads');
+    equal(layer.params, { pad: 'dx_pad', odds: 3 });
+    equal(RA.CodeTools.paramsOf(code), { pad: 'dx_pad', odds: 3 });
+    const next = RA.CodeTools.setParams(code, { pad: 'haze', odds: 4 });
+    equal(next.split('\n')[1], code.split('\n')[1], 'the body is untouched');
+    equal(RA.CodeTools.paramsOf(next), { pad: 'haze', odds: 4 });
+    assert(RA.CodeTools.synthsUsed(next).includes('haze'), 'instruments in params count as used');
+    // a pattern without params gets the line after its inst lines
+    equal(RA.CodeTools.setParams("inst('a', { osc: [] })\nloop('a', () => sleep(4))", { k: 1 }).split('\n')[1], 'params({ k: 1 })');
   });
 
-  runner.test('Mutator: 1000 chained mutations stay valid at full variation', () => {
-    const coder = makeCoder();
-    const m = new RA.Mutator(new RA.Rng(3), () => 10);
-    let n = 0;
-    const fails = [];
-    for (const p of RA.PATTERNS) {
-      let code = p.code;
-      for (let k = 0; k < 30; k++) {
-        const r = m.mutate(code, p.code, 1);
-        if (!r) break;
-        n++;
-        const probe = coder.probe(r.code, 4);
-        if (!probe.ok) fails.push(`${p.id} ${r.desc}: ${probe.error}`);
-        else code = r.code;
+  runner.test('Variation: instruments and kits only swap within their family and the genre playing', () => {
+    const v = new RA.Variation({ rng: new RA.Rng(4), sampleCount: () => 5 });
+    for (const g of RA.Genres.LIST) {
+      const G = RA.Genres.of(g);
+      for (const [fam, list] of Object.entries(G.palette)) {
+        assert(list.every((n) => RA.Families.SYNTHS[fam] && RA.Families.SYNTHS[fam].includes(n) && RA.SynthPresets[n]), `${g} palette ${fam}`);
+        // (an instrument in two families swaps within the first, Families.synthFamily)
+        for (const n of list) assert(v.options(n, g).every((x) => G.palette[RA.Families.synthFamily(n)].includes(x) && x !== n), `${g}/${n}`);
+      }
+      for (const [fam, list] of Object.entries(G.kits)) {
+        assert(list.every((f) => RA.Families.KITS[fam] && RA.Families.KITS[fam].includes(f)), `${g} kits ${fam}`);
       }
     }
-    assert(n >= 900, 'enough mutations ran: ' + n);
-    assert(!fails.length, fails.slice(0, 3).join('; '));
-    return `${n} mutations`;
+    // an Efdemin bell never turns into a Boards of Canada sound, and vice versa
+    assert(!v.options('efd_bell', 'minimal').some((n) => /^boc_/.test(n)), 'minimal bells');
+    equal(v.options('boc_pad', 'ae'), [], 'ae has no boc pads');
+    let changed = 0;
+    for (let k = 0; k < 200; k++) {
+      const r = v.version({ boc_pad: 'boc_pad', kick: 'bd', odds: 3 }, 'boc', 1);
+      equal(r.params.odds, 3, 'versions leave numbers alone');
+      assert(RA.Genres.of('boc').palette.boc_pad.includes(r.params.boc_pad) && RA.Genres.of('boc').kits.kick.includes(r.params.kick), JSON.stringify(r.params));
+      if (r.changes.length) changed++;
+    }
+    assert(changed > 100, 'versions change something: ' + changed);
+    const t = v.timbre({ pad: 'dx_pad', kick: 'bd' }, 'saw');
+    assert(t && t.params.kick === 'bd' && RA.Genres.of('saw').palette.pad.includes(t.params.pad), 'timbre: one instrument');
   });
+
+  runner.test('Variation: tweaks keep numbers near the pattern\'s own value', () => {
+    const v = new RA.Variation({ rng: new RA.Rng(8) });
+    let p = { odds: 4, amp: 0.3, pad: 'haze' };
+    for (let k = 0; k < 500; k++) { const r = v.tweak(p, { odds: 4, amp: 0.3 }, 1); if (r) p = r.params; }
+    assert(p.odds >= 2 && p.odds <= 7 && Number.isInteger(p.odds), 'odds ' + p.odds);
+    assert(p.amp >= 0.3 * 0.4 - 1e-9 && p.amp <= 0.3 * 2 + 1e-9, 'amp ' + p.amp);
+    equal(p.pad, 'haze');
+    equal(v.tweak({ pad: 'haze' }, {}, 1), null);
+  });
+
 
   runner.test('LiveCoder hot-swaps loops and keeps their state', () => {
     const coder = makeCoder();
@@ -353,29 +373,32 @@
     equal(RA.Families.kitFamily('808bd'), 'kick');
   });
 
-  runner.test('Recipe: each entry is a new version of the pattern that still runs', async () => {
+  runner.test('Versions: every pattern\'s versions in every genre still run, and only the params line changes', async () => {
     const lib = new RA.SampleLibrary(() => {}, new RA.Logger());
     await lib.loadIndex();
     const coder = makeCoder();
-    const ctx = { rng: new RA.Rng(5), strength: 0.8, synthExists: (n) => !!RA.SynthPresets[n], sampleCount: (f) => lib.count(f) };
-    const sigs = new Set();
+    const v = new RA.Variation({ rng: new RA.Rng(5), sampleCount: (f) => lib.count(f) });
     const bad = [];
-    let changed = 0;
+    let changed = 0, n = 0;
+    const body = (c) => c.split('\n').filter((l) => !RA.CodeTools.PARAMS_LINE.test(l)).join('\n');
     for (const p of RA.PATTERNS) {
-      for (let k = 0; k < 3; k++) {
-        const r = RA.Recipe.roll(p, ctx);
-        sigs.add(r.sig);
-        if (r.changes.length) changed++;
-        const probe = coder.probe(r.code, 4);
+      const params = RA.CodeTools.paramsOf(p.code);
+      for (const g of Object.keys(p.genres || p.flavours)) {
+        if (!RA.Genres.of(g)) continue;
+        const r = v.version(params, g, 1);
+        n++;
+        if (!r.changes.length) continue;
+        changed++;
+        const code = RA.CodeTools.setParams(p.code, r.params);
+        if (body(code) !== body(p.code)) bad.push(p.id + ': body changed');
+        const probe = coder.probe(code, 4);
         if (!probe.ok) bad.push(`${p.id}: ${probe.error} (${r.changes.join(', ')})`);
       }
     }
     equal(bad, []);
-    assert(changed > RA.PATTERNS.length, `versions with changes: ${changed} of ${RA.PATTERNS.length * 3}`);
-    assert(sigs.size > RA.PATTERNS.length * 1.8, `distinct versions: ${sigs.size}`);
-    // slots
-    const r = RA.Recipe.roll({ id: 'x', code: "loop('a', (i) => { synth('$inst', 60); sleep($len) })", slots: { inst: ['bell'], len: [4] } }, ctx);
-    assert(r.code.includes("synth('") && r.code.includes('sleep(4)') && !r.code.includes('$'), r.code);
+    // fewer than before v4 on purpose: only the genre's own instruments and kits swap in
+    assert(changed > n * 0.3, `versions with changes: ${changed} of ${n}`);
+    return `${changed} of ${n} versions change something`;
   });
 
   runner.test('Memory: patterns heard lately weigh less and recover; versions are remembered', () => {
@@ -892,17 +915,19 @@
     assert(names.includes('clank') && names.includes('zap'), names.join(','));
   });
 
-  runner.test('Head/body split: mutations never touch inst lines or the fx line', () => {
+  runner.test('Head/body split: variation never touches inst lines, the fx line or the body', () => {
     const lib = new RA.InstrumentLibrary(RA.SynthPresets);
     const p = RA.PATTERNS.find((x) => x.id === 'dub_chord_stab');
     const code = RA.CodeTools.setFxParams(RA.CodeTools.withInstruments(p.code, lib), { amp: 0.9, lpf: 1234, res: 0.7, rev: 0.31, delay: 0.42, wobble: 0.1, crush: 0 });
     const { head, body } = RA.CodeTools.split(code);
     assert(head.includes("inst('stab'") && /^fx\(\{.*lpf: 1234/m.test(head), head);
     equal(RA.CodeTools.join(head, body), code);
-    const m = new RA.Mutator(new RA.Rng(5), () => 10);
+    // variation rewrites the params line only: the inst lines, the fx line and the body stay
+    const v = new RA.Variation({ rng: new RA.Rng(5) });
     let c = code;
-    for (let k = 0; k < 50; k++) { const r = m.mutate(c, p.code, 1); if (r) c = r.code; }
-    equal(RA.CodeTools.split(c).head, head);
+    for (let k = 0; k < 50; k++) { const r = v.version(RA.CodeTools.paramsOf(c), 'dub', 1); c = RA.CodeTools.setParams(c, r.params); }
+    const strip = (x) => x.split('\n').filter((l) => !RA.CodeTools.PARAMS_LINE.test(l)).join('\n');
+    equal(strip(c), strip(code));
   });
 
   window.addEventListener('load', () => runner.run(document.getElementById('results')));

@@ -168,7 +168,7 @@ RA.App = class App {
     }));
     this.composer = new RA.Composer({
       bank: this.bank, coder: this.coder, audio: this.audio, samples: this.samples, harmony: this.harmony,
-      drift: this.drift, arc: this.arc, fx: this.fx, instruments: this.instruments, mutator: new RA.Mutator(this.rng, (name) => this.samples.count(name)),
+      drift: this.drift, arc: this.arc, fx: this.fx, instruments: this.instruments,
       settings: this.settings, clock: this.clock, scheduler: this.scheduler, rng: this.rng,
       emitter: this.emitter, logger: this.logger, fast: this.fast,
     });

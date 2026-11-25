@@ -25,66 +25,73 @@ loop('break', (i) => {
 })` },
 
   { id: 'atmos_ride_hats', role: 'perc', flavours: { minimal: 1 }, energy: [0.4, 1], code: `
+params({ hat: 'hh27', kit: 'odx' })
 fx({ lpf: 11000, rev: 0.15 })
 loop('hats', (i) => {
   const vel = ring(0.12, 0.05, 0.08, 0.05)
   for (let k = 0; k < 16; k++) {
-    s('hh27', { n: 0, amp: vel.tick(), pan: 0.25, cut: 0.1 })
+    s(P.hat, { n: 0, amp: vel.tick(), pan: 0.25, cut: 0.1 })
     sleep(0.25)
   }
 })
 loop('ride', (i) => {
-  s('odx', { n: 4, amp: 0.1, pan: -0.3 })
+  s(P.kit, { n: 4, amp: 0.1, pan: -0.3 })
   sleep(1)
 })` },
 
   { id: 'atmos_shaker', role: 'perc', flavours: { minimal: 1 }, energy: [0.3, 1], code: `
+params({ kit: 'odx' })
 fx({ lpf: 8000, delay: 0.1 })
 loop('shaker', (i) => {
   const vel = ring(0.09, 0.04, 0.06, 0.04)
   for (let k = 0; k < 8; k++) {
-    s('odx', { n: 2, amp: vel.tick(), pan: 0.4 })
+    s(P.kit, { n: 2, amp: vel.tick(), pan: 0.4 })
     sleep(0.5)
   }
 })` },
 
   { id: 'atmos_sub_line', role: 'bass', flavours: { drill: 1 }, energy: [0.2, 1], code: `
+params({ sub: 'sub' })
 fx({ lpf: 600 })
 loop('sub', (i) => {
-  synth('sub', ROOT, { dur: 1.2, amp: 0.5 })
+  synth(P.sub, ROOT, { dur: 1.2, amp: 0.5 })
   sleep(1.5)
-  synth('sub', ROOT, { dur: 0.6, amp: 0.4 })
+  synth(P.sub, ROOT, { dur: 0.6, amp: 0.4 })
   sleep(1)
-  synth('sub', ROOT + 12, { dur: 0.3, amp: 0.25 })
+  synth(P.sub, ROOT + 12, { dur: 0.3, amp: 0.25 })
   sleep(1.5)
 })` },
 
   { id: 'atmos_rhodes', role: 'keys', flavours: { boc: 1 }, energy: [0.2, 1], code: `
+params({ keys: 'epiano' })
 fx({ rev: 0.4, delay: 0.25, lpf: 3500, wobble: 0.15 })
 loop('rhodes', (i) => {
-  synth('epiano', harm(1, '9'), { dur: 2, amp: 0.28 })
+  synth(P.keys, harm(1, '9'), { dur: 2, amp: 0.28 })
   sleep(2.75)
-  synth('epiano', harm(1, '7'), { dur: 0.8, amp: 0.18 })
+  synth(P.keys, harm(1, '7'), { dur: 0.8, amp: 0.18 })
   sleep(1.25)
 })` },
 
   { id: 'atmos_string_pad', role: 'keys', flavours: { saw: 1 }, energy: [0, 1], code: `
+params({ pad: 'strings' })
 fx({ rev: 0.55, lpf: 2200, wobble: 0.15 })
 loop('strings', (i) => {
-  synth('strings', harm(1, '9'), { dur: 13, attack: 3, release: 4, amp: 0.45 })
+  synth(P.pad, harm(1, '9'), { dur: 13, attack: 3, release: 4, amp: 0.45 })
   sleep(16)
 })` },
 
   { id: 'atmos_flute', role: 'lead', flavours: { boc: 1 }, energy: [0.3, 1], code: `
+params({ lead: 'mono' })
 fx({ rev: 0.5, delay: 0.35, lpf: 3200 })
 loop('flute', (i) => {
   for (const n of phrase('f', { beats: 8, density: 0.15, octave: 2, rest: 0.35 })) {
-    if (n.note) synth('mono', n.note, { dur: n.dur * 0.85, attack: 0.3, release: 1.5, amp: 0.2 * n.vel })
+    if (n.note) synth(P.lead, n.note, { dur: n.dur * 0.85, attack: 0.3, release: 1.5, amp: 0.2 * n.vel })
     sleep(n.dur)
   }
 })` },
 
   { id: 'atmos_piano', role: 'keys', flavours: { saw: 1 }, energy: [0.2, 1], code: `
+params({ keys: 'piano' })
 fx({ rev: 0.45, delay: 0.25, lpf: 5000 })
 loop('piano', (i) => {
   const voicing = harm(1, vary('ext', ['7', '9'], 8))
@@ -92,27 +99,29 @@ loop('piano', (i) => {
   let t = 0
   for (const r of rhythm) {
     sleep(r - t)
-    synth('piano', r == 0 ? voicing : voicing.slice(1), { amp: r == 0 ? 0.2 : 0.13 })
+    synth(P.keys, r == 0 ? voicing : voicing.slice(1), { amp: r == 0 ? 0.2 : 0.13 })
     t = r
   }
   sleep(4 - t)
 })` },
 
   { id: 'atmos_bell_arp', role: 'lead', flavours: { saw: 1 }, energy: [0.4, 1], code: `
+params({ bell: 'glass' })
 fx({ rev: 0.45, delay: 0.3, lpf: 6000 })
 loop('arp', (i) => {
   const notes = ring(...harm(2, '9'))
   for (let k = 0; k < 8; k++) {
-    if (k % 3 != 2) synth('glass', notes.tick(), { amp: 0.11, pan: Math.sin(k) * 0.5 })
+    if (k % 3 != 2) synth(P.bell, notes.tick(), { amp: 0.11, pan: Math.sin(k) * 0.5 })
     sleep(0.5)
   }
 })` },
 
   { id: 'atmos_space_sweep', role: 'texture', flavours: { space: 1 }, energy: [0.2, 1], code: `
+params({ nature: 'wind' })
 fx({ rev: 0.45 })
 loop('sweep', (i) => {
   fx({ lpf: 500 })
-  s('wind', { n: 2, amp: 0.18, rate: 0.8, attack: 2, release: 3 })
+  s(P.nature, { n: 2, amp: 0.18, rate: 0.8, attack: 2, release: 3 })
   for (let k = 1; k <= 8; k++) {
     sleep(2)
     fx({ lpf: 500 + k * 500 })
@@ -120,10 +129,11 @@ loop('sweep', (i) => {
 })` },
 
   { id: 'atmos_voice_air', role: 'texture', flavours: { space: 1 }, energy: [0, 1], code: `
+params({ voice: 'mouth' })
 fx({ lpf: 3000, rev: 0.65, delay: 0.3, wobble: 0.3 })
 loop('voice', (i) => {
   sleep(12)
-  if (i % 2 == 1) s('mouth', { n: 5, amp: 0.12, rate: 0.8, pan: -0.4 })
+  if (i % 2 == 1) s(P.voice, { n: 5, amp: 0.12, rate: 0.8, pan: -0.4 })
   sleep(4)
 })` },
 );

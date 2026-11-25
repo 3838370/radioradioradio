@@ -46,12 +46,41 @@ RA.CodeTools = class CodeTools {
     return dec ? v.toFixed(dec) : String(Math.round(v));
   }
 
-  // Instruments a layer plays: synth('name', ...) plus names chosen in code on synth lines,
-  // e.g. synth(vary('v', ['growl', 'dist_bass'], 8), ...). `known` filters the quoted words.
+  // ───── the params line: what may vary in a pattern ─────
+  // params({ pad: 'boc_pad', kick: '808bd', odds: 4 }) at the top; the code reads P.pad,
+  // P.kick, P.odds. The composer only rewrites this line (see Variation).
+
+  static PARAMS_LINE = /^params\(\{([^\n]*)\}\)[ \t]*$/m;
+
+  // The values of the params line: strings and numbers ({} if there's none).
+  static paramsOf(code) {
+    const m = CodeTools.PARAMS_LINE.exec(code);
+    const out = {};
+    if (!m) return out;
+    for (const [, k, s, n] of m[1].matchAll(/(\w+):\s*(?:'([^']*)'|(-?\d*\.?\d+))/g)) out[k] = s != null ? s : parseFloat(n);
+    return out;
+  }
+
+  // Writes the params line (replacing it, or adding it after the inst lines).
+  static setParams(code, params) {
+    const line = `params(${CodeTools.toCode(params)})`;
+    const m = CodeTools.PARAMS_LINE.exec(code);
+    if (m) return CodeTools.splice(code, m.index, m[0].length, line);
+    const lines = code.split('\n');
+    let i = 0;
+    while (i < lines.length && CodeTools.isInstLine(lines[i])) i++;
+    lines.splice(i, 0, line);
+    return lines.join('\n');
+  }
+
+  // Instruments a layer plays: synth('name', ...), the instruments in its params line, and
+  // names chosen in code on synth lines, e.g. synth(vary('v', ['bell', 'glass'], 8), ...).
+  // `known` (instrument names) filters the quoted words; without it, the built-in presets.
   static synthsUsed(code, known = null) {
+    const set = new Set(known || Object.keys(RA.SynthPresets));
     const names = [...code.matchAll(/synth\('(\w+)'/g)].map((m) => m[1]);
+    for (const v of Object.values(CodeTools.paramsOf(code))) if (set.has(v)) names.push(v);
     if (known) {
-      const set = new Set(known);
       for (const line of code.split('\n')) {
         if (!line.includes('synth(')) continue;
         for (const [, w] of line.matchAll(/'(\w+)'/g)) if (set.has(w)) names.push(w);
@@ -81,12 +110,12 @@ RA.CodeTools = class CodeTools {
 
   static isInstLine(line) { return /^inst\('/.test(line); }
 
-  // Leading inst(...) lines, the top-level fx line and the mute line are the head; the
-  // rest is the body.
+  // Leading inst(...) lines, the params line, the top-level fx line and the mute line are
+  // the head; the rest is the body.
   static split(code) {
     const lines = code.split('\n');
     let i = 0;
-    while (i < lines.length && (CodeTools.isInstLine(lines[i]) || /^fx\(\{[^\n]*\}\)\s*$/.test(lines[i]) || /^mute\([^\n]*\)\s*$/.test(lines[i]))) i++;
+    while (i < lines.length && (CodeTools.isInstLine(lines[i]) || /^(params|fx)\(\{[^\n]*\}\)\s*$/.test(lines[i]) || /^mute\([^\n]*\)\s*$/.test(lines[i]))) i++;
     return { head: lines.slice(0, i).join('\n'), body: lines.slice(i).join('\n') };
   }
 
@@ -106,7 +135,12 @@ RA.CodeTools = class CodeTools {
     return code.split('\n').map((l) => (l.startsWith(`inst('${name}',`) ? CodeTools.instLine(name, spec) : l)).join('\n');
   }
 
-  static samplesUsed(code) { return [...new Set([...code.matchAll(/\bs\('(\w+)'/g)].map((m) => m[1]))]; }
+  // Sample folders a layer plays: s('folder', ...) and the folders in its params line.
+  static samplesUsed(code) {
+    const names = [...code.matchAll(/\bs\('(\w+)'/g)].map((m) => m[1]);
+    for (const v of Object.values(CodeTools.paramsOf(code))) if (typeof v === 'string' && RA.Families.kitFamily(v)) names.push(v);
+    return [...new Set(names)];
+  }
 
   // ───── the sequencer's lines ─────
   // mute('a:1', 'sub') in the head, and the hand-made rows at the end, one loop per cycle

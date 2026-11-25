@@ -30,19 +30,20 @@ RA.LiveCoder = class LiveCoder {
   // Compiles code for a layer and (re)defines its loops; new loops start at startBeat.
   load(layer, code, startBeat) {
     const defined = {};
-    this.compiling = { defined, fx: null };
+    this.compiling = { defined, fx: null, params: null };
     try {
       this.compile(code)(this.env);
     } catch (e) {
       this.compiling = null;
       return { ok: false, error: e.message };
     }
-    const { fx, mute } = this.compiling;
+    const { fx, mute, params } = this.compiling;
     this.compiling = null;
     if (!Object.keys(defined).length) return { ok: false, error: 'no loop() defined' };
 
     const start = startBeat != null ? startBeat : Math.ceil(this.scheduler.clock.beat / 4) * 4;
     layer.define(defined, start);
+    layer.params = params || {};
     layer.mutes = new Set(mute || []);
     layer.hand = new Set(RA.CodeTools.hitsKeys(code));
     layer.prevGood = layer.code || null;
@@ -133,13 +134,15 @@ RA.LiveCoder = class LiveCoder {
     const saved = { compiling: this.compiling, cur: this.cur, probing: this.probing, inProbe: this.inProbe };
     this.inProbe = true; // side effects such as inst() are skipped while probing
     let error = null;
-    this.compiling = { defined, fx: null };
+    this.compiling = { defined, fx: null, params: null };
+    let params = {};
     try {
       this.compile(code)(this.env);
       if (!Object.keys(defined).length) throw new Error('no loop() defined');
+      params = this.compiling.params || {};
       this.compiling = null;
       this.probing = found;
-      const layer = { id: 'probe', vars: new Map() };
+      const layer = { id: 'probe', vars: new Map(), params };
       for (const [name, fn] of Object.entries(defined)) {
         const loop = new RA.Loop(name, fn, 0);
         for (let k = 0; k < iterations; k++) {
@@ -153,7 +156,7 @@ RA.LiveCoder = class LiveCoder {
       error = e.message;
     }
     Object.assign(this, saved);
-    return { ok: !error, error, samples: [...found].map((k) => JSON.parse(k)), lengths };
+    return { ok: !error, error, samples: [...found].map((k) => JSON.parse(k)), lengths, params };
   }
 
   noteSample(name, n) {

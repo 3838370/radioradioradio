@@ -4,6 +4,7 @@
 RA.PATTERNS = RA.PATTERNS || [];
 RA.PATTERNS.push(
   { id: 'ae_poly_kit', role: 'drums', flavours: { ae: 1 }, energy: [0.3, 1], code: `
+params({ odds: 4 })
 fx({ lpf: 10000, crush: 0.2 })
 loop('kick', (i) => {
   const b = beat('k', { style: 'ae', density: 0.5 })
@@ -22,17 +23,18 @@ loop('snare', (i) => {
 loop('hats', (i) => {
   const step = vary('step', [0.25, 1 / 3, 0.2], 4)
   for (let k = 0; k < Math.round(3 / step); k++) {
-    if (!one_in(4)) synth('hat_synth', 60, { amp: rrand(0.15, 0.35) })
+    if (!one_in(P.odds)) synth('hat_synth', 60, { amp: rrand(0.15, 0.35) })
     sleep(step)
   }
 })` },
 
   { id: 'ae_broken_break', role: 'drums', flavours: { drill: 1, ae: 0.7 }, energy: [0.4, 1], code: `
+params({ odds: 6 })
 fx({ lpf: 9000, crush: 0.3, delay: 0.1 })
 loop('break', (i) => {
   const order = vary('order', [[0, 6, 2, 11, 4, 9, 13, 7], [3, 3, 8, 1, 12, 12, 5, 14], [0, 1, 0, 1, 10, 4, 15, 2]], 2)
   for (let k = 0; k < 16; k++) {
-    const st = one_in(6)
+    const st = one_in(P.odds)
     const n = order[k % 8] + 16 * (i % 2)
     if (st) {
       for (let r = 0; r < 3; r++) {
@@ -99,9 +101,10 @@ loop('chords', (i) => {
 })` },
 
   { id: 'ae_drone', role: 'keys', flavours: { ae: 1 }, energy: [0, 0.8], code: `
+params({ pad_dark: 'dark_pad' })
 fx({ rev: 0.5, wobble: 0.3 })
 loop('drone', (i) => {
-  synth('dark_pad', [ROOT + 12, ROOT + 18], { dur: 12, attack: 3, release: 4, amp: 0.4 })
+  synth(P.pad_dark, [ROOT + 12, ROOT + 18], { dur: 12, attack: 3, release: 4, amp: 0.4 })
   sleep(16)
 })` },
 
@@ -116,11 +119,12 @@ loop('bursts', (i) => {
 })` },
 
   { id: 'ae_voice_glitch', role: 'texture', flavours: { ae: 1 }, energy: [0.2, 1], code: `
+params({ odds: 3 })
 fx({ delay: 0.3, rev: 0.25, crush: 0.3 })
 loop('voice', (i) => {
   const src = vary('src', ['diphone', 'speechless', 'numbers'], 4)
   for (let k = 0; k < 10; k++) {
-    if (one_in(3)) s(src, { n: rrand_i(0, 9), begin: rrand(0, 0.6), cut: choose([0.1, 0.2]), amp: 0.2, rate: choose([0.7, 1, 1.4]), pan: rrand(-0.8, 0.8) })
+    if (one_in(P.odds)) s(src, { n: rrand_i(0, 9), begin: rrand(0, 0.6), cut: choose([0.1, 0.2]), amp: 0.2, rate: choose([0.7, 1, 1.4]), pan: rrand(-0.8, 0.8) })
     sleep(0.5)
   }
 })` },

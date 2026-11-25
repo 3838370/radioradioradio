@@ -3,16 +3,22 @@
 // time, plays a break or fill before a section changes, and every `pace` bars makes one
 // move: add or drop layers toward the target, replace a layer that no longer fits the genre,
 // or one move chosen by score (see candidates()): swap a pattern, play a new version of it,
-// change a synth for another of its family, mutate, reset, drop a layer out for a few bars,
-// reharmonise, scatter a collage phrase, push or drag the tempo.
-// Every pattern comes in as a fresh version of itself (Recipe), and the session memory
-// makes what was heard lately less likely. Locked layers are never touched.
-// Emits layer:add / layer:change / layer:remove.
+// change an instrument for another of its family, tweak a number, reset, drop a layer out
+// for a few bars, reharmonise, scatter a collage phrase, push or drag the tempo.
+// Every pattern comes in as a fresh version of itself, and the session memory makes what was
+// heard lately less likely. Versions, timbres and tweaks only change the values of the
+// layer's params({ ... }) line (see Variation), never the rest of its code.
+// Locked layers are never touched. Emits layer:add / layer:change / layer:remove.
 RA.Composer = class Composer {
   static CALM = ['sparse', 'drift', 'release', 'collapse', 'suspense'];
 
-  constructor({ bank, coder, audio, samples, harmony, drift, arc, fx = null, instruments = null, mutator, settings, clock, scheduler, rng, emitter, logger, fast }) {
-    Object.assign(this, { bank, coder, audio, samples, harmony, drift, arc, fx, instruments, mutator, settings, clock, scheduler, rng, emitter, logger, fast });
+  constructor({ bank, coder, audio, samples, harmony, drift, arc, fx = null, instruments = null, settings, clock, scheduler, rng, emitter, logger, fast }) {
+    Object.assign(this, { bank, coder, audio, samples, harmony, drift, arc, fx, instruments, settings, clock, scheduler, rng, emitter, logger, fast });
+    this.variation = new RA.Variation({
+      rng,
+      synthExists: (n) => (instruments ? instruments.has(n) : !!RA.SynthPresets[n]),
+      sampleCount: (f) => samples.count(f),
+    });
     this.layers = new Map(); // role -> Layer
     this.bar = 0;
     this.nextMove = 0;
@@ -212,21 +218,31 @@ RA.Composer = class Composer {
     return null;
   }
 
-  // A new version of a pattern (Recipe): its synths, kits and sample variants partly swapped
-  // within their families. Tries a few times for a version not heard this session.
+  // A new version of a pattern: some of its params (instruments, kits) swapped for others
+  // of their family that the genre allows. Tries a few times for a version not heard this
+  // session. Returns { code, changes, sig }.
   roll(pattern) {
-    const ctx = {
-      rng: this.rng,
-      strength: 0.3 + 0.7 * this.settings.get('variation'),
-      synthExists: (n) => (this.instruments ? this.instruments.has(n) : !!RA.SynthPresets[n]),
-      sampleCount: (f) => this.samples.count(f),
-    };
+    const params = RA.CodeTools.paramsOf(pattern.code);
+    const strength = 0.3 + 0.7 * this.settings.get('variation');
     let r = null;
     for (let k = 0; k < 4; k++) {
-      r = RA.Recipe.roll(pattern, ctx);
-      if (!this.memory.heard(r.sig)) break;
+      r = this.variation.version(params, this.genre, strength);
+      if (!this.memory.heard(pattern.id + r.sig)) break;
     }
-    return r;
+    const code = r.changes.length ? RA.CodeTools.setParams(pattern.code, r.params) : pattern.code;
+    return { code, changes: r.changes, sig: pattern.id + r.sig };
+  }
+
+  // Loads new params into a layer (its code with the params line rewritten).
+  loadParams(layer, params, desc, bar) {
+    const code = RA.CodeTools.setParams(layer.code, params);
+    const probe = this.coder.probe(code);
+    if (!probe.ok) return false;
+    this.samples.preload(probe.samples);
+    if (!this.coder.load(layer, this.fullCode(code)).ok) return false;
+    this.emitter.emit('layer:change', { layer, desc });
+    this.logger.add(`bar ${bar}: ~ ${layer.role}: ${desc}`);
+    return true;
   }
 
   // The step count the listener chose (STEPS), or null on auto.
@@ -344,11 +360,16 @@ RA.Composer = class Composer {
     const out = [];
     for (const l of free) {
       out.push({ score: (0.08 + 0.3 * v) * RA.MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });
-      out.push({ score: 0.2 * (0.5 + v) * RA.MathUtil.clamp(age(l) / 24, 0.3, 1.5) * I('reroll') / free.length, run: () => this.reroll(l, bar) });
-      if (RA.CodeTools.synthsUsed(l.code).some((n) => RA.Families.synthFamily(n))) {
+      // versions and timbres only where the genre has other instruments or kits for its params;
+      // tweaks only where it has numbers
+      const params = RA.CodeTools.paramsOf(l.code);
+      if (Object.values(params).some((x) => typeof x === 'string' && this.variation.options(x, this.genre).length)) {
+        out.push({ score: 0.2 * (0.5 + v) * RA.MathUtil.clamp(age(l) / 24, 0.3, 1.5) * I('reroll') / free.length, run: () => this.reroll(l, bar) });
+      }
+      if (this.variation.canTimbre(params, this.genre)) {
         out.push({ score: 0.12 * (0.5 + v) * I('timbre') / free.length, run: () => this.timbre(l, bar) });
       }
-      out.push({ score: 0.35 * I('mutate') / free.length, run: () => this.mutate(l, bar) });
+      if (Composer.hasNumbers(l.code)) out.push({ score: 0.35 * I('mutate') / free.length, run: () => this.mutate(l, bar) });
       if (l.code !== this.fullCode(l.base || l.pattern.code)) out.push({ score: 0.15 * (1 - v) * I('reset') / free.length, run: () => this.reset(l, bar) });
       if (free.length >= 2 && !l.muted) out.push({ score: (0.04 + 0.25 * dubby) * I('dropout') / free.length, run: () => this.dropout(l, bar) });
     }
@@ -360,35 +381,21 @@ RA.Composer = class Composer {
     return out.filter((o) => o.score > 0);
   }
 
-  // The same pattern, another version (Recipe), from the next phrase.
+  // The same pattern, another version (other instruments and kits of the genre), with the
+  // layer's head (fx line, mutes) kept.
   reroll(layer, bar) {
     const r = this.roll(layer.pattern);
-    if (!r.changes.length) return this.mutate(layer, bar);
-    const code = this.fullCode(r.code);
-    const probe = this.coder.probe(code);
-    if (!probe.ok) return this.mutate(layer, bar);
-    this.samples.preload(probe.samples);
-    if (!this.coder.load(layer, code).ok) return;
+    if (!r.changes.length) return;
+    const params = RA.CodeTools.paramsOf(r.code);
+    if (!this.loadParams(layer, params, 'new version: ' + r.changes.slice(0, 3).join(', '), bar)) return;
     layer.base = r.code;
     this.memory.note(layer.patternId, r.sig, bar);
-    const desc = r.changes.slice(0, 3).join(', ');
-    this.emitter.emit('layer:change', { layer, desc: 'new version: ' + desc });
-    this.logger.add(`bar ${bar}: ${layer.role} new version: ${desc}`);
   }
 
-  // One synth of the layer swapped for another of its family (timbre, same notes).
+  // One instrument of the layer swapped for another of its family in this genre (same notes).
   timbre(layer, bar) {
-    const used = RA.CodeTools.synthsUsed(layer.code).filter((n) => RA.Families.synthFamily(n));
-    if (!used.length) return this.mutate(layer, bar);
-    const from = this.rng.pick(used);
-    const exists = (n) => (this.instruments ? this.instruments.has(n) : !!RA.SynthPresets[n]);
-    const to = RA.Families.alt(RA.Families.SYNTHS[RA.Families.synthFamily(from)], from, this.rng, exists);
-    if (!to) return this.mutate(layer, bar);
-    const body = RA.CodeTools.split(layer.code).body.split(`synth('${from}'`).join(`synth('${to}'`);
-    const code = this.fullCode(body);
-    if (!this.coder.probe(code).ok || !this.coder.load(layer, code).ok) return;
-    this.emitter.emit('layer:change', { layer, desc: `${from} → ${to}` });
-    this.logger.add(`bar ${bar}: ~ ${layer.role}: ${from} → ${to}`);
+    const r = this.variation.timbre(RA.CodeTools.paramsOf(layer.code), this.genre);
+    if (r) this.loadParams(layer, r.params, r.change, bar);
   }
 
   // Dub-style drop: the layer goes quiet for 1-4 bars from the next bar, then comes back.
@@ -471,7 +478,7 @@ RA.Composer = class Composer {
       const pattern = this.pickPattern(role);
       if (!pattern) continue;
       const layer = this.enter(role, pattern, this.phraseStart(bar));
-      if (layer) this.logger.add(`bar ${bar}: + ${role} (${pattern.id}${layer.recipe.length ? ': ' + layer.recipe.slice(0, 2).join(', ') : ''})`);
+      if (layer) this.logger.add(`bar ${bar}: + ${role} (${pattern.id}${layer.changes.length ? ': ' + layer.changes.slice(0, 2).join(', ') : ''})`);
       return;
     }
   }
@@ -505,20 +512,17 @@ RA.Composer = class Composer {
     }
   }
 
+  // A small move of one of the layer's numeric params (odds, hits...), near the pattern's own
+  // value.
   mutate(layer, bar) {
-    const v = this.settings.get('variation');
-    for (let attempt = 0; attempt < 6; attempt++) {
-      const m = this.mutator.mutate(layer.code, layer.base || layer.pattern.code, v);
-      if (!m) continue;
-      const probe = this.coder.probe(m.code);
-      if (!probe.ok) continue;
-      this.samples.preload(probe.samples);
-      if (!this.coder.load(layer, m.code).ok) continue;
-      this.emitter.emit('layer:change', { layer, desc: m.desc });
-      this.logger.add(`bar ${bar}: ~ ${layer.role}: ${m.desc}`);
-      return;
+    const original = RA.CodeTools.paramsOf(layer.base || layer.pattern.code);
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const r = this.variation.tweak(RA.CodeTools.paramsOf(layer.code), original, this.settings.get('variation'));
+      if (r && this.loadParams(layer, r.params, r.change, bar)) return;
     }
   }
+
+  static hasNumbers(code) { return Object.values(RA.CodeTools.paramsOf(code)).some((v) => typeof v === 'number'); }
 
   // A layer's code carries everything that makes its sound: the inst(...) definitions of
   // the instruments it plays, then the pattern.
@@ -526,7 +530,7 @@ RA.Composer = class Composer {
     return this.instruments ? RA.CodeTools.withInstruments(code, this.instruments) : code;
   }
 
-  // Back to the version it came in with (its recipe), before any mutations.
+  // Back to the version it came in with, before any tweaks or timbre moves.
   reset(layer, bar) {
     if (!this.coder.load(layer, this.fullCode(layer.base || layer.pattern.code)).ok) return;
     this.emitter.emit('layer:change', { layer, desc: 'back to original' });
@@ -553,7 +557,7 @@ RA.Composer = class Composer {
     if (!res.ok) { this.logger.add(`skipped ${pattern.id}: ${res.error}`, 'err'); return null; }
     layer.base = base;
     layer.enteredBar = startBar;
-    layer.recipe = base === r.code ? r.changes : [];
+    layer.changes = base === r.code ? r.changes : [];
     this.memory.note(pattern.id, base === r.code ? r.sig : null, startBar);
     const quick = role === 'drums' || role === 'bass' || startBar === 0;
     const at = Math.max(this.audio.ac.currentTime, this.clock.timeOf(startBeat));

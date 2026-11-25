@@ -166,6 +166,19 @@ RA.LanguageApi = class LanguageApi {
         }, meta);
       },
 
+      // params({ pad: 'boc_pad', kick: '808bd', odds: 4 }): top level, what may vary in this
+      // layer; the code reads them as P.pad, P.kick, P.odds. The composer changes the values
+      // (other instruments of the family, kits, numbers near these) and never the code.
+      params(values) {
+        if (coder.compiling) coder.compiling.params = Object.assign({}, coder.compiling.params, values);
+      },
+
+      // The params of the layer running now (or being compiled).
+      get P() {
+        if (coder.compiling) return coder.compiling.params || {};
+        return (coder.cur && coder.cur.layer.params) || {};
+      },
+
       // mute('drumtraks:6', 'sub'): top level, silences those sounds in this layer
       // (samples as 'folder:n', synths by instrument name). The sequencer writes this line.
       mute(...keys) {
