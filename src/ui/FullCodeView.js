@@ -1,8 +1,10 @@
+import { Theme } from './Theme.js';
+
 // FullCodeView: every playing layer's code as one program, in full and live: it follows
 // each change the radio makes (with freeze on, nothing changes). Scrolls with the wheel;
 // [COPY] puts the whole text on the clipboard. Each layer's header line lights up when
 // that layer sounds.
-RA.FullCodeView = class FullCodeView {
+export class FullCodeView {
   constructor(highlighter) {
     this.highlighter = highlighter;
     this.scroll = 0;     // in rows
@@ -37,7 +39,7 @@ RA.FullCodeView = class FullCodeView {
 
   // flashes: one flash time per layer, in the same order as the sections
   draw(p, x, y, w, h, m, text, flashes, now) {
-    const T = RA.Theme;
+    const T = Theme;
     this.rect = { x, y, w, h };
     this.hits = [];
     p.noFill();

@@ -3,7 +3,7 @@
 // (hot-swapped at the loops' next iteration) and closes it; Ctrl/Cmd+Enter runs it and
 // keeps editing, Esc closes without running, Tab inserts two spaces. Clicks in `keepOpen`
 // elements (the side panels, which insert code here) leave it open.
-RA.CodeEditor = class CodeEditor {
+export class CodeEditor {
   static HINT = 'click outside: run & close · Ctrl+Enter run · Esc cancel';
 
   constructor(p, parent, { onRun, onOpen, onClose, keepOpen = [] }) {

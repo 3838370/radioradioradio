@@ -1,8 +1,12 @@
+import { Equalizer } from '../audio/Equalizer.js';
+import { MathUtil } from '../core/MathUtil.js';
+import { Theme } from './Theme.js';
+
 // EqCurve: the master EQ drawn as one response curve (20 Hz..20 kHz, ±12 dB), with a
 // handle per band. Drag a handle: left/right moves its frequency, up/down its gain.
 // [RESET] (top right) or a double-click sets it flat again. onChange(values) gets the new
 // values on release and on reset.
-RA.EqCurve = class EqCurve {
+export class EqCurve {
   static POINTS = 96;
 
   constructor(eq, onChange) {
@@ -26,8 +30,8 @@ RA.EqCurve = class EqCurve {
 
   // Screen y for a level in dB (the same scale for the curve and the handles).
   yOf(db) {
-    const r = this.rect, G = RA.Equalizer.GAIN;
-    return r.y + r.h / 2 - (RA.MathUtil.clamp(db, -G, G) / G) * (r.h / 2 - 2);
+    const r = this.rect, G = Equalizer.GAIN;
+    return r.y + r.h / 2 - (MathUtil.clamp(db, -G, G) / G) * (r.h / 2 - 2);
   }
 
   // The handles sit on the curve itself: at each band's handle frequency, at the level the
@@ -36,7 +40,7 @@ RA.EqCurve = class EqCurve {
     const r = this.rect;
     const key = `${r.x},${r.y},${r.w},${r.h}`;
     if (this.points && this.points.key === key) return this.points.list;
-    const list = RA.Equalizer.BANDS.map((b) => {
+    const list = Equalizer.BANDS.map((b) => {
       const hf = this.eq.handleFreq(b.id);
       return { id: b.id, x: r.x + this.uOf(hf) * r.w, y: this.yOf(this.eq.responseAt(hf)) };
     });
@@ -70,9 +74,9 @@ RA.EqCurve = class EqCurve {
       this.hover = this.contains(mx, my) && !this.hoverReset ? this.nearest(mx, my) : null;
       return;
     }
-    const r = this.rect, G = RA.Equalizer.GAIN;
-    const u = RA.MathUtil.clamp((mx - r.x) / r.w, 0, 1);
-    const db = RA.MathUtil.clamp(((r.y + r.h / 2 - my) / (r.h / 2 - 2)) * G, -G, G);
+    const r = this.rect, G = Equalizer.GAIN;
+    const u = MathUtil.clamp((mx - r.x) / r.w, 0, 1);
+    const db = MathUtil.clamp(((r.y + r.h / 2 - my) / (r.h / 2 - 2)) * G, -G, G);
     this.eq.setAt(this.drag, this.freqAt(u), Math.abs(db) < 0.6 ? 0 : db); // snaps to 0 dB
     this.invalidate();
   }
@@ -86,13 +90,13 @@ RA.EqCurve = class EqCurve {
   }
 
   reset() {
-    this.eq.set(RA.Equalizer.flat());
+    this.eq.set(Equalizer.flat());
     this.invalidate();
-    this.onChange(RA.Equalizer.flat());
+    this.onChange(Equalizer.flat());
   }
 
   draw(p, x, y, w, h) {
-    const T = RA.Theme;
+    const T = Theme;
     this.rect = { x, y, w, h };
     if (!this.curve) this.curve = this.eq.response(this.freqs);
     p.noFill();
@@ -122,10 +126,10 @@ RA.EqCurve = class EqCurve {
       p.rect(hd.x - 2.5, hd.y - 2.5, 6, 6);
     }
     p.fill(T.dim);
-    p.textSize(RA.Theme.size.small - 1);
+    p.textSize(Theme.size.small - 1);
     p.text('EQ', x + 4, y + 11);
     // [RESET], brighter when the curve isn't flat
-    const flat = RA.Equalizer.BANDS.every((b) => this.eq.values[b.id].g === 0);
+    const flat = Equalizer.BANDS.every((b) => this.eq.values[b.id].g === 0);
     const rw = p.textWidth('[RESET]');
     this.resetRect = { x: x + w - rw - 6, y: y + 2, w: rw + 4, h: 12 };
     p.fill(this.hoverReset ? T.bright : flat ? T.faint : T.dim);
@@ -135,7 +139,7 @@ RA.EqCurve = class EqCurve {
       const id = this.drag || this.hover;
       const v = this.eq.values[id];
       const f = v.f >= 1000 ? (v.f / 1000).toFixed(1) + 'k' : Math.round(v.f);
-      const label = `${RA.Equalizer.BANDS.find((b) => b.id === id).label} ${f}Hz ${v.g >= 0 ? '+' : ''}${v.g.toFixed(1)}dB`;
+      const label = `${Equalizer.BANDS.find((b) => b.id === id).label} ${f}Hz ${v.g >= 0 ? '+' : ''}${v.g.toFixed(1)}dB`;
       p.textAlign(p.RIGHT);
       p.text(label, x + w - 4, y + h - 4);
       p.textAlign(p.LEFT);

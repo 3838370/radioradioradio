@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Melodies: the melody styles behind melody() in pattern code, one per family of genres,
 // and a bank of short original cells to start from (scale steps over a root, durations in
 // beats, null = rest). None of them closes phrases like a song; each holds its idea and
@@ -10,7 +12,7 @@
 //                to play; notes leave the mode, slightly detuned; probabilities wander.
 //   cells        Efdemin, dub: two or three tiny bell figures, each looping in its own cycle
 //                length (3 against 4 against 5), so their sum keeps shifting.
-RA.MelodyBank = {
+export const MelodyBank = {
   ostinato: [
     [[0, 0.5], [2, 0.5], [4, 0.5], [2, 0.5]],
     [[0, 0.5], [4, 0.5], [7, 0.5], [4, 0.5], [2, 0.5], [4, 0.5]],
@@ -65,10 +67,10 @@ RA.MelodyBank = {
 };
 
 // A cell that repeats and changes one thing at a time.
-RA.OstinatoGen = class OstinatoGen {
+export class OstinatoGen {
   constructor(rng, cell = null) {
     this.rng = rng;
-    this.cell = (cell || rng.pick(RA.MelodyBank.ostinato)).map((n) => n.slice());
+    this.cell = (cell || rng.pick(MelodyBank.ostinato)).map((n) => n.slice());
     this.shift = 0;    // transposition in scale steps
     this.pos = 0;      // where in the cell the next note starts (cells run across bars)
     this.hold = rng.int(4, 8);
@@ -82,7 +84,7 @@ RA.OstinatoGen = class OstinatoGen {
     else if (r < 0.45) this.shift = this.rng.pick([-2, -1, 0, 1, 2, 3]);         // transpose
     else if (r < 0.65) { const n = this.rng.pick(c); if (n[0] != null) n[0] += this.rng.pick([-7, 7]); } // octave
     else if (r < 0.85) { const n = this.rng.pick(c); if (n[0] != null) n[0] += this.rng.pick([-2, -1, 1, 2]); } // a note
-    else this.cell = this.rng.pick(RA.MelodyBank.ostinato).map((n) => n.slice()); // a new cell, now and then
+    else this.cell = this.rng.pick(MelodyBank.ostinato).map((n) => n.slice()); // a new cell, now and then
   }
 
   // [{ step, dur, vel }] filling `beats`
@@ -102,10 +104,10 @@ RA.OstinatoGen = class OstinatoGen {
 };
 
 // Long notes that wander and are never quite in tune.
-RA.DriftGen = class DriftGen {
+export class DriftGen {
   constructor(rng) {
     this.rng = rng;
-    this.line = rng.pick(RA.MelodyBank.drift).map((n) => n.slice());
+    this.line = rng.pick(MelodyBank.drift).map((n) => n.slice());
     this.pos = 0;
     this.left = 0; // beats still to play of the current note (notes run across bars)
     this.hold = rng.int(2, 5);
@@ -120,7 +122,7 @@ RA.DriftGen = class DriftGen {
         if (this.pos > 0 && this.pos % this.line.length === 0 && ++this.rounds >= this.hold) {
           this.rounds = 0;
           this.hold = this.rng.int(2, 5);
-          if (this.rng.chance(0.3)) this.line = this.rng.pick(RA.MelodyBank.drift).map((n) => n.slice());
+          if (this.rng.chance(0.3)) this.line = this.rng.pick(MelodyBank.drift).map((n) => n.slice());
           else { const n = this.rng.pick(this.line); if (n[0] != null) n[0] += this.rng.pick([-2, -1, 1, 2]); }
         }
         this.cur = this.line[this.pos % this.line.length];
@@ -140,7 +142,7 @@ RA.DriftGen = class DriftGen {
 };
 
 // An odd-length step sequence where each step plays with its own probability.
-RA.ProbabilityGen = class ProbabilityGen {
+export class ProbabilityGen {
   constructor(rng) {
     this.rng = rng;
     this.make();
@@ -150,7 +152,7 @@ RA.ProbabilityGen = class ProbabilityGen {
     const r = this.rng;
     this.len = r.pick([5, 7, 9, 11, 13]);
     this.unit = r.pick([0.25, 0.25, 1 / 3, 0.5]);
-    this.set = r.pick(RA.MelodyBank.sets);
+    this.set = r.pick(MelodyBank.sets);
     this.steps = Array.from({ length: this.len }, () => ({ semi: r.pick(this.set) + 12 * r.pick([0, 0, 1, -1]), p: r.float(0.2, 0.95), detune: r.float(-35, 35) }));
     this.pos = 0;
     this.bars = 0;
@@ -158,7 +160,7 @@ RA.ProbabilityGen = class ProbabilityGen {
 
   next(beats = 4) {
     if (++this.bars > this.rng.int(8, 16)) this.make();
-    for (const s of this.steps) s.p = RA.MathUtil.clamp(s.p + this.rng.float(-0.12, 0.12), 0.1, 1);
+    for (const s of this.steps) s.p = MathUtil.clamp(s.p + this.rng.float(-0.12, 0.12), 0.1, 1);
     const out = [];
     let t = 0;
     while (t < beats - 1e-9) {
@@ -174,7 +176,7 @@ RA.ProbabilityGen = class ProbabilityGen {
 };
 
 // Two or three little figures, each in its own cycle length, on half beats.
-RA.CellsGen = class CellsGen {
+export class CellsGen {
   constructor(rng) {
     this.rng = rng;
     this.pick();
@@ -186,8 +188,8 @@ RA.CellsGen = class CellsGen {
     const lens = new Set();
     this.voices = [];
     for (let k = this.rng.int(2, 3); k > 0; k--) {
-      let c = this.rng.pick(RA.MelodyBank.cells);
-      for (let tries = 0; tries < 6 && lens.has(c.length); tries++) c = this.rng.pick(RA.MelodyBank.cells);
+      let c = this.rng.pick(MelodyBank.cells);
+      for (let tries = 0; tries < 6 && lens.has(c.length); tries++) c = this.rng.pick(MelodyBank.cells);
       lens.add(c.length);
       this.voices.push({ cell: c.slice(), oct: this.rng.pick([0, 0, 1]) });
     }

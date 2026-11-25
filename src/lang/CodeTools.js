@@ -1,5 +1,8 @@
+import { SynthPresets } from '../audio/SynthPresets.js';
+import { Families } from '../music/Families.js';
+
 // CodeTools: small, safe text edits on pattern code used by the editing UI.
-RA.CodeTools = class CodeTools {
+export class CodeTools {
   static FX_LINE = /^fx\(\{([^\n]*)\}\)[ \t]*$/m; // top-level only (lines inside loops are indented)
 
   static splice(code, start, len, str) { return code.slice(0, start) + str + code.slice(start + len); }
@@ -77,7 +80,7 @@ RA.CodeTools = class CodeTools {
   // names chosen in code on synth lines, e.g. synth(vary('v', ['bell', 'glass'], 8), ...).
   // `known` (instrument names) filters the quoted words; without it, the built-in presets.
   static synthsUsed(code, known = null) {
-    const set = new Set(known || Object.keys(RA.SynthPresets));
+    const set = new Set(known || Object.keys(SynthPresets));
     const names = [...code.matchAll(/synth\('(\w+)'/g)].map((m) => m[1]);
     for (const v of Object.values(CodeTools.paramsOf(code))) if (set.has(v)) names.push(v);
     if (known) {
@@ -138,7 +141,7 @@ RA.CodeTools = class CodeTools {
   // Sample folders a layer plays: s('folder', ...) and the folders in its params line.
   static samplesUsed(code) {
     const names = [...code.matchAll(/\bs\('(\w+)'/g)].map((m) => m[1]);
-    for (const v of Object.values(CodeTools.paramsOf(code))) if (typeof v === 'string' && RA.Families.kitFamily(v)) names.push(v);
+    for (const v of Object.values(CodeTools.paramsOf(code))) if (typeof v === 'string' && Families.kitFamily(v)) names.push(v);
     return [...new Set(names)];
   }
 

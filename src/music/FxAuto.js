@@ -1,7 +1,10 @@
+import { FxRack } from '../audio/FxRack.js';
+import { Composer } from './Composer.js';
+
 // FxAuto: the effects the radio plays by itself. Now and then an effect pad that suits the
 // section, an Aphex-style jump of the delay time, and a break or fill on the last bar before
 // the arc moves on. `c` is the Composer.
-RA.FxAuto = class FxAuto {
+export class FxAuto {
   constructor(c) {
     this.c = c;
   }
@@ -12,7 +15,7 @@ RA.FxAuto = class FxAuto {
     const p = settings.get('fxAuto');
     if (!p || fx.autoActive() || !rng.chance(p * 0.08)) return;
     const sec = arc.section;
-    const calm = RA.Composer.CALM.includes(sec);
+    const calm = Composer.CALM.includes(sec);
     const id = rng.weighted(calm
       ? [['dub', 3], ['warp', 2], ['wash', 3], ['wobble', 2], ['throw', 2]]
       : sec === 'dread'
@@ -20,7 +23,7 @@ RA.FxAuto = class FxAuto {
         : [['throw', 3], ['sweep', 2], ['stutter', sec === 'surge' ? 3 : 2], ['dub', 1], ['tapestop', sec === 'tension' ? 0.6 : sec === 'peak' || sec === 'surge' ? 1.2 : 0]]);
     const bars = id === 'stutter' || id === 'tapestop' ? 1 : rng.int(1, 4);
     fx.pulse(id, bars * 4 * clock.spb());
-    const pad = RA.FxRack.PADS.find((x) => x.id === id);
+    const pad = FxRack.PADS.find((x) => x.id === id);
     logger.add(`bar ${bar}: fx ${pad.label.toLowerCase()} (${bars} bar${bars > 1 ? 's' : ''})`);
   }
 
@@ -29,7 +32,7 @@ RA.FxAuto = class FxAuto {
     const { settings, fx, rng, logger } = this.c;
     if (!settings.get('delayAuto') || !rng.chance(this.c.fast ? 0.2 : 0.05)) return;
     const current = settings.get('delayBeats');
-    const [name, beats] = rng.pick(RA.FxRack.DELAY_NOTES.filter(([, b]) => Math.abs(b - current) > 0.01));
+    const [name, beats] = rng.pick(FxRack.DELAY_NOTES.filter(([, b]) => Math.abs(b - current) > 0.01));
     fx.setDelayBeats(beats);
     logger.add(`bar ${bar}: delay → ${name}`);
   }

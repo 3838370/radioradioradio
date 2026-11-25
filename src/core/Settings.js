@@ -1,3 +1,6 @@
+import { Emitter } from './Emitter.js';
+import { Genres } from '../music/Genres.js';
+
 // Settings: every knob of the radio, described once in SCHEMA. The listener's controls (top
 // bar, delay bar, panels) and the musical parameters (PARAMS row) all live here, so they are
 // saved, exported and reset the same way. Emits 'change' with { name, value } (and `genre`
@@ -8,7 +11,7 @@
 //   ui: 'params' = shown in the PARAMS row (generated from the schema); null = shown
 //       elsewhere (the top bar, the delay bar, panels) or kept internally
 // GENRE_SCHEMA: the parameters each genre has (defaults from the Genres table, `path` in it).
-RA.Settings = class Settings extends RA.Emitter {
+export class Settings extends Emitter {
   static SCHEMA = [
     // ───── the top bar, the delay bar and the panels ─────
     { id: 'pace', def: 32 },               // bars between composer moves
@@ -94,7 +97,7 @@ RA.Settings = class Settings extends RA.Emitter {
     this.values = {};
     for (const s of Settings.SCHEMA) this.values[s.id] = Settings.clone(s.def);
     Object.assign(this.values, Settings.migrate(overrides));
-    RA.Genres.tune(this.values.genreTune);
+    Genres.tune(this.values.genreTune);
   }
 
   get(name) { return this.values[name]; }
@@ -102,7 +105,7 @@ RA.Settings = class Settings extends RA.Emitter {
   set(name, value) {
     if (this.values[name] === value) return;
     this.values[name] = value;
-    if (name === 'genreTune') RA.Genres.tune(value);
+    if (name === 'genreTune') Genres.tune(value);
     this.emit('change', { name, value });
   }
 
@@ -113,7 +116,7 @@ RA.Settings = class Settings extends RA.Emitter {
 
   // ───── a genre's own parameters (tempo, energy, max layers, modes) ─────
 
-  genre(g, id) { return RA.Genres.get(g, Settings.genreSpec(id).path); }
+  genre(g, id) { return Genres.get(g, Settings.genreSpec(id).path); }
 
   setGenre(g, id, value) {
     if (Array.isArray(value) && !value.length) return; // a genre keeps at least one mode
@@ -133,7 +136,7 @@ RA.Settings = class Settings extends RA.Emitter {
 
   setTune(tune, g, id) {
     this.values.genreTune = tune;
-    RA.Genres.tune(tune);
+    Genres.tune(tune);
     this.emit('change', { name: 'genreTune', value: tune, genre: g, param: id });
   }
 

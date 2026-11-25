@@ -15,47 +15,13 @@
 <body>
   <div id="results">running…</div>
 
-  <script src="src/core/RA.js"></script>
-  <script src="src/core/Emitter.js"></script>
-  <script src="src/core/Settings.js"></script>
-  <script src="src/core/Rng.js"></script>
-  <script src="src/core/Logger.js"></script>
-  <script src="src/audio/Clock.js"></script>
-  <script src="src/audio/SampleLibrary.js"></script>
-  <script src="src/audio/SynthPresets.js"></script>
-  <script src="src/audio/SynthVoice.js"></script>
-  <script src="src/audio/Equalizer.js"></script>
-  <script src="src/audio/InstrumentLibrary.js"></script>
-  <script src="src/lang/Theory.js"></script>
-  <script src="src/lang/Ring.js"></script>
-  <script src="src/lang/Loop.js"></script>
-  <script src="src/lang/Iteration.js"></script>
-  <script src="src/lang/Layer.js"></script>
-  <script src="src/lang/LiveCoder.js"></script>
-  <script src="src/lang/LanguageApi.js"></script>
-  <script src="src/lang/CodeTools.js"></script>
-  <script src="src/music/Harmony.js"></script>
-  <script src="src/music/MelodyGen.js"></script>
-  <script src="src/music/Phrase.js"></script>
-  <script src="src/music/BeatGen.js"></script>
-  <script src="src/music/Arc.js"></script>
-  <script src="src/music/Genres.js"></script>
-  <script src="src/music/GenreDrift.js"></script>
-  <script src="src/music/PatternBank.js"></script>
-  <script src="src/music/PatternLoader.js"></script>
-  <script src="src/music/Families.js"></script>
-  <script src="src/music/Variation.js"></script>
-  <script src="src/music/Memory.js"></script>
-  <script src="src/music/Generators.js"></script>
-  <script src="src/music/Melodies.js"></script>
-  <script src="src/music/Layers.js"></script>
-  <script src="src/music/Transitions.js"></script>
-  <script src="src/music/Steering.js"></script>
-  <script src="src/music/FxAuto.js"></script>
-  <script src="src/music/Composer.js"></script>
-  <script src="src/ui/FullCodeView.js"></script>
-  <script src="src/ui/SequencerView.js"></script>
-  <script src="tests/TestRunner.js"></script>
-  <script src="tests/suite.js"></script>
+  <script type="module">
+    // the tests use one RA object with every class in it
+    import * as all from './src/all.js';
+    window.RA = Object.assign({}, all);
+    for (const src of ['tests/TestRunner.js', 'tests/suite.js']) {
+      await new Promise((ok, fail) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = fail; document.body.appendChild(el); });
+    }
+  </script>
 </body>
 </html>

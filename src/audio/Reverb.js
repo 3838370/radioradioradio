@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Reverb: an algorithmic (Freeverb-style) stereo reverb built from native nodes:
 // 8 damped feedback combs in parallel, then 4 allpass diffusers, per channel (the right
 // channel's delays are slightly longer for width).
@@ -6,7 +8,7 @@
 // (crackling) in real time: Chrome computes long convolution tails on a background thread
 // that couldn't keep up here. This runs entirely on the audio thread at ~4% of one core,
 // with a ~3 s tail.
-RA.Reverb = class Reverb {
+export class Reverb {
   static COMBS = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617]; // samples at 44.1 kHz
   static ALLPASS = [556, 441, 341, 225];
   static SPREAD = 23;
@@ -82,7 +84,7 @@ RA.Reverb = class Reverb {
 
   // 0..0.97: tail length (comb feedback).
   setSize(size, time = this.ac.currentTime) {
-    const g = RA.MathUtil.clamp(size, 0, 0.97);
+    const g = MathUtil.clamp(size, 0, 0.97);
     for (const fb of this.feedbacks) fb.gain.setTargetAtTime(g, time, 0.1);
   }
 

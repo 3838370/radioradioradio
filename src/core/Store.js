@@ -1,7 +1,7 @@
 // Store: persistence. Settings, instruments and the listener's patterns go to
 // localStorage; dropped audio files (too big for that) go to IndexedDB. Everything is
 // best-effort: private windows or blocked storage just mean nothing is remembered.
-RA.Store = class Store {
+export class Store {
   static KEY = 'radio-ai-v3';
   static OLD_KEYS = ['radio-ai-v2']; // read once if there's nothing under KEY yet (Settings.migrate does the rest)
 

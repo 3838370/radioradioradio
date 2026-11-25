@@ -1,8 +1,11 @@
+import { FxRack } from '../audio/FxRack.js';
+import { CodeTools } from '../lang/CodeTools.js';
+
 // Input: the mouse and the keys on the stage. Clicks on the HUD, the cards (edit, sound
 // panel, mute, lock, swap), numbers dragged in the code, the XY pad and the EQ, the
 // sequencer's cells and buttons, the wheel in the long views, and the keyboard shortcuts.
 // It acts on the App (`app`): its views, composer, editor and effects.
-RA.Input = class Input {
+export class Input {
   constructor(app) {
     this.app = app;
   }
@@ -67,7 +70,7 @@ RA.Input = class Input {
   seqAction(b) {
     const layer = this.app.composer.deck.find(b.layerId);
     if (!layer) return;
-    const CT = RA.CodeTools;
+    const CT = CodeTools;
     if (b.type === 'layer-mute') return this.app.composer.deck.toggleMute(layer.id);
     if (b.type === 'layer-lock') return this.app.composer.deck.toggleLock(layer.id);
     if (b.type === 'audition') return this.audition(b.row);
@@ -131,8 +134,8 @@ RA.Input = class Input {
   }
 
   applyScrub(d, dy, final) {
-    const str = RA.CodeTools.scrub(d.from, dy);
-    const code = RA.CodeTools.splice(d.code, d.start, d.len, str);
+    const str = CodeTools.scrub(d.from, dy);
+    const code = CodeTools.splice(d.code, d.start, d.len, str);
     const res = this.app.composer.deck.liveEdit(d.layer.id, code, { desc: `${d.from} → ${str}`, final });
     if (res.ok) { d.code = code; d.len = str.length; }
   }
@@ -173,7 +176,7 @@ RA.Input = class Input {
   padForKey(p, event) {
     const m = /^(?:Digit|Numpad)(\d)$/.exec((event && event.code) || '');
     const digit = m ? m[1] : p.key;
-    return RA.FxRack.PADS.find((x) => x.key === digit) || null;
+    return FxRack.PADS.find((x) => x.key === digit) || null;
   }
 
   keyUp(p, event) {

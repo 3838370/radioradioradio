@@ -1,6 +1,9 @@
+import { CodeTools } from '../lang/CodeTools.js';
+import { SliderRow } from './SliderRow.js';
+
 // SamplePanel: browse the Dirt-Samples folders and your own files ('my'), shape a sample
 // (rate, start, length, reverse, granular), hear it, and put the code into the editor.
-RA.SamplePanel = class SamplePanel {
+export class SamplePanel {
   constructor(p, parent, app) {
     this.p = p;
     this.app = app;
@@ -17,10 +20,10 @@ RA.SamplePanel = class SamplePanel {
     const shape = p.createDiv().parent(root);
     const onShape = () => this.showSnippet();
     const onRelease = () => { this.showSnippet(); this.audition(); };
-    this.rate = new RA.SliderRow(p, shape, { label: 'pitch / rate', min: 0.25, max: 4, log: true, value: 1, onInput: onShape, onChange: onRelease });
-    this.begin = new RA.SliderRow(p, shape, { label: 'início', min: 0, max: 0.95, value: 0, onInput: onShape, onChange: onRelease });
-    this.cut = new RA.SliderRow(p, shape, { label: 'duração (tempos)', min: 0, max: 4, step: 0.05, value: 0, format: (v) => (v ? String(v) : 'inteiro'), onInput: onShape, onChange: onRelease });
-    this.amp = new RA.SliderRow(p, shape, { label: 'volume', min: 0, max: 1.5, value: 0.6, onInput: onShape, onChange: onShape });
+    this.rate = new SliderRow(p, shape, { label: 'pitch / rate', min: 0.25, max: 4, log: true, value: 1, onInput: onShape, onChange: onRelease });
+    this.begin = new SliderRow(p, shape, { label: 'início', min: 0, max: 0.95, value: 0, onInput: onShape, onChange: onRelease });
+    this.cut = new SliderRow(p, shape, { label: 'duração (tempos)', min: 0, max: 4, step: 0.05, value: 0, format: (v) => (v ? String(v) : 'inteiro'), onInput: onShape, onChange: onRelease });
+    this.amp = new SliderRow(p, shape, { label: 'volume', min: 0, max: 1.5, value: 0.6, onInput: onShape, onChange: onShape });
     const checks = p.createDiv().addClass('buttons').parent(shape);
     this.reverse = p.createCheckbox('reverse', false).addClass('check').parent(checks);
     this.granular = p.createCheckbox('granular', false).addClass('check').parent(checks);
@@ -87,7 +90,7 @@ RA.SamplePanel = class SamplePanel {
   }
 
   static optsText(o) {
-    return '{ ' + Object.entries(o).map(([k, v]) => `${k}: ${typeof v === 'number' ? RA.CodeTools.format(v) : v}`).join(', ') + ' }';
+    return '{ ' + Object.entries(o).map(([k, v]) => `${k}: ${typeof v === 'number' ? CodeTools.format(v) : v}`).join(', ') + ' }';
   }
 
   code() {

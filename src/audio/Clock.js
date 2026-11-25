@@ -1,6 +1,8 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Clock: maps beats to audio time. The tempo can glide, so the mapping is integrated
 // step by step by the Scheduler rather than computed from a fixed BPM.
-RA.Clock = class Clock {
+export class Clock {
   constructor(bpm = 90) {
     this.bpm = bpm;
     this.target = bpm;
@@ -24,7 +26,7 @@ RA.Clock = class Clock {
     this.time += step * this.spb();
     const d = this.target - this.bpm;
     const maxd = this.rate * step;
-    this.bpm += RA.MathUtil.clamp(d, -maxd, maxd);
+    this.bpm += MathUtil.clamp(d, -maxd, maxd);
   }
 
   timeOf(beat) { return this.time + (beat - this.beat) * this.spb(); }

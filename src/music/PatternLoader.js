@@ -1,3 +1,5 @@
+import { PatternBank } from './PatternBank.js';
+
 // PatternLoader: the pattern bank lives in patterns/<genre>/<id>.rad, one file per pattern,
 // listed in patterns/index.txt (made by Scripts/indexar_padroes.py; static hosts can't list
 // folders). A .rad file is the layer's code as it shows on its card, under a short header:
@@ -8,7 +10,7 @@
 //   params({ bell: 'dx_bell' })
 //   loop('dx', (i) => { ... })
 // The same format exports and imports your own patterns (SavePanel).
-RA.PatternLoader = class PatternLoader {
+export class PatternLoader {
   // A .rad text -> { id, role, genres, energy, odd?, code }. `id` comes from the file name.
   static parse(text, file = '') {
     const lines = text.replace(/\r/g, '').split('\n');
@@ -25,7 +27,7 @@ RA.PatternLoader = class PatternLoader {
     const [lo, hi] = (head.energy || '0-1').split('-').map(Number);
     const p = { id, role: head.role, genres, energy: [lo, hi], code: lines.slice(k).join('\n').trim() };
     if (head.odd === 'true') p.odd = true;
-    if (!p.role || !RA.PatternBank.ROLES.includes(p.role)) throw new Error(`${file || id}: no valid "// role:" line`);
+    if (!p.role || !PatternBank.ROLES.includes(p.role)) throw new Error(`${file || id}: no valid "// role:" line`);
     return p;
   }
 
@@ -39,7 +41,7 @@ RA.PatternLoader = class PatternLoader {
   }
 
   // Loads every pattern in the index (several at a time). onProgress(loaded, total).
-  // Sets RA.PATTERNS and returns the list. A file that fails is skipped and reported.
+  // Returns the list. A file that fails is skipped and reported.
   static async load({ base = 'patterns/', onProgress = null, logger = null } = {}) {
     const index = await (await fetch(base + 'index.txt')).text();
     const files = index.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
@@ -57,7 +59,6 @@ RA.PatternLoader = class PatternLoader {
       }
     };
     await Promise.all(Array.from({ length: 12 }, worker));
-    RA.PATTERNS = out.filter(Boolean);
-    return RA.PATTERNS;
+    return out.filter(Boolean);
   }
 };

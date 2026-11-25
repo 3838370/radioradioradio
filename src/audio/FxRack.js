@@ -1,3 +1,6 @@
+import { Emitter } from '../core/Emitter.js';
+import { MathUtil } from '../core/MathUtil.js';
+
 // FxRack: effects played like instruments. Eight pads that any of three sources can hold
 // on at the same time: 'hold' (mouse/key held), 'latch' (right-click toggle) and 'auto'
 // (the composer or pattern code), switched with engage()/release() (on() is the inherited
@@ -7,7 +10,7 @@
 // It also owns the master delay: its time in beats (note values, gliding like Aphex
 // Twin's pitch-bending delay changes), feedback, and the arc's long-term colour.
 // Emits 'change' when pads switch.
-RA.FxRack = class FxRack extends RA.Emitter {
+export class FxRack extends Emitter {
   static PADS = [
     { id: 'throw', label: 'DELAY THROW', key: '1', hint: 'sobe o delay de todas as camadas' },
     { id: 'dub', label: 'DUB ECHO', key: '2', hint: 'sobe o delay das camadas + feedback alto, ecos escuros' },
@@ -93,7 +96,7 @@ RA.FxRack = class FxRack extends RA.Emitter {
 
   update() {
     const a = this.audio, t = a.ac.currentTime, on = (id) => this.isOn(id);
-    const clamp = RA.MathUtil.clamp;
+    const clamp = MathUtil.clamp;
     const S = this.settings;
     const spb = this.clock.spb();
     const glide = Math.max(0.01, S.get('glide'));

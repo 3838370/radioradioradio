@@ -1,17 +1,23 @@
+import { SynthPresets } from '../audio/SynthPresets.js';
+import { CodeTools } from '../lang/CodeTools.js';
+import { Layer } from '../lang/Layer.js';
+import { Memory } from './Memory.js';
+import { Variation } from './Variation.js';
+
 // Layers: the layers playing (one per role) and everything about their life: coming in as a
 // fresh version of their pattern, fading out, being swapped, getting new params, being muted,
 // locked or edited by the listener. The Composer decides; this class carries it out.
 // `c` is the Composer (its clock, coder, audio, settings, genre...). `map`: role -> Layer.
-RA.Layers = class Layers {
+export class Layers {
   constructor(c) {
     this.c = c;
     this.map = new Map();
     this.serial = 0;
     this.recent = [];              // last pattern ids heard, avoided when choosing
-    this.memory = new RA.Memory(); // everything heard this session (fatigue, versions)
-    this.variation = new RA.Variation({
+    this.memory = new Memory(); // everything heard this session (fatigue, versions)
+    this.variation = new Variation({
       rng: c.rng,
-      synthExists: (n) => (c.instruments ? c.instruments.has(n) : !!RA.SynthPresets[n]),
+      synthExists: (n) => (c.instruments ? c.instruments.has(n) : !!SynthPresets[n]),
       sampleCount: (f) => c.samples.count(f),
     });
   }
@@ -26,28 +32,28 @@ RA.Layers = class Layers {
   // A layer's code carries everything that makes its sound: the inst(...) definitions of
   // the instruments it plays, then the pattern.
   fullCode(code) {
-    return this.c.instruments ? RA.CodeTools.withInstruments(code, this.c.instruments) : code;
+    return this.c.instruments ? CodeTools.withInstruments(code, this.c.instruments) : code;
   }
 
   // A new version of a pattern: some of its params (instruments, kits) swapped for others
   // of their family that the genre allows. Tries a few times for a version not heard this
   // session. Returns { code, changes, sig }.
   roll(pattern) {
-    const params = RA.CodeTools.paramsOf(pattern.code);
+    const params = CodeTools.paramsOf(pattern.code);
     const strength = 0.3 + 0.7 * this.c.settings.get('variation');
     let r = null;
     for (let k = 0; k < 4; k++) {
       r = this.variation.version(params, this.c.genre, strength);
       if (!this.memory.heard(pattern.id + r.sig)) break;
     }
-    const code = r.changes.length ? RA.CodeTools.setParams(pattern.code, r.params) : pattern.code;
+    const code = r.changes.length ? CodeTools.setParams(pattern.code, r.params) : pattern.code;
     return { code, changes: r.changes, sig: pattern.id + r.sig };
   }
 
   // Loads new params into a layer (its code with the params line rewritten).
   loadParams(layer, params, desc, bar) {
     const { coder, samples, emitter, logger } = this.c;
-    const code = RA.CodeTools.setParams(layer.code, params);
+    const code = CodeTools.setParams(layer.code, params);
     const probe = coder.probe(code);
     if (!probe.ok) return false;
     samples.preload(probe.samples);
@@ -77,7 +83,7 @@ RA.Layers = class Layers {
     }
     if (!probe.ok) { logger.add(`skipped ${pattern.id}: ${probe.error}`, 'err'); return null; }
     samples.preload(probe.samples);
-    const layer = new RA.Layer({ id: `${role}-${++this.serial}`, role, pattern });
+    const layer = new Layer({ id: `${role}-${++this.serial}`, role, pattern });
     const startBeat = startBar * 4;
     const res = coder.load(layer, code, startBeat);
     if (!res.ok) { logger.add(`skipped ${pattern.id}: ${res.error}`, 'err'); return null; }

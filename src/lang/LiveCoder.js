@@ -1,7 +1,11 @@
+import { CodeTools } from './CodeTools.js';
+import { Iteration } from './Iteration.js';
+import { Loop } from './Loop.js';
+
 // LiveCoder: compiles layer code, runs loop iterations ahead of time, hot-swaps and rolls
 // back broken code. The code is plain JS evaluated inside `with (env)`, where env is the
 // LanguageApi, so names like loop/scale shadow p5's own functions.
-RA.LiveCoder = class LiveCoder {
+export class LiveCoder {
   constructor({ scheduler, audio, emitter, logger }) {
     this.scheduler = scheduler;
     this.audio = audio;
@@ -45,7 +49,7 @@ RA.LiveCoder = class LiveCoder {
     layer.define(defined, start);
     layer.params = params || {};
     layer.mutes = new Set(mute || []);
-    layer.hand = new Set(RA.CodeTools.hitsKeys(code));
+    layer.hand = new Set(CodeTools.hitsKeys(code));
     layer.prevGood = layer.code || null;
     layer.code = code;
     this.layers.set(layer.id, layer);
@@ -77,7 +81,7 @@ RA.LiveCoder = class LiveCoder {
   }
 
   iterate(layer, loop) {
-    const it = new RA.Iteration(layer, loop, loop.nextBeat);
+    const it = new Iteration(layer, loop, loop.nextBeat);
     this.cur = it;
     let err = null;
     try { loop.fn(loop.i); } catch (e) { err = e; }
@@ -144,9 +148,9 @@ RA.LiveCoder = class LiveCoder {
       this.probing = found;
       const layer = { id: 'probe', vars: new Map(), params };
       for (const [name, fn] of Object.entries(defined)) {
-        const loop = new RA.Loop(name, fn, 0);
+        const loop = new Loop(name, fn, 0);
         for (let k = 0; k < iterations; k++) {
-          this.cur = new RA.Iteration(layer, loop, k * 4);
+          this.cur = new Iteration(layer, loop, k * 4);
           fn(k);
           if (this.cur.cursor <= 0) throw new Error(`loop '${name}' did not sleep`);
           (lengths[name] = lengths[name] || []).push(this.cur.cursor);

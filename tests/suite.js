@@ -1001,5 +1001,5 @@
   });
 
   // the pattern bank (patterns/*.rad) loads first
-  window.addEventListener('load', () => RA.PatternLoader.load().then(() => runner.run(document.getElementById('results'))));
+  RA.PatternLoader.load().then((list) => { RA.PATTERNS = list; runner.run(document.getElementById('results')); });
 })();

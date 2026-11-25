@@ -1,8 +1,10 @@
+import { Genres } from './Genres.js';
+
 // Families: instruments and sample folders that can stand in for each other. A pattern's
 // params name them by family (params({ pad: 'dx_pad', kick: '808bd' })); a new version or a
 // timbre move swaps one for another of its family that the genre allows (Genres: palette,
 // kits; see Variation), so a pattern keeps its role but changes colour.
-RA.Families = class Families {
+export class Families {
   static SYNTHS = {
     boc_pad: ['boc_pad', 'boc_choir', 'juno_pad', 'warm_pad'],
     boc_lead: ['boc_lead', 'boc_flute', 'tape_warble', 'soft_saw'],
@@ -58,7 +60,7 @@ RA.Families = class Families {
   // The pool for collage() for the genre weights: the dominant genre's (Genres: collage),
   // with a little of the second genre's mixed in.
   static collagePool(weights) {
-    const pool = (g) => (RA.Genres.of(g) || {}).collage || [];
+    const pool = (g) => (Genres.of(g) || {}).collage || [];
     const sorted = Object.entries(weights || {}).filter(([, w]) => w > 0).sort((a, b) => b[1] - a[1]);
     if (!sorted.length) return pool('space');
     const out = new Set(pool(sorted[0][0]));

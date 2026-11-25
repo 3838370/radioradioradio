@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // MelodyGen: generates melodies that develop instead of looping.
 //
 // A motif is a few notes (scale steps relative to the key, durations in beats, velocities)
@@ -5,7 +7,7 @@
 // them each time (transpose, invert, ornament, displace, change a note), and every few
 // forms the motif itself evolves or is replaced. Notes on strong beats snap to the current
 // chord, so lines stay consonant while they wander.
-RA.MelodyGen = class MelodyGen {
+export class MelodyGen {
   // 4-beat rhythms from sparse to busy (each sums to 4).
   static RHYTHMS = [
     [4], [3, 1], [2, 2], [1.5, 2.5], [2, 1, 1], [1, 1, 2], [1.5, 1.5, 1], [0.5, 1.5, 2],
@@ -123,12 +125,12 @@ RA.MelodyGen = class MelodyGen {
         for (let k = h; k < notes.length && k - h < h; k++) notes[k].step = notes[k - h].step + d;
       },
       () => { // accents move: a loud weak beat, a soft strong one
-        notes.forEach((n) => { n.vel = RA.MathUtil.clamp(1.4 - n.vel + this.rng.float(-0.1, 0.1), 0.4, 1); });
+        notes.forEach((n) => { n.vel = MathUtil.clamp(1.4 - n.vel + this.rng.float(-0.1, 0.1), 0.4, 1); });
       },
     ];
     const count = 1 + Math.round(amount * 2.5);
     for (let k = 0; k < count; k++) this.rng.pick(ops)();
-    for (const n of notes) n.step = RA.MathUtil.clamp(n.step, -5, 13);
+    for (const n of notes) n.step = MathUtil.clamp(n.step, -5, 13);
     return m;
   }
 };

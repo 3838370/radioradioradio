@@ -1,8 +1,11 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Theme } from './Theme.js';
+
 // CodeCard: shows one layer's code. Edits are typed in character by character (delete the
 // differing middle, then type the new text), the border flashes when the layer sounds,
 // four buttons (sound panel, mute, lock, regenerate) sit in the bottom-right corner, and numbers in the
 // code can be found under the mouse so they can be dragged.
-RA.CodeCard = class CodeCard {
+export class CodeCard {
   static BUTTONS = [
     { action: 'sound', label: '≈', title: 'sound panel' },
     { action: 'mute', label: 'M', title: 'mute' },
@@ -87,7 +90,7 @@ RA.CodeCard = class CodeCard {
   }
 
   draw(p, x, y, w, h, m, now) {
-    const T = RA.Theme;
+    const T = Theme;
     const f = Math.exp(-(now - this.flashAt) / 160);
     const alpha = this.removing ? 0.45 : this.layer.muted ? 0.35 : 1;
     const fill = (c, a = 1) => p.fill(c[0], c[1], c[2], 255 * a * alpha);
@@ -130,7 +133,7 @@ RA.CodeCard = class CodeCard {
       if (!this.removing) this.hits.push({ action: b.action, x: bx - 2, y: by - 2, w: bw + 4, h: m.small + 7 });
       bx -= bw + 4;
     }
-    const la = RA.MathUtil.clamp(1 - (now - this.labelAt) / 6000, 0, 1);
+    const la = MathUtil.clamp(1 - (now - this.labelAt) / 6000, 0, 1);
     if (la > 0) {
       fill(T.text, 0.9 * la);
       p.textAlign(p.RIGHT);
@@ -175,7 +178,7 @@ RA.CodeCard = class CodeCard {
     if (!row || my < y) return null;
     const col = Math.floor((mx - x) / m.charW);
     const seg = row.find((s) => col >= s.col && col < s.col + s.str.length);
-    if (!seg || seg.color !== RA.Theme.num) return null;
+    if (!seg || seg.color !== Theme.num) return null;
     return { start: seg.tokStart, len: seg.tokLen };
   }
 

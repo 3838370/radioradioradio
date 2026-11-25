@@ -1,7 +1,11 @@
+import { Bus } from '../audio/Bus.js';
+import { CodeTools } from '../lang/CodeTools.js';
+import { SliderRow } from './SliderRow.js';
+
 // LayerPanel: the sound of one layer. Each slider rewrites the layer's top-level fx({...})
 // line (so the code stays the source of truth) and is heard immediately. Also links to
 // the instruments and samples the layer uses.
-RA.LayerPanel = class LayerPanel {
+export class LayerPanel {
   static FX = [
     { key: 'amp', label: 'volume', min: 0, max: 1.5, def: 1 },
     { key: 'lpf', label: 'filtro', min: 100, max: 16000, log: true, def: 16000 },
@@ -34,7 +38,7 @@ RA.LayerPanel = class LayerPanel {
     });
     this.sliders = {};
     for (const f of LayerPanel.FX) {
-      this.sliders[f.key] = new RA.SliderRow(p, this.body, Object.assign({}, f, {
+      this.sliders[f.key] = new SliderRow(p, this.body, Object.assign({}, f, {
         value: f.def,
         onInput: (v) => this.edit(f.key, v, false),
         onChange: (v) => this.edit(f.key, v, true),
@@ -73,10 +77,10 @@ RA.LayerPanel = class LayerPanel {
     this.auto.checked(layer.fxAuto !== false);
     this.tick();
     this.links.html('');
-    for (const name of RA.CodeTools.synthsUsed(layer.code)) {
+    for (const name of CodeTools.synthsUsed(layer.code)) {
       this.p.createButton(`synth:${name}`).addClass('chip').parent(this.links).mousePressed(() => this.app.openInstrument(name));
     }
-    for (const name of RA.CodeTools.samplesUsed(layer.code)) {
+    for (const name of CodeTools.samplesUsed(layer.code)) {
       this.p.createButton(`s:${name}`).addClass('chip').parent(this.links).mousePressed(() => this.app.openSamples(name));
     }
   }
@@ -106,11 +110,11 @@ RA.LayerPanel = class LayerPanel {
     if (!final && now - this.lastInput < 50) return;
     this.lastInput = now;
     const bus = this.app.audio.bus(layer.id);
-    const m = bus ? bus.mod : RA.Bus.NEUTRAL;
+    const m = bus ? bus.mod : Bus.NEUTRAL;
     const base = key === 'lpf' ? value / m.lpfMul : key === 'amp' ? value / m.ampMul
       : Math.max(0, value - (m[key + 'Add'] || 0));
     this.editing = true;
-    this.app.composer.deck.liveEdit(layer.id, RA.CodeTools.setFxParam(layer.code, key, base), { desc: `${key} → ${RA.CodeTools.format(value)}`, final });
+    this.app.composer.deck.liveEdit(layer.id, CodeTools.setFxParam(layer.code, key, base), { desc: `${key} → ${CodeTools.format(value)}`, final });
     if (bus) bus.pin(key, base);
     this.editing = false;
   }

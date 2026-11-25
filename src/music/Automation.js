@@ -1,3 +1,8 @@
+import { Bus } from '../audio/Bus.js';
+import { FxRack } from '../audio/FxRack.js';
+import { MathUtil } from '../core/MathUtil.js';
+import { CodeTools } from '../lang/CodeTools.js';
+
 // Automation: moves each layer's sound settings (the sliders of the sound panel) over time.
 //
 // Auto mode (per layer, plus a global switch): every parameter glides slowly to a new
@@ -12,7 +17,7 @@
 // Auto mode writes its values into each layer's top-level fx line (you see the numbers
 // change in the code card and on the panel). Pads are a temporary modulation on the bus,
 // shown on the cards as a comment line while they're on.
-RA.Automation = class Automation {
+export class Automation {
   static CALM = ['sparse', 'drift', 'release', 'collapse'];
 
   // param -> [calm range, busy range] for the auto target
@@ -69,7 +74,7 @@ RA.Automation = class Automation {
     }
   }
 
-  neutral(param) { return RA.Bus.NEUTRAL[param]; }
+  neutral(param) { return Bus.NEUTRAL[param]; }
 
   // A new auto target for one parameter, gliding over 8-32 bars.
   retarget(st, param, now) {
@@ -92,12 +97,12 @@ RA.Automation = class Automation {
 
   // The pattern's own fx values: the centre the auto mode moves around.
   origin(layer) {
-    return Object.assign({}, Automation.DEFAULTS, RA.CodeTools.fxParams(layer.pattern.code));
+    return Object.assign({}, Automation.DEFAULTS, CodeTools.fxParams(layer.pattern.code));
   }
 
   // Auto offsets applied to the origin -> the values written into the code.
   static apply(o, m) {
-    const clamp = RA.MathUtil.clamp;
+    const clamp = MathUtil.clamp;
     return {
       amp: clamp(o.amp * m.ampMul, 0, 2),
       lpf: clamp(o.lpf * m.lpfMul, 60, 16000),
@@ -119,15 +124,15 @@ RA.Automation = class Automation {
     const inLoop = new Set();
     for (const m of layer.code.matchAll(/^\s+fx\(\{([^}\n]*)\}\)/gm)) for (const [, k] of m[1].matchAll(/(\w+):/g)) inLoop.add(k);
     const want = {};
-    const current = RA.CodeTools.fxParams(layer.code);
+    const current = CodeTools.fxParams(layer.code);
     let changed = false;
-    for (const k of RA.CodeTools.FX_KEYS) {
+    for (const k of CodeTools.FX_KEYS) {
       if (bus.pinned.has(k) || inLoop.has(k)) continue;
       want[k] = values[k];
-      if (current[k] == null || RA.CodeTools.format(current[k]) !== RA.CodeTools.format(values[k])) changed = true;
+      if (current[k] == null || CodeTools.format(current[k]) !== CodeTools.format(values[k])) changed = true;
     }
     if (!changed) return;
-    layer.code = RA.CodeTools.setFxParams(layer.code, want);
+    layer.code = CodeTools.setFxParams(layer.code, want);
     bus.setFx(want);
     this.emitter.emit('layer:change', { layer, desc: null, instant: true, quiet: true });
   }
@@ -160,7 +165,7 @@ RA.Automation = class Automation {
         for (const p of Object.keys(Automation.RANGES)) {
           const s = st[p];
           if (now >= s.end) this.retarget(s, p, now);
-          const t = RA.MathUtil.smoothstep((now - s.start) / Math.max(0.001, s.end - s.start));
+          const t = MathUtil.smoothstep((now - s.start) / Math.max(0.001, s.end - s.start));
           s.value = s.from + (s.to - s.from) * t;
           mod[p] = s.value;
         }
@@ -169,7 +174,7 @@ RA.Automation = class Automation {
         for (const p of Object.keys(Automation.RANGES)) st[p].end = now; // fresh targets when auto returns
       }
 
-      const padMod = Object.assign({}, RA.Bus.NEUTRAL);
+      const padMod = Object.assign({}, Bus.NEUTRAL);
       for (const [pad, effect] of Object.entries(Automation.PADS)) {
         const e = this.env[pad];
         if (e < 0.001) continue;
@@ -189,7 +194,7 @@ RA.Automation = class Automation {
     for (const [pad, effect] of Object.entries(Automation.PADS)) {
       const e = this.env[pad];
       if (e < 0.02) continue;
-      const label = RA.FxRack.PADS.find((p) => p.id === pad).label;
+      const label = FxRack.PADS.find((p) => p.id === pad).label;
       const fx = Object.entries(effect).map(([p, v]) => (p.endsWith('Mul')
         ? `${p.replace('Mul', '')} ×${(1 + (v - 1) * e).toFixed(2)}`
         : `${p.replace('Add', '')} +${(v * e).toFixed(2)}`)).join(', ');

@@ -1,6 +1,9 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { CodeTools } from '../lang/CodeTools.js';
+
 // SliderRow: a labelled slider with a value readout, linear or logarithmic.
 // onInput fires while dragging, onChange when the slider is released.
-RA.SliderRow = class SliderRow {
+export class SliderRow {
   constructor(p, parent, { label, min, max, step = 0.01, log = false, value, format, onInput, onChange }) {
     Object.assign(this, { min, max, step, log, format });
     this.row = p.createDiv().addClass('row').parent(parent);
@@ -18,7 +21,7 @@ RA.SliderRow = class SliderRow {
   toPos(v) {
     const { min, max } = this;
     const t = this.log ? Math.log(Math.max(v, min) / min) / Math.log(max / min) : (v - min) / (max - min);
-    return Math.round(RA.MathUtil.clamp(t, 0, 1) * 1000);
+    return Math.round(MathUtil.clamp(t, 0, 1) * 1000);
   }
 
   value() {
@@ -36,5 +39,5 @@ RA.SliderRow = class SliderRow {
     this.show(v);
   }
 
-  show(v) { this.out.html(this.format ? this.format(v) : RA.CodeTools.format(v)); }
+  show(v) { this.out.html(this.format ? this.format(v) : CodeTools.format(v)); }
 };

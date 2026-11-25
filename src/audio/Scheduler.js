@@ -1,7 +1,7 @@
 // Scheduler: a lookahead event queue in beats. A 25 ms timer advances the clock in small
 // steps up to ~120 ms ahead of the audio clock and fires everything due in each step,
 // so sounds are scheduled sample-accurately no matter how the page is rendering.
-RA.Scheduler = class Scheduler {
+export class Scheduler {
   constructor(ac, clock, logger) {
     this.ac = ac;
     this.clock = clock;

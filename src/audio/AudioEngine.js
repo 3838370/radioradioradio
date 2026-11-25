@@ -1,3 +1,10 @@
+import { Bus } from './Bus.js';
+import { Equalizer } from './Equalizer.js';
+import { Reverb } from './Reverb.js';
+import { SampleVoice } from './SampleVoice.js';
+import { SynthVoice } from './SynthVoice.js';
+import { TapeFx } from './TapeFx.js';
+
 // AudioEngine: the master chain and the voice pool.
 //   layer buses -> mix (dry) -> duck -> TapeFx -> master lowpass -> EQ -> compressor -> output
 //   reverb / delay returns -> wet -> TapeFx          (so ducking the dry keeps the echoes)
@@ -5,7 +12,7 @@
 // The FxRack drives the sends, returns, delay and master filter. A 'preview' bus plays
 // auditions from the side panel. Effects and analysis are p5.sound objects; voices are
 // native nodes on the same context.
-RA.AudioEngine = class AudioEngine {
+export class AudioEngine {
   constructor(ac, samples, instruments) {
     this.ac = ac;
     this.samples = samples;
@@ -20,12 +27,12 @@ RA.AudioEngine = class AudioEngine {
     this.master = new p5.Filter('lowpass');
     this.master.biquad.frequency.value = 20000;
     this.master.biquad.Q.value = 0.7;
-    this.eq = new RA.Equalizer(ac);
+    this.eq = new Equalizer(ac);
     this.master.disconnect();
     this.master.connect(this.eq.input);
     this.eq.output.connect(this.comp.input);
 
-    this.tape = new RA.TapeFx(ac);
+    this.tape = new TapeFx(ac);
     this.tape.connect(this.master);
     // 0.6 = headroom: several layers at once shouldn't hit the soft clip hard
     this.mix = ac.createGain();
@@ -39,7 +46,7 @@ RA.AudioEngine = class AudioEngine {
 
     this.revReturn = ac.createGain();
     this.revReturn.connect(this.wet);
-    this.reverb = new RA.Reverb(ac);
+    this.reverb = new Reverb(ac);
     this.reverb.output.connect(this.revReturn);
 
     this.delReturn = ac.createGain();
@@ -77,7 +84,7 @@ RA.AudioEngine = class AudioEngine {
   }
 
   createBus(id) {
-    const bus = new RA.Bus(this.ac, id, { dry: this.mix, reverb: this.reverb.input, delay: this.delayIn });
+    const bus = new Bus(this.ac, id, { dry: this.mix, reverb: this.reverb.input, delay: this.delayIn });
     this.buses.set(id, bus);
     return bus;
   }
@@ -99,7 +106,7 @@ RA.AudioEngine = class AudioEngine {
     if (!loaded) { this.stats.missing++; return false; }
     if (!this.claimVoice()) return false;
     const buffer = opts.reverse ? this.samples.reversed(loaded) : loaded;
-    new RA.SampleVoice(this.ac, buffer, opts).start(time, bus.input, () => this.voices--);
+    new SampleVoice(this.ac, buffer, opts).start(time, bus.input, () => this.voices--);
     this.stats.samples++;
     return true;
   }
@@ -109,7 +116,7 @@ RA.AudioEngine = class AudioEngine {
     if (!bus) return false;
     const preset = this.instruments.get(presetName) || this.instruments.get('keys');
     if (!this.claimVoice()) return false;
-    new RA.SynthVoice(this.ac, preset, midi, opts).start(time, bus.input, () => this.voices--);
+    new SynthVoice(this.ac, preset, midi, opts).start(time, bus.input, () => this.voices--);
     this.stats.notes++;
     return true;
   }

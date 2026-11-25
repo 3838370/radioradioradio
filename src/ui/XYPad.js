@@ -1,6 +1,9 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Theme } from './Theme.js';
+
 // XYPad: a performance pad drawn on the canvas. X opens/closes the master filter,
 // Y adds or removes space (reverb/delay returns). Double-click resets.
-RA.XYPad = class XYPad {
+export class XYPad {
   constructor(onChange) {
     this.onChange = onChange;
     this.x = 1;
@@ -17,8 +20,8 @@ RA.XYPad = class XYPad {
 
   set(mx, my) {
     const r = this.rect;
-    this.x = RA.MathUtil.clamp((mx - r.x) / r.w, 0, 1);
-    this.y = RA.MathUtil.clamp(1 - (my - r.y) / r.h, 0, 1);
+    this.x = MathUtil.clamp((mx - r.x) / r.w, 0, 1);
+    this.y = MathUtil.clamp(1 - (my - r.y) / r.h, 0, 1);
     this.onChange(this.values());
   }
 
@@ -29,7 +32,7 @@ RA.XYPad = class XYPad {
   }
 
   draw(p, x, y, w, h) {
-    const T = RA.Theme;
+    const T = Theme;
     this.rect = { x, y, w, h };
     p.noFill();
     p.stroke(T.faint);
@@ -46,7 +49,7 @@ RA.XYPad = class XYPad {
     p.fill(T.bright);
     p.rect(px - 2, py - 2, 5, 5);
     p.fill(T.dim);
-    p.textSize(RA.Theme.size.small - 1);
+    p.textSize(Theme.size.small - 1);
     p.text('FILTRO', x + 4, y + h - 4);
     p.push();
     p.translate(x + w - 4, y + h - 4);

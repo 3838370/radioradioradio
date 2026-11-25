@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // BeatGen: drum patterns that evolve instead of looping. Each style is a table of
 // probabilities per 16th step for kick (k), snare (s), hat (h) and extra percussion (p).
 // A beat is sampled from the table, then every bar a step or two is re-sampled, ghost
@@ -7,7 +9,7 @@
 // Most styles are 16 steps (4/4); odd meters are longer or shorter (seven = 7/8 is 14,
 // five = 5/4 is 20, eleven = 11/8 is 22, ritual = 12/8 is 24), so loop over b.length, not 16.
 // Styles marked `nofill` (dubtechno, pulse_sparse, drift_free) never play fills.
-RA.BeatGen = class BeatGen {
+export class BeatGen {
   static STYLES = {
     // steady four-on-the-floor (dub, industrial, fog)
     four: {
@@ -246,7 +248,7 @@ RA.BeatGen = class BeatGen {
       for (let c = this.rng.int(1, 3); c > 0; c--) {
         const inst = this.rng.pick(['k', 's', 'h', 'p']);
         const i = this.rng.int(1, this.length - 1);
-        this.table[inst][i] = RA.MathUtil.clamp(this.table[inst][i] + this.rng.float(-0.35, 0.35), 0, 0.95);
+        this.table[inst][i] = MathUtil.clamp(this.table[inst][i] + this.rng.float(-0.35, 0.35), 0, 0.95);
       }
     }
     if (this.bars % 16 === 0 && this.rng.chance(0.4)) {

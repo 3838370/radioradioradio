@@ -1,7 +1,7 @@
 // Theme: 1-bit, like an old handheld screen. Pure black and white, with a few greys for
 // hierarchy; red only for errors. The HTML side uses the same values as CSS variables in
 // index.html.
-RA.Theme = {
+export const Theme = {
   bg: [0, 0, 0], panel: [0, 0, 0], card: [0, 0, 0],
   text: [228, 228, 228], bright: [255, 255, 255], dim: [150, 150, 150], faint: [62, 62, 62],
   accent: [255, 255, 255], err: [255, 90, 74], mood: [235, 235, 235],

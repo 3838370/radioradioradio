@@ -1,5 +1,7 @@
+import { Loop } from './Loop.js';
+
 // Layer: one running piece of code (from a pattern) with its loops and its own bus.
-RA.Layer = class Layer {
+export class Layer {
   constructor({ id, role, pattern }) {
     this.id = id;
     this.role = role;
@@ -50,7 +52,7 @@ RA.Layer = class Layer {
     for (const [name, fn] of Object.entries(defined)) {
       const loop = this.loops.get(name);
       if (loop) loop.fn = fn;
-      else this.loops.set(name, new RA.Loop(name, fn, startBeat));
+      else this.loops.set(name, new Loop(name, fn, startBeat));
     }
     for (const [name, loop] of this.loops) {
       if (!(name in defined)) { loop.stopped = true; this.loops.delete(name); }

@@ -2,7 +2,7 @@
 // in the section that matches what they're doing; back on auto it carries on from there, and
 // the register they left (level, tempo) keeps leaning the next sections and genres for a
 // while (see Arc.lean, GenreDrift.lean). `c` is the Composer.
-RA.Steering = class Steering {
+export class Steering {
   constructor(c) {
     this.c = c;
     this.dir = 0;            // which way the listener last moved the layer count (-1, +1)

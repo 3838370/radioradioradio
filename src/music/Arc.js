@@ -1,3 +1,5 @@
+import { Genres } from './Genres.js';
+
 // Arc: the shape of the music over minutes. It walks through sections with random lengths
 // and a weighted choice of what comes next. Tension comes two ways, fast or slow:
 //   sparse   1-2 layers, slower, no drums, long delays and lots of vibrato
@@ -19,7 +21,7 @@
 // While the listener steers by hand, the composer holds the arc in the section that matches
 // what they're doing; back on auto, the arc carries on from there and keeps leaning towards
 // that register (similar sections, similar tempo) for 5 minutes, fading out.
-RA.Arc = class Arc {
+export class Arc {
   static SECTIONS = {
     sparse:   { layers: [1, 2], level: 0.05, tempo: 0.85, delay: 1.9, feedback: 0.2, wow: 3.5, space: 1.5, boost: -0.15, bars: [16, 32], no: ['drums'] },
     drift:    { layers: [2, 4], level: 0.4, tempo: 0.92, delay: 1.3, feedback: 0.1, wow: 2, space: 1.25, boost: -0.05, bars: [16, 32] },
@@ -74,13 +76,13 @@ RA.Arc = class Arc {
   // sections (Genres: sections.prefer) weigh ×2.2, avoided ones ×0.25.
   static genreBias(name, weights) {
     if (!weights) return 1;
-    const b = RA.Genres.blend(weights, (g) => (g.sections.prefer.includes(name) ? 2.2 : g.sections.avoid.includes(name) ? 0.25 : 1));
+    const b = Genres.blend(weights, (g) => (g.sections.prefer.includes(name) ? 2.2 : g.sections.avoid.includes(name) ? 0.25 : 1));
     return b || 1;
   }
 
   // The most layers the genres play on auto (blended by their weights).
   static cap(weights) {
-    const c = RA.Genres.blend(weights, (g) => g.sections.cap);
+    const c = Genres.blend(weights, (g) => g.sections.cap);
     return c ? Math.round(c) : 5;
   }
 

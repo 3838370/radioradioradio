@@ -1,3 +1,7 @@
+import { Arc } from './Arc.js';
+import { Composer } from './Composer.js';
+import { Genres } from './Genres.js';
+
 // Transitions: how the radio gets from one thing to the next. `c` is the Composer.
 //   layers    drums and bass come in at once; when they are swapped the old ones stop at
 //             once too, so two beats or two basslines never overlap. Pads, melodies and
@@ -7,7 +11,7 @@
 //   genres    when a new genre takes over, its harmony comes in and (PARAMS "calm hand-over")
 //             the arc first goes to a quiet section: the old layers leave, the tempo moves
 //             with little playing, then the new genre builds up.
-RA.Transitions = class Transitions {
+export class Transitions {
   static RHYTHM = ['drums', 'bass'];
   static QUIET = ['release', 'sparse', 'suspense'];
 
@@ -34,7 +38,7 @@ RA.Transitions = class Transitions {
   keyChangeAllowed() {
     const { settings, arc, deck } = this.c;
     if (!settings.get('modulateCalm')) return true;
-    return RA.Composer.CALM.includes(arc.section) || deck.size <= 2;
+    return Composer.CALM.includes(arc.section) || deck.size <= 2;
   }
 
   // Every 4 bars: if the genre in the lead has changed, its harmony comes in (its modes,
@@ -51,12 +55,12 @@ RA.Transitions = class Transitions {
     if (settings.get('key') === 'auto') change.key = harmony.key + rng.pick([0, 5, 7, -3]);
     harmony.request(change);
     this.c.nextMove = Math.min(this.c.nextMove, bar + (this.c.fast ? 1 : 4)); // start handing over soon
-    logger.add(`bar ${bar}: genre → ${RA.Genres.label(dom)}`, 'event');
+    logger.add(`bar ${bar}: genre → ${Genres.label(dom)}`, 'event');
     // the hand-over goes through a quiet section the new genre likes (not while the listener
     // steers the arc by hand, or holds the layer count)
     if (settings.get('handoffCalm') && !arc.held && settings.get('densityAuto') && !Transitions.QUIET.includes(arc.section) && arc.section !== 'collapse') {
       const w = { [dom]: 1 };
-      const quiet = rng.weighted(Transitions.QUIET.map((s) => [s, RA.Arc.genreBias(s, w)]));
+      const quiet = rng.weighted(Transitions.QUIET.map((s) => [s, Arc.genreBias(s, w)]));
       arc.enter(quiet, bar);
       logger.add(`bar ${bar}: section → ${quiet.toUpperCase()} (hand-over)`, 'event');
     }

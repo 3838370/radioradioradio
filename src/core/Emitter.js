@@ -1,5 +1,5 @@
 // Emitter: minimal publish/subscribe, so components don't reach into each other.
-RA.Emitter = class Emitter {
+export class Emitter {
   constructor() {
     this.handlers = new Map();
   }

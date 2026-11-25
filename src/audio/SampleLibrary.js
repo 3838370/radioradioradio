@@ -1,6 +1,8 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // SampleLibrary: the Dirt-Samples index plus lazily loaded AudioBuffers.
 // `loader` is p5.sound's loadSound(url, onLoad, onError), injected by the App.
-RA.SampleLibrary = class SampleLibrary {
+export class SampleLibrary {
   static BASE = 'https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/';
 
   // Only used if strudel.json can't be fetched: one file per folder (any n plays that file).
@@ -78,7 +80,7 @@ RA.SampleLibrary = class SampleLibrary {
   path(name, n = 0) {
     const files = this.index && this.index[name];
     if (!files || !files.length) return null;
-    return files[RA.MathUtil.mod(Math.floor(n) || 0, files.length)];
+    return files[MathUtil.mod(Math.floor(n) || 0, files.length)];
   }
 
   // The buffer if ready; otherwise starts loading it and returns null.

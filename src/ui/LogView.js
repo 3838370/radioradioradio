@@ -1,11 +1,13 @@
+import { Theme } from './Theme.js';
+
 // LogView: the latest composer log lines, terminal style (newest at the bottom).
-RA.LogView = class LogView {
+export class LogView {
   constructor(logger) {
     this.logger = logger;
   }
 
   draw(p, x, y, w, h) {
-    const T = RA.Theme;
+    const T = Theme;
     p.textFont(T.font);
     p.textSize(T.size.small);
     const lh = 15;

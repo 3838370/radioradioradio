@@ -1,6 +1,6 @@
 // Iteration: one run of a loop body in virtual time. sleep() moves the cursor; sounds are
 // collected as events at the cursor and scheduled when the body returns.
-RA.Iteration = class Iteration {
+export class Iteration {
   constructor(layer, loop, start) {
     this.layer = layer;
     this.loop = loop;

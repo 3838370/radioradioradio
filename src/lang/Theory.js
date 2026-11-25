@@ -1,5 +1,7 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Theory: pure music-theory helpers (no state).
-RA.Theory = class Theory {
+export class Theory {
   static PITCH = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
   static NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -42,13 +44,13 @@ RA.Theory = class Theory {
     return out;
   }
 
-  static name(midi) { return Theory.NAMES[RA.MathUtil.mod(midi, 12)]; }
+  static name(midi) { return Theory.NAMES[MathUtil.mod(midi, 12)]; }
 
   // Playback rate that retunes a sample recorded on pitch class `from` ('c') to `to` (midi),
   // choosing the nearest octave.
   static keyRate(from, to) {
-    const pc = RA.MathUtil.mod(Theory.note(/\d/.test(String(from)) ? from : from + '4'), 12);
-    let d = RA.MathUtil.mod(Theory.note(to) - pc, 12);
+    const pc = MathUtil.mod(Theory.note(/\d/.test(String(from)) ? from : from + '4'), 12);
+    let d = MathUtil.mod(Theory.note(to) - pc, 12);
     if (d > 6) d -= 12;
     return Math.pow(2, d / 12);
   }

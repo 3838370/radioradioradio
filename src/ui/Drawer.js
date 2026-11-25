@@ -1,6 +1,6 @@
 // Drawer: the side panel with tabs (Camada, Instrumentos, Samples, Guardar).
 // Opening/closing changes the stage width, so it calls onToggle to resize the canvas.
-RA.Drawer = class Drawer {
+export class Drawer {
   constructor(p, root, tabs, onToggle) {
     this.root = root;
     this.onToggle = onToggle;

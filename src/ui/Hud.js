@@ -1,7 +1,11 @@
+import { App } from '../App.js';
+import { Genres } from '../music/Genres.js';
+import { Theme } from './Theme.js';
+
 // Hud: two small terminal lines. Title, the genre drift (one meter per genre) and
 // [↻ REFRESH] on top; key, chord, tempo, bar, next change and energy below. Clicking a
 // genre's name turns it on or off (struck-through genres never play).
-RA.Hud = class Hud {
+export class Hud {
   static HEIGHT = 50;
 
   constructor() {
@@ -13,7 +17,7 @@ RA.Hud = class Hud {
   }
 
   meter(p, x, y, value, cells = 8) {
-    const T = RA.Theme;
+    const T = Theme;
     for (let k = 0; k < cells; k++) {
       const on = k < Math.round(value * cells);
       p.fill(on ? T.text : T.faint);
@@ -23,7 +27,7 @@ RA.Hud = class Hud {
   }
 
   draw(p, w, s) {
-    const T = RA.Theme;
+    const T = Theme;
     p.noStroke();
     p.fill(T.panel);
     p.rect(0, 0, w, Hud.HEIGHT);
@@ -32,15 +36,15 @@ RA.Hud = class Hud {
     p.textFont(T.font);
     p.textSize(T.size.title);
     p.fill(T.bright);
-    const titleW = RA.App.tracked(p, 'BROKEN-RADIO', 14, 21, 0.2, 'left');
+    const titleW = App.tracked(p, 'BROKEN-RADIO', 14, 21, 0.2, 'left');
 
     p.textSize(T.size.small);
     let x = 14 + titleW + 18;
     this.hits = [];
-    for (const g of RA.Genres.LIST) {
+    for (const g of Genres.LIST) {
       const wgt = s.weights[g];
       const on = s.genres.includes(g);
-      const label = RA.Genres.label(g).toUpperCase();
+      const label = Genres.label(g).toUpperCase();
       const lw = p.textWidth(label);
       p.fill(!on ? T.faint : wgt > 0.5 ? T.bright : T.dim);
       p.text(label, x, 21);

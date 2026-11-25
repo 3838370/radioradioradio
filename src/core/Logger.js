@@ -1,5 +1,5 @@
 // Logger: the composer log shown on screen. kind: 'info' | 'event' (genre, section, harmony, settings) | 'err'
-RA.Logger = class Logger {
+export class Logger {
   constructor(max = 60) {
     this.max = max;
     this.lines = [];

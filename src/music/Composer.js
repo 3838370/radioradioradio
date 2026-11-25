@@ -1,3 +1,14 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { CodeTools } from '../lang/CodeTools.js';
+import { Arc } from './Arc.js';
+import { Families } from './Families.js';
+import { FxAuto } from './FxAuto.js';
+import { Genres } from './Genres.js';
+import { Layers } from './Layers.js';
+import { PatternBank } from './PatternBank.js';
+import { Steering } from './Steering.js';
+import { Transitions } from './Transitions.js';
+
 // Composer: the radio's DJ, the one that decides. Once per bar it follows the genre and the
 // arc (sections: layer count, tempo, colour), and every `pace` bars makes one move: add or
 // drop layers toward the target, replace a layer that no longer fits the genre, or one move
@@ -11,7 +22,7 @@
 //   fxAuto       FxAuto: effect pads, delay jumps, breaks and fills
 // Versions, timbres and tweaks only change a layer's params({ ... }) line (see Variation).
 // Locked layers are never touched. Emits layer:add / layer:change / layer:remove.
-RA.Composer = class Composer {
+export class Composer {
   static CALM = ['sparse', 'drift', 'release', 'collapse', 'suspense'];
 
   constructor({ bank, coder, audio, samples, harmony, drift, arc, fx = null, instruments = null, settings, clock, scheduler, rng, emitter, logger, fast }) {
@@ -24,10 +35,10 @@ RA.Composer = class Composer {
     this.push = null;        // { factor, until }: a short tempo push or pull
     this.autoPace = settings.get('pace'); // the pace chosen on auto (see rollPace), and until when
     this.paceUntil = 0;
-    this.deck = new RA.Layers(this);
-    this.transitions = new RA.Transitions(this);
-    this.steering = new RA.Steering(this);
-    this.fxAuto = new RA.FxAuto(this);
+    this.deck = new Layers(this);
+    this.transitions = new Transitions(this);
+    this.steering = new Steering(this);
+    this.fxAuto = new FxAuto(this);
   }
 
   // The layers playing: role -> Layer.
@@ -41,11 +52,11 @@ RA.Composer = class Composer {
     this.harmony.mode = this.settings.get('mode') !== 'auto' ? this.settings.get('mode') : plan.mode;
     this.harmony.prog = plan.prog;
     this.harmony.barsPerChord = plan.bars;
-    if (this.settings.get('key') !== 'auto') this.harmony.key = 40 + RA.MathUtil.mod(this.settings.get('key') - 40, 12);
+    if (this.settings.get('key') !== 'auto') this.harmony.key = 40 + MathUtil.mod(this.settings.get('key') - 40, 12);
     const bpm = this.settings.get('bpmAuto') ? this.drift.tempo() : this.settings.get('bpm');
     this.clock.bpm = this.clock.target = bpm;
     this.settings.on('change', (e) => this.onSetting(e));
-    this.logger.add(`genre: ${RA.Genres.label(this.genre)} · ${this.harmony.keyName()} · ${bpm} BPM`, 'event');
+    this.logger.add(`genre: ${Genres.label(this.genre)} · ${this.harmony.keyName()} · ${bpm} BPM`, 'event');
     this.scheduler.at(0, () => this.onBar(0));
   }
 
@@ -66,7 +77,7 @@ RA.Composer = class Composer {
   }
 
   preloadNextGenre() {
-    this.preloadFor(Object.assign(RA.Genres.zeroWeights(), { [this.drift.next()]: 1 }));
+    this.preloadFor(Object.assign(Genres.zeroWeights(), { [this.drift.next()]: 1 }));
   }
 
   onBar(bar) {
@@ -75,14 +86,14 @@ RA.Composer = class Composer {
     this.steering.steer(bar);
     const section = this.arc.advanceBar(bar, 240 / this.clock.bpm, this.drift.weights());
     this.steering.lean();
-    this.energy = RA.MathUtil.clamp(this.drift.intensity() + this.arc.boost, 0.03, 1);
+    this.energy = MathUtil.clamp(this.drift.intensity() + this.arc.boost, 0.03, 1);
     if (section) {
       this.logger.add(`bar ${bar}: section → ${section.toUpperCase()}`, 'event');
       if (this.settings.get('densityAuto')) this.nextMove = Math.min(this.nextMove, bar + 1);
     }
     if (this.settings.get('paceAuto') && (section || bar >= this.paceUntil)) this.rollPace(bar);
     // the tape's wow: the section's, times the genre's (Genres: wow; boc bends the most)
-    if (this.fx) this.fx.setArc(Object.assign({}, this.arc.value, { wow: this.arc.value.wow * RA.Genres.blend(this.drift.weights(), (g) => g.wow) }));
+    if (this.fx) this.fx.setArc(Object.assign({}, this.arc.value, { wow: this.arc.value.wow * Genres.blend(this.drift.weights(), (g) => g.wow) }));
     if (this.push && bar >= this.push.until) this.push = null;
     // a key change held back for a calm moment lands right after a break
     if (bar === this.keyAfterBreak) this.applyHarmony(bar, true);
@@ -153,13 +164,13 @@ RA.Composer = class Composer {
   // it; otherwise exactly the number the listener set.
   target() {
     if (this.settings.get('densityAuto')) {
-      const cap = RA.Arc.cap(this.drift.weights());
+      const cap = Arc.cap(this.drift.weights());
       const [lo0, hi0] = this.arc.spec.layers;
       const hi = Math.min(hi0, cap), lo = Math.min(lo0, hi);
-      const f = RA.MathUtil.clamp((this.energy - 0.15) / 0.7, 0, 1);
+      const f = MathUtil.clamp((this.energy - 0.15) / 0.7, 0, 1);
       return lo + Math.round((hi - lo) * f);
     }
-    return RA.MathUtil.clamp(this.settings.get('density'), 1, RA.PatternBank.ROLES.length);
+    return MathUtil.clamp(this.settings.get('density'), 1, PatternBank.ROLES.length);
   }
 
   // Build up quickly at the start, follow the target quickly when it thins out or fills up,
@@ -203,7 +214,7 @@ RA.Composer = class Composer {
   misfit(layer, w) {
     if (this.bank.fit(layer.pattern, w) >= 0.4) return false;
     const meter = this.meter();
-    return !(meter && RA.PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps));
+    return !(meter && PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps));
   }
 
   // After STEPS changes: free layers whose loops don't fit it are swapped at the next phrase.
@@ -214,7 +225,7 @@ RA.Composer = class Composer {
     let n = 0;
     for (const layer of [...this.deck.values()]) {
       if (layer.locked || layer.editing) continue;
-      if (RA.PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps)) continue;
+      if (PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps)) continue;
       this.swap(layer, this.bar, `${meter.steps} steps`, start);
       n++;
     }
@@ -294,7 +305,7 @@ RA.Composer = class Composer {
   // The PARAMS weight for each kind of move.
   static WEIGHTS = { swap: 'wSwap', reroll: 'wReroll', timbre: 'wTimbre', mutate: 'wMutate', reset: 'wMutate', dropout: 'wDropout', reharm: 'wReharm', collage: 'wCollage' };
 
-  static hasNumbers(code) { return Object.values(RA.CodeTools.paramsOf(code)).some((v) => typeof v === 'number'); }
+  static hasNumbers(code) { return Object.values(CodeTools.paramsOf(code)).some((v) => typeof v === 'number'); }
 
   // [{ score, run }] for this move.
   candidates(bar, free, w) {
@@ -308,12 +319,12 @@ RA.Composer = class Composer {
     const variation = this.deck.variation;
     const out = [];
     for (const l of free) {
-      out.push({ score: (0.08 + 0.3 * v) * RA.MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });
+      out.push({ score: (0.08 + 0.3 * v) * MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });
       // versions and timbres only where the genre has other instruments or kits for its params;
       // tweaks only where it has numbers
-      const params = RA.CodeTools.paramsOf(l.code);
+      const params = CodeTools.paramsOf(l.code);
       if (Object.values(params).some((x) => typeof x === 'string' && variation.options(x, this.genre).length)) {
-        out.push({ score: 0.2 * (0.5 + v) * RA.MathUtil.clamp(age(l) / 24, 0.3, 1.5) * I('reroll') / free.length, run: () => this.reroll(l, bar) });
+        out.push({ score: 0.2 * (0.5 + v) * MathUtil.clamp(age(l) / 24, 0.3, 1.5) * I('reroll') / free.length, run: () => this.reroll(l, bar) });
       }
       if (variation.canTimbre(params, this.genre)) {
         out.push({ score: 0.12 * (0.5 + v) * I('timbre') / free.length, run: () => this.timbre(l, bar) });
@@ -323,7 +334,7 @@ RA.Composer = class Composer {
       if (free.length >= 2 && !l.muted) out.push({ score: (0.04 + 0.25 * dubby) * I('dropout') / free.length, run: () => this.dropout(l, bar) });
     }
     if (this.settings.get('key') === 'auto' || this.settings.get('mode') === 'auto') {
-      out.push({ score: (0.04 + 0.2 * RA.MathUtil.clamp((bar - this.lastHarmBar) / 48, 0, 1.5)) * I('reharm'), run: () => this.reharmonize(bar) });
+      out.push({ score: (0.04 + 0.2 * MathUtil.clamp((bar - this.lastHarmBar) / 48, 0, 1.5)) * I('reharm'), run: () => this.reharmonize(bar) });
     }
     if (this.deck.size) out.push({ score: (0.03 + 0.25 * collagey) * I('collage'), run: () => this.collageEvent(bar) });
     if (this.settings.get('bpmAuto')) out.push({ score: 0.15 * I('tempo'), run: () => this.tempoPush(bar) });
@@ -335,7 +346,7 @@ RA.Composer = class Composer {
   reroll(layer, bar) {
     const r = this.deck.roll(layer.pattern);
     if (!r.changes.length) return;
-    const params = RA.CodeTools.paramsOf(r.code);
+    const params = CodeTools.paramsOf(r.code);
     if (!this.deck.loadParams(layer, params, 'new version: ' + r.changes.slice(0, 3).join(', '), bar)) return;
     layer.base = r.code;
     this.deck.memory.note(layer.patternId, r.sig, bar);
@@ -343,15 +354,15 @@ RA.Composer = class Composer {
 
   // One instrument of the layer swapped for another of its family in this genre (same notes).
   timbre(layer, bar) {
-    const r = this.deck.variation.timbre(RA.CodeTools.paramsOf(layer.code), this.genre);
+    const r = this.deck.variation.timbre(CodeTools.paramsOf(layer.code), this.genre);
     if (r) this.deck.loadParams(layer, r.params, r.change, bar);
   }
 
   // A small move of one of the layer's numeric params (odds...), near the pattern's own value.
   mutate(layer, bar) {
-    const original = RA.CodeTools.paramsOf(layer.base || layer.pattern.code);
+    const original = CodeTools.paramsOf(layer.base || layer.pattern.code);
     for (let attempt = 0; attempt < 4; attempt++) {
-      const r = this.deck.variation.tweak(RA.CodeTools.paramsOf(layer.code), original, this.settings.get('variation'));
+      const r = this.deck.variation.tweak(CodeTools.paramsOf(layer.code), original, this.settings.get('variation'));
       if (r && this.deck.loadParams(layer, r.params, r.change, bar)) return;
     }
   }
@@ -379,7 +390,7 @@ RA.Composer = class Composer {
 
   // A short collage phrase (voices, radio, field sounds) over the texture, FSOL-style.
   collageEvent(bar) {
-    const pool = RA.Families.collagePool(this.drift.weights());
+    const pool = Families.collagePool(this.drift.weights());
     const layer = this.deck.get('texture') || this.deck.get('keys') || [...this.deck.values()][0];
     if (!layer) return;
     const names = [];
@@ -409,7 +420,7 @@ RA.Composer = class Composer {
   // count needs them.
   add(bar) {
     const spec = this.arc.spec;
-    let missing = RA.Genres.of(this.drift.dominant()).roleOrder.filter((r) => !this.deck.has(r));
+    let missing = Genres.of(this.drift.dominant()).roleOrder.filter((r) => !this.deck.has(r));
     const allowed = missing.filter((r) => !(spec.no || []).includes(r));
     if (allowed.length || this.settings.get('densityAuto')) missing = allowed;
     if (!missing.length) return;
@@ -427,7 +438,7 @@ RA.Composer = class Composer {
 
   drop(bar, free) {
     const w = this.drift.weights();
-    const order = RA.Genres.of(this.drift.dominant()).roleOrder;
+    const order = Genres.of(this.drift.dominant()).roleOrder;
     // In calm sections the beat goes first, leaving pads, melodies and echoes.
     const calm = Composer.CALM.includes(this.arc.section);
     const beat = (l) => (calm && (l.role === 'drums' || l.role === 'perc') ? -1 : 0);
@@ -506,7 +517,7 @@ RA.Composer = class Composer {
       const was = this.drift.dominant();
       this.drift.setAllowed(value);
       this.preloadNextGenre();
-      this.logger.add(`genres: ${this.drift.allowed.map((g) => RA.Genres.label(g)).join(' · ')}`, 'event');
+      this.logger.add(`genres: ${this.drift.allowed.map((g) => Genres.label(g)).join(' · ')}`, 'event');
       // The genre playing now was turned off: move to the new one and swap the layers.
       if (!this.drift.allowed.includes(was)) {
         this.transitions.followGenre(this.bar);

@@ -1,6 +1,8 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Bus: one per layer. input (level) -> crush -> wobble -> lowpass -> mute -> out (fades)
 // -> dry, plus reverb and delay sends.
-RA.Bus = class Bus {
+export class Bus {
   static CRUSH_RANGE = 4;
 
   constructor(ac, id, { dry, reverb, delay }) {
@@ -80,7 +82,7 @@ RA.Bus = class Bus {
 
   // What is actually playing (shown by the sound panel's sliders).
   effective() {
-    const clamp = RA.MathUtil.clamp, c = this.code, m = this.mod;
+    const clamp = MathUtil.clamp, c = this.code, m = this.mod;
     return {
       lpf: clamp(c.lpf * m.lpfMul, 40, 20000),
       res: clamp(c.res + m.resAdd, 0.1, 20),

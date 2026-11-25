@@ -1,6 +1,6 @@
 // Phrase: the state of one named melody inside a layer: its base motif, where it is in
 // its form, and how many forms it has played.
-RA.Phrase = class Phrase {
+export class Phrase {
   static FORM = ['A', "A'", 'B', "A''"];
 
   constructor(gen, opts) {
@@ -13,7 +13,7 @@ RA.Phrase = class Phrase {
 
   // The motif to play this time, moving through the form and evolving over time.
   next() {
-    const part = RA.Phrase.FORM[this.plays % 4];
+    const part = Phrase.FORM[this.plays % 4];
     if (this.plays > 0 && this.plays % (4 * (this.opts.evolve || 2)) === 0) {
       if (this.gen.rng.chance(0.3)) this.base = this.gen.create(this.opts);
       else this.base = this.gen.vary(this.base, 0.6);

@@ -1,5 +1,7 @@
+import { Theme } from './Theme.js';
+
 // CodeHighlighter: tokenizes code lines for colouring and hard-wraps them to a column width.
-RA.CodeHighlighter = class CodeHighlighter {
+export class CodeHighlighter {
   static KEYWORDS = new Set(['loop', 'sleep', 's', 'synth', 'fx', 'if', 'else', 'for', 'const', 'let']);
   static LIVE = new Set(['KEY', 'ROOT', 'QUAL', 'MODE', 'ENERGY', 'BAR', 'BPM']);
 
@@ -9,7 +11,7 @@ RA.CodeHighlighter = class CodeHighlighter {
 
   tokenize(line) {
     if (this.cache.has(line)) return this.cache.get(line);
-    const T = RA.Theme;
+    const T = Theme;
     const out = [];
     const re = /(\/\/.*$)|('[^']*'?)|(\b\d*\.?\d+\b)|([A-Za-z_]\w*)|(\s+)|([^\sA-Za-z_\d']+)/g;
     let m;

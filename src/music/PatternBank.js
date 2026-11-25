@@ -1,12 +1,14 @@
+import { Genres } from './Genres.js';
+
 // PatternBank: the AI-written patterns, with lookup by role and fit to the current genres.
 // Pattern: { id, role, genres: { saw?, boc?, ae? ... (see Genres) }, energy: [min, max], code }
-RA.PatternBank = class PatternBank {
+export class PatternBank {
   static ROLES = ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'];
 
   // A pattern as the bank keeps it: trimmed code, and its genre weights in today's genres
   // (older patterns call them `flavours` and may use older genre names).
   static normalize(p) {
-    const out = Object.assign({}, p, { code: p.code.trim(), genres: RA.Genres.migrateWeights(p.genres || p.flavours) });
+    const out = Object.assign({}, p, { code: p.code.trim(), genres: Genres.migrateWeights(p.genres || p.flavours) });
     delete out.flavours;
     return out;
   }

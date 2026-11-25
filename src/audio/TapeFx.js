@@ -3,7 +3,7 @@
 // The saturation is a unity-gain tanh soft clip: transparent at normal levels, only
 // rounding off peaks. (p5.Distortion's curve boosts quiet signals ~6x even at tiny
 // amounts, which crushed the whole mix.)
-RA.TapeFx = class TapeFx {
+export class TapeFx {
   static BASE_DELAY = 0.012;
   static WOW = 0.0014;
   static FLUTTER = 0.00011;

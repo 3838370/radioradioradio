@@ -1,6 +1,8 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // SampleVoice: one sample hit with its own time, rate, amp, pan, start offset and length.
 // (p5.SoundFile.play() sets rate and volume on the whole file, which breaks overlapping hits.)
-RA.SampleVoice = class SampleVoice {
+export class SampleVoice {
   constructor(ac, buffer, opts = {}) {
     this.ac = ac;
     this.buffer = buffer;
@@ -9,7 +11,7 @@ RA.SampleVoice = class SampleVoice {
 
   start(time, destination, onEnd) {
     const { ac, buffer, o } = this;
-    const clamp = RA.MathUtil.clamp;
+    const clamp = MathUtil.clamp;
     const rate = Math.abs(o.rate == null ? 1 : +o.rate) || 1;
     const amp = clamp(o.amp == null ? 1 : +o.amp, 0, 2);
     const src = ac.createBufferSource();

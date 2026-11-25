@@ -1,7 +1,10 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Theme } from './Theme.js';
+
 // Spectrum: a phosphor bar graph from p5.FFT, drawn as stacked cells like an old VU display,
 // with each column's frequency written above it. The number of columns follows the width,
 // so every label fits over its own column.
-RA.Spectrum = class Spectrum {
+export class Spectrum {
   static COL_W = 26; // px per column, room for a label like "12k"
 
   constructor(fft) {
@@ -28,15 +31,15 @@ RA.Spectrum = class Spectrum {
   }
 
   draw(p, x, y, w, h) {
-    const T = RA.Theme;
+    const T = Theme;
     const spec = this.fft.analyze();
     const nyquist = this.fft.analyser.context.sampleRate / 2;
-    const bars = RA.MathUtil.clamp(Math.floor(w / Spectrum.COL_W), 6, 48);
+    const bars = MathUtil.clamp(Math.floor(w / Spectrum.COL_W), 6, 48);
     const cell = 4;
     const rows = Math.floor(h / cell);
     const bw = w / bars;
     p.noStroke();
-    p.textSize(RA.Theme.size.small - 2);
+    p.textSize(Theme.size.small - 2);
     p.textAlign(p.CENTER);
     const bins = this.bins(bars, spec.length, nyquist);
     for (let k = 0; k < bars; k++) {

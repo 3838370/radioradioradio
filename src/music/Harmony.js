@@ -1,9 +1,13 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Theory } from '../lang/Theory.js';
+import { Genres } from './Genres.js';
+
 // Harmony: key, mode and chord progression. Chords are stacked in thirds from the mode,
 // so every chord is diatonic. Progressions are scale degrees (0 = tonic); each chord lasts
 // `barsPerChord` bars (the genre's chordBars: slow in acid and ae, quicker in saw and boc).
 // Changes are requested at any time and applied on the next 4-bar boundary; a key change
 // can be held back until a calm moment (applyPending(false)).
-RA.Harmony = class Harmony {
+export class Harmony {
   static MODES = ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'];
 
   // Each genre's modes and progressions are in Genres. The composer changes progression now
@@ -16,12 +20,12 @@ RA.Harmony = class Harmony {
   // with chance `modulate` (0..1; true = 0.3) a key move as well.
   reharm(genre, rng, modulate = 0.3) {
     const current = this.prog.join();
-    const all = RA.Genres.of(genre).progressions;
+    const all = Genres.of(genre).progressions;
     const others = all.filter((p) => p.join() !== current);
     const change = { prog: rng.pick(others.length ? others : all) };
     const chance = modulate === true ? 0.3 : +modulate || 0;
     if (chance > 0 && rng.chance(chance)) change.key = this.key + rng.pick(Harmony.MODULATIONS);
-    change.bars = rng.pick(RA.Genres.of(genre).chordBars || [4]);
+    change.bars = rng.pick(Genres.of(genre).chordBars || [4]);
     return change;
   }
 
@@ -47,7 +51,7 @@ RA.Harmony = class Harmony {
     const holdKey = !withKey && p.key != null;
     this.pending = holdKey ? { key: p.key } : null;
     const before = this.describe();
-    if (p.key != null && !holdKey) this.key = 40 + RA.MathUtil.mod(p.key - 40, 12);
+    if (p.key != null && !holdKey) this.key = 40 + MathUtil.mod(p.key - 40, 12);
     if (p.mode) this.mode = p.mode;
     if (p.prog) this.prog = p.prog;
     if (p.bars) this.barsPerChord = p.bars;
@@ -60,7 +64,7 @@ RA.Harmony = class Harmony {
   // Picks a mode, progression and chord length that suit a genre (keeps the current mode if
   // it fits).
   planFor(genre, rng) {
-    const G = RA.Genres.of(genre);
+    const G = Genres.of(genre);
     return {
       mode: G.modes.includes(this.mode) ? this.mode : rng.pick(G.modes),
       prog: rng.pick(G.progressions),
@@ -68,17 +72,17 @@ RA.Harmony = class Harmony {
     };
   }
 
-  steps() { return RA.Theory.SCALES[this.mode] || RA.Theory.SCALES.aeolian; }
+  steps() { return Theory.SCALES[this.mode] || Theory.SCALES.aeolian; }
 
   degreeAt(bar) {
-    return this.prog[RA.MathUtil.mod(Math.floor(bar / this.barsPerChord), this.prog.length)];
+    return this.prog[MathUtil.mod(Math.floor(bar / this.barsPerChord), this.prog.length)];
   }
 
   // degree(0, 0) is KEY itself; degree(2, 1) is the mode's third, one octave up.
   degree(d, octave = 1) {
     const steps = this.steps();
     const o = Math.floor(d / steps.length);
-    return this.key + 12 * (octave + o) + steps[RA.MathUtil.mod(d, steps.length)];
+    return this.key + 12 * (octave + o) + steps[MathUtil.mod(d, steps.length)];
   }
 
   root(bar) { return this.degree(this.degreeAt(bar), 0); }
@@ -101,9 +105,9 @@ RA.Harmony = class Harmony {
   // Moves a scale step to the nearest tone of the chord playing at `bar` (for strong beats).
   snapToChord(step, bar) {
     const r = this.degreeAt(bar);
-    const tones = [0, 2, 4, 6].map((k) => RA.MathUtil.mod(r + k, 7));
+    const tones = [0, 2, 4, 6].map((k) => MathUtil.mod(r + k, 7));
     for (const off of [0, -1, 1, -2, 2]) {
-      if (tones.includes(RA.MathUtil.mod(step + off, 7))) return step + off;
+      if (tones.includes(MathUtil.mod(step + off, 7))) return step + off;
     }
     return step;
   }
@@ -114,10 +118,10 @@ RA.Harmony = class Harmony {
     return out;
   }
 
-  keyName() { return `${RA.Theory.name(this.key)} ${this.mode}`; }
+  keyName() { return `${Theory.name(this.key)} ${this.mode}`; }
 
   chordName(bar) {
     const r = this.root(bar);
-    return RA.Theory.name(r) + (this.quality(bar) === 'minor' ? 'm' : '');
+    return Theory.name(r) + (this.quality(bar) === 'minor' ? 'm' : '');
   }
 };

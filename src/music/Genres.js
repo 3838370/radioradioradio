@@ -1,3 +1,5 @@
+import { Settings } from '../core/Settings.js';
+
 // Genres: everything that makes each genre itself, in one table. The rest of the radio reads
 // it from here (GenreDrift, Arc, Harmony, Composer, collage()).
 //   label        the name in the top bar
@@ -15,7 +17,7 @@
 //                says params({ pad: 'boc_pad' }), a new version or a timbre move picks
 //                another pad from this genre's `pad` list, never one from another genre
 //   kits         the same for sample folders (Families.KITS): kick, snare, hat...
-RA.Genres = class Genres {
+export class Genres {
   static TABLE = {
     // Aphex Twin's ambient side (Selected Ambient Works 85-92 and II, the Drukqs prepared
     // pianos): FM pads, loose 808, ostinatos, tape. Slow, melancholy turns.
@@ -156,7 +158,7 @@ RA.Genres = class Genres {
     if (!Genres.tuned.has(name)) {
       const out = JSON.parse(JSON.stringify(base));
       for (const [id, value] of Object.entries(t)) {
-        const spec = RA.Settings.genreSpec(id);
+        const spec = Settings.genreSpec(id);
         if (!spec) continue;
         const keys = spec.path.split('.');
         const last = keys.pop();

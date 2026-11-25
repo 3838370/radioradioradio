@@ -1,5 +1,5 @@
 // Rng: random helpers. Seedable (mulberry32) for reproducible tests; Math.random otherwise.
-RA.Rng = class Rng {
+export class Rng {
   constructor(seed = null) {
     if (seed == null) {
       this.next = Math.random;

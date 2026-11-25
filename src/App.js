@@ -1,3 +1,47 @@
+import { AudioEngine } from './audio/AudioEngine.js';
+import { Clock } from './audio/Clock.js';
+import { FxRack } from './audio/FxRack.js';
+import { InstrumentLibrary } from './audio/InstrumentLibrary.js';
+import { SampleLibrary } from './audio/SampleLibrary.js';
+import { Scheduler } from './audio/Scheduler.js';
+import { SynthPresets } from './audio/SynthPresets.js';
+import { SynthVoice } from './audio/SynthVoice.js';
+import { Emitter } from './core/Emitter.js';
+import { Logger } from './core/Logger.js';
+import { Rng } from './core/Rng.js';
+import { Settings } from './core/Settings.js';
+import { Store } from './core/Store.js';
+import { CodeTools } from './lang/CodeTools.js';
+import { LanguageApi } from './lang/LanguageApi.js';
+import { LiveCoder } from './lang/LiveCoder.js';
+import { Arc } from './music/Arc.js';
+import { Automation } from './music/Automation.js';
+import { Composer } from './music/Composer.js';
+import { GenreDrift } from './music/GenreDrift.js';
+import { Genres } from './music/Genres.js';
+import { Harmony } from './music/Harmony.js';
+import { PatternBank } from './music/PatternBank.js';
+import { PatternLoader } from './music/PatternLoader.js';
+import { CardGrid } from './ui/CardGrid.js';
+import { CodeEditor } from './ui/CodeEditor.js';
+import { ControlPanel } from './ui/ControlPanel.js';
+import { Drawer } from './ui/Drawer.js';
+import { EqCurve } from './ui/EqCurve.js';
+import { FullCodeView } from './ui/FullCodeView.js';
+import { FxBar } from './ui/FxBar.js';
+import { Hud } from './ui/Hud.js';
+import { Input } from './ui/Input.js';
+import { InstrumentPanel } from './ui/InstrumentPanel.js';
+import { LayerPanel } from './ui/LayerPanel.js';
+import { LogView } from './ui/LogView.js';
+import { ParamsBar } from './ui/ParamsBar.js';
+import { SamplePanel } from './ui/SamplePanel.js';
+import { SavePanel } from './ui/SavePanel.js';
+import { SequencerView } from './ui/SequencerView.js';
+import { Spectrum } from './ui/Spectrum.js';
+import { Theme } from './ui/Theme.js';
+import { XYPad } from './ui/XYPad.js';
+
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
 // URL flags: ?fast=1 (genres last ~1 minute, pace divided by 8), ?seed=123 (repeatable choices)
@@ -6,43 +50,43 @@
 //       1-8 = effect pads (hold; Shift+number latches)
 // On a code card: drag a number up/down to change it; click elsewhere to edit the code
 // (Ctrl/Cmd+Enter runs it, Esc closes); ≈ opens the layer's sound panel.
-RA.App = class App {
+export class App {
   constructor() {
     const params = new URLSearchParams(location.search);
     this.fast = params.get('fast') === '1';
-    this.rng = new RA.Rng(params.has('seed') ? +params.get('seed') : null);
-    this.store = new RA.Store();
+    this.rng = new Rng(params.has('seed') ? +params.get('seed') : null);
+    this.store = new Store();
     const saved = this.store.load();
-    this.settings = new RA.Settings(RA.Settings.migrate(saved.settings));
-    this.emitter = new RA.Emitter();
-    this.logger = new RA.Logger();
-    this.instruments = new RA.InstrumentLibrary(RA.SynthPresets);
+    this.settings = new Settings(Settings.migrate(saved.settings));
+    this.emitter = new Emitter();
+    this.logger = new Logger();
+    this.instruments = new InstrumentLibrary(SynthPresets);
     this.instruments.load(saved.instruments);
     // your saved patterns now (the bank moves older genre names to today's: fog → dub, deep →
     // saw/boc...); the bank's own .rad files load in the background (see PatternLoader)
-    this.bank = new RA.PatternBank([]);
+    this.bank = new PatternBank([]);
     for (const pat of saved.userPatterns || []) {
       if (pat && pat.code && pat.role) this.bank.upsert(pat);
     }
     this.patternsLoaded = [0, 0];
-    this.patternsReady = RA.PatternLoader.load({ logger: this.logger, onProgress: (n, total) => { this.patternsLoaded = [n, total]; } })
+    this.patternsReady = PatternLoader.load({ logger: this.logger, onProgress: (n, total) => { this.patternsLoaded = [n, total]; } })
       .then((list) => { for (const p of list) if (!this.bank.get(p.id)) this.bank.upsert(p); });
-    this.harmony = new RA.Harmony();
-    this.drift = new RA.GenreDrift(this.rng, { legMinutes: this.legMinutes(), allowed: this.settings.get('genres') });
-    this.hud = new RA.Hud();
-    this.grid = new RA.CardGrid(this.emitter);
+    this.harmony = new Harmony();
+    this.drift = new GenreDrift(this.rng, { legMinutes: this.legMinutes(), allowed: this.settings.get('genres') });
+    this.hud = new Hud();
+    this.grid = new CardGrid(this.emitter);
     // The stage shows the same code three ways; the ⇄ button (or V) cycles through them.
     this.view = 'cards'; // cards | code | seq
-    this.fullCode = new RA.FullCodeView(this.grid.highlighter);
-    this.seq = new RA.SequencerView();
+    this.fullCode = new FullCodeView(this.grid.highlighter);
+    this.seq = new SequencerView();
     this.viewButton = null;
-    this.log = new RA.LogView(this.logger);
-    this.xy = new RA.XYPad((v) => { if (this.fx) this.fx.setXY(v); });
-    this.arc = new RA.Arc(this.rng, { scale: this.sectionScale() });
-    RA.SynthVoice.detuneScale = this.settings.get('detune');
+    this.log = new LogView(this.logger);
+    this.xy = new XYPad((v) => { if (this.fx) this.fx.setXY(v); });
+    this.arc = new Arc(this.rng, { scale: this.sectionScale() });
+    SynthVoice.detuneScale = this.settings.get('detune');
     this.state = 'idle'; // idle | loading | playing
     this.muted = false;
-    this.input = new RA.Input(this); // the mouse and the keys
+    this.input = new Input(this); // the mouse and the keys
     this.drag = null;    // { type: 'xy' } or { type: 'scrub', ... } while the mouse is down
   }
 
@@ -60,7 +104,7 @@ RA.App = class App {
   applyParam(name) {
     if (name === 'legMin' || name === 'legMax') this.drift.legMinutes = this.legMinutes();
     if (name === 'sectionLength') this.arc.scale = this.sectionScale();
-    if (name === 'detune') RA.SynthVoice.detuneScale = this.settings.get('detune');
+    if (name === 'detune') SynthVoice.detuneScale = this.settings.get('detune');
   }
 
   mount() {
@@ -85,13 +129,13 @@ RA.App = class App {
 
   setup(p) {
     this.p = p;
-    this.samples = new RA.SampleLibrary((url, ok, err) => p.loadSound(url, ok, err), this.logger);
+    this.samples = new SampleLibrary((url, ok, err) => p.loadSound(url, ok, err), this.logger);
     this.indexReady = this.samples.loadIndex().then(() => this.samplePanel && this.samplePanel.refreshFolders());
 
     // Build the control strip first so the stage's remaining height is known.
-    this.panel = new RA.ControlPanel(p, this.settings, p.select('#top'));
+    this.panel = new ControlPanel(p, this.settings, p.select('#top'));
     // the PARAMS row under it (closed at first), opened by its button
-    this.paramsBar = new RA.ParamsBar(p, this.settings, p.select('#top'), {
+    this.paramsBar = new ParamsBar(p, this.settings, p.select('#top'), {
       playing: () => this.drift.dominant(),
       onResize: () => this.resize(p),
       onExport: () => this.store.download('radio-params.json', this.settings.paramsSnapshot()),
@@ -101,22 +145,22 @@ RA.App = class App {
     });
     const paramsButton = this.panel.addButton('[params ▾]', () => paramsButton.html(this.paramsBar.toggle() ? '[params ▴]' : '[params ▾]'));
     this.panel.addButton('[≈] painel', () => this.drawer.toggle());
-    this.drawer = new RA.Drawer(p, p.select('#drawer'), [
+    this.drawer = new Drawer(p, p.select('#drawer'), [
       { id: 'layer', label: 'Camada' }, { id: 'instruments', label: 'Instrumentos' },
       { id: 'samples', label: 'Samples' }, { id: 'save', label: 'Guardar' },
     ], () => this.resize(p));
-    this.fxBar = new RA.FxBar(p, p.select('#fxbar'), this.settings);
+    this.fxBar = new FxBar(p, p.select('#fxbar'), this.settings);
     this.stage = p.select('#stage');
     const { width, height } = this.stage.elt.getBoundingClientRect();
     p.createCanvas(width, height).parent(this.stage);
-    p.textFont(RA.Theme.font);
+    p.textFont(Theme.font);
 
-    this.layerPanel = new RA.LayerPanel(p, this.drawer.pane('layer'), this);
-    this.instrumentPanel = new RA.InstrumentPanel(p, this.drawer.pane('instruments'), this);
-    this.samplePanel = new RA.SamplePanel(p, this.drawer.pane('samples'), this);
-    this.savePanel = new RA.SavePanel(p, this.drawer.pane('save'), this);
+    this.layerPanel = new LayerPanel(p, this.drawer.pane('layer'), this);
+    this.instrumentPanel = new InstrumentPanel(p, this.drawer.pane('instruments'), this);
+    this.samplePanel = new SamplePanel(p, this.drawer.pane('samples'), this);
+    this.savePanel = new SavePanel(p, this.drawer.pane('save'), this);
 
-    this.editor = new RA.CodeEditor(p, this.stage, {
+    this.editor = new CodeEditor(p, this.stage, {
       onRun: (layer, code) => this.composer.deck.applyCode(layer.id, code),
       onOpen: (layer) => this.composer.deck.setEditing(layer.id, true),
       onClose: (layer) => this.composer.deck.setEditing(layer.id, false),
@@ -168,33 +212,33 @@ RA.App = class App {
 
     await this.indexReady;
     await this.patternsReady;
-    this.clock = new RA.Clock(this.drift.tempo());
-    this.scheduler = new RA.Scheduler(ac, this.clock, this.logger);
-    this.audio = new RA.AudioEngine(ac, this.samples, this.instruments);
-    this.fx = new RA.FxRack(this.audio, this.clock, this.settings);
+    this.clock = new Clock(this.drift.tempo());
+    this.scheduler = new Scheduler(ac, this.clock, this.logger);
+    this.audio = new AudioEngine(ac, this.samples, this.instruments);
+    this.fx = new FxRack(this.audio, this.clock, this.settings);
     this.fx.setXY(this.xy.values());
     this.fxBar.attach(this.fx);
-    this.coder = new RA.LiveCoder({ scheduler: this.scheduler, audio: this.audio, emitter: this.emitter, logger: this.logger });
-    this.coder.attach(new RA.LanguageApi({
+    this.coder = new LiveCoder({ scheduler: this.scheduler, audio: this.audio, emitter: this.emitter, logger: this.logger });
+    this.coder.attach(new LanguageApi({
       coder: this.coder, audio: this.audio, harmony: this.harmony, clock: this.clock, fx: this.fx, rng: this.rng,
       instruments: this.instruments, settings: this.settings,
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
       genres: () => this.drift.weights(),
     }));
-    this.composer = new RA.Composer({
+    this.composer = new Composer({
       bank: this.bank, coder: this.coder, audio: this.audio, samples: this.samples, harmony: this.harmony,
       drift: this.drift, arc: this.arc, fx: this.fx, instruments: this.instruments,
       settings: this.settings, clock: this.clock, scheduler: this.scheduler, rng: this.rng,
       emitter: this.emitter, logger: this.logger, fast: this.fast,
     });
-    this.automation = new RA.Automation({
+    this.automation = new Automation({
       audio: this.audio, fx: this.fx, arc: this.arc, settings: this.settings, clock: this.clock, rng: this.rng,
       layers: () => [...this.composer.layers.values()], emitter: this.emitter, fast: this.fast,
     });
-    this.spectrum = new RA.Spectrum(this.audio.fft);
+    this.spectrum = new Spectrum(this.audio.fft);
     if (this.settings.get('eq')) this.audio.eq.set(this.settings.get('eq'));
-    this.eqCurve = new RA.EqCurve(this.audio.eq, (values) => this.settings.set('eq', values));
+    this.eqCurve = new EqCurve(this.audio.eq, (values) => this.settings.set('eq', values));
 
     this.composer.preloadFor(this.drift.weights());
     const t0 = performance.now();
@@ -230,7 +274,7 @@ RA.App = class App {
       const current = this.snapshot();
       this.store.save({
         version: 3,
-        settings: Object.assign({}, current.settings, RA.Settings.migrate(data.settings)),
+        settings: Object.assign({}, current.settings, Settings.migrate(data.settings)),
         instruments: Object.assign({}, current.instruments, data.instruments),
         userPatterns: current.userPatterns.concat(data.userPatterns || []),
       });
@@ -241,13 +285,13 @@ RA.App = class App {
   }
 
   // One of your patterns as a .rad file (the bank's own format).
-  exportPattern(pat) { this.store.downloadText(`${pat.id}.rad`, RA.PatternLoader.format(pat)); }
+  exportPattern(pat) { this.store.downloadText(`${pat.id}.rad`, PatternLoader.format(pat)); }
 
   // .rad files become your patterns (user_<name>), saved and picked by the composer.
   async importPatterns(files) {
     for (const file of files) {
       try {
-        const p = RA.PatternLoader.parse(await file.text(), file.name);
+        const p = PatternLoader.parse(await file.text(), file.name);
         const id = p.id.startsWith('user_') ? p.id : 'user_' + p.id;
         this.bank.upsert(Object.assign(p, { id, user: true, edited: true }));
         this.logger.add(`pattern imported: ${id}`, 'event');
@@ -314,7 +358,7 @@ RA.App = class App {
     const spec = this.instruments.get(name);
     if (!this.composer || !spec) return;
     for (const layer of this.composer.layers.values()) {
-      const code = RA.CodeTools.updateInstrument(layer.code, name, spec);
+      const code = CodeTools.updateInstrument(layer.code, name, spec);
       if (code === layer.code) continue;
       layer.code = code;
       this.emitter.emit('layer:change', { layer, desc: null, instant: true, quiet: true });
@@ -372,9 +416,9 @@ RA.App = class App {
   // Two arrows, one over the other (→ over ←), in the stage's bottom-right corner, with the
   // current view's name beside it. The name also counts as the button.
   drawViewButton(p, x, y) {
-    const T = RA.Theme;
+    const T = Theme;
     const s = 26;
-    p.textSize(RA.Theme.size.small);
+    p.textSize(Theme.size.small);
     const nameW = p.textWidth(App.VIEW_NAMES[this.view]) + 8;
     this.viewButton = { x: x - nameW, y, w: s + nameW, h: s };
     const hover = this.inViewButton(p.mouseX, p.mouseY);
@@ -399,14 +443,14 @@ RA.App = class App {
   stepsShown(now) {
     if (!this.stepsCache || now - this.stepsCache.at > 500) {
       const beat = this.clock.beatAt(this.audio.ac.currentTime);
-      this.stepsCache = { at: now, list: RA.SequencerView.cycles([...this.composer.layers.values()], beat) };
+      this.stepsCache = { at: now, list: SequencerView.cycles([...this.composer.layers.values()], beat) };
     }
     return this.stepsCache.list;
   }
 
   fullCodeText() {
-    return RA.FullCodeView.text([...this.composer.layers.values()], {
-      genre: RA.Genres.label(this.drift.dominant()).toUpperCase(),
+    return FullCodeView.text([...this.composer.layers.values()], {
+      genre: Genres.label(this.drift.dominant()).toUpperCase(),
       section: this.arc.section.toUpperCase(),
       bpm: Math.round(this.clock.bpm),
       key: this.harmony.keyName(),
@@ -432,8 +476,8 @@ RA.App = class App {
     } else {
       on.add(g);
     }
-    const list = RA.Genres.LIST.filter((x) => on.has(x));
-    this.settings.set('genres', list.length === RA.Genres.LIST.length ? null : list);
+    const list = Genres.LIST.filter((x) => on.has(x));
+    this.settings.set('genres', list.length === Genres.LIST.length ? null : list);
   }
 
 
@@ -445,7 +489,7 @@ RA.App = class App {
   // ───── drawing ─────
 
   draw(p) {
-    const T = RA.Theme;
+    const T = Theme;
     p.background(T.bg);
     if (this.state !== 'playing') return this.drawIdle(p);
 
@@ -459,7 +503,7 @@ RA.App = class App {
     if (this.drawer.isOpen && this.drawer.current === 'layer') this.layerPanel.tick();
 
     const bottomH = 104;
-    const top = RA.Hud.HEIGHT + 10;
+    const top = Hud.HEIGHT + 10;
     const stageH = p.height - top - bottomH - 8;
     const layers = [...this.composer.layers.values()];
     if (this.view === 'cards') {
@@ -475,7 +519,7 @@ RA.App = class App {
     }
     // a strip at the foot of the stage for the view button (cards taller than the stage end under it)
     p.noStroke();
-    p.fill(RA.Theme.bg);
+    p.fill(Theme.bg);
     p.rect(0, top + stageH - 32, p.width, 40);
     this.drawViewButton(p, p.width - 12 - 26, top + stageH - 26);
     if (this.editor.isOpen && this.view === 'cards') {
@@ -503,7 +547,7 @@ RA.App = class App {
   }
 
   drawBottom(p, by, h) {
-    const T = RA.Theme;
+    const T = Theme;
     p.noStroke();
     p.fill(T.panel);
     p.rect(0, by, p.width, h);
@@ -549,7 +593,7 @@ RA.App = class App {
   }
 
   drawIdle(p) {
-    const T = RA.Theme;
+    const T = Theme;
     const cx = p.width / 2, cy = p.height / 2;
     p.textFont(T.font);
     p.textSize(T.size.title + 3);
@@ -560,7 +604,7 @@ RA.App = class App {
     p.fill(T.text);
     p.text('ENDLESS JS CODED AMBIENT RADIO', cx, cy - 28);
     p.fill(T.dim);
-    p.text(RA.Genres.LIST.map((g) => RA.Genres.label(g).toUpperCase()).join(' · '), cx, cy - 12);
+    p.text(Genres.LIST.map((g) => Genres.label(g).toUpperCase()).join(' · '), cx, cy - 12);
     if (this.state === 'loading') {
       const s = this.samples;
       const blink = (performance.now() >> 9) % 2 ? '_' : ' ';

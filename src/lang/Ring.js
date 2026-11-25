@@ -1,6 +1,8 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Ring: an array that wraps around, with Sonic Pi-style tick()/look() counters.
 // Counters belong to the loop that is running, so they persist between iterations.
-RA.Ring = class Ring extends Array {
+export class Ring extends Array {
   static get [Symbol.species]() { return Array; } // map/filter return plain arrays
 
   static from(items, counters) {
@@ -10,7 +12,7 @@ RA.Ring = class Ring extends Array {
     return r;
   }
 
-  get(k) { return this[RA.MathUtil.mod(k, this.length)]; }
+  get(k) { return this[MathUtil.mod(k, this.length)]; }
 
   tick(key = '_') {
     const c = this.counters;

@@ -1,3 +1,21 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Rng } from '../core/Rng.js';
+import { Ring } from './Ring.js';
+import { Theory } from './Theory.js';
+import { BeatGen } from '../music/BeatGen.js';
+import { Families } from '../music/Families.js';
+import { BassGen } from '../music/Generators.js';
+import { ChordGen } from '../music/Generators.js';
+import { CollageGen } from '../music/Generators.js';
+import { DroneGen } from '../music/Generators.js';
+import { MotifGen } from '../music/Generators.js';
+import { CellsGen } from '../music/Melodies.js';
+import { DriftGen } from '../music/Melodies.js';
+import { OstinatoGen } from '../music/Melodies.js';
+import { ProbabilityGen } from '../music/Melodies.js';
+import { MelodyGen } from '../music/MelodyGen.js';
+import { Phrase } from '../music/Phrase.js';
+
 // LanguageApi: everything pattern code can see.
 //
 //   loop(name, (i) => {...})  sleep(beats)
@@ -15,8 +33,8 @@
 //
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
-RA.LanguageApi = class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new RA.Rng() }) {
+export class LanguageApi {
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng() }) {
     this.settings = settings; // the feel parameters (humanTime, humanVel)
     this.genres = genres;   // () => the genre weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
@@ -28,7 +46,7 @@ RA.LanguageApi = class LanguageApi {
     this.section = section; // () => the arc section name, for SECTION
     this.fx = fx;         // FxRack, for pad()
     this.rng = rng;
-    this.melody = new RA.MelodyGen(rng);
+    this.melody = new MelodyGen(rng);
     this.globalVars = new Map();
     this.env = this.buildEnv();
   }
@@ -37,7 +55,7 @@ RA.LanguageApi = class LanguageApi {
   param(id) { return this.settings ? this.settings.get(id) : 1; }
 
   // A melody note's velocity with its variation scaled by humanVel (around 0.8).
-  human(vel) { return RA.MathUtil.clamp(0.8 + (vel - 0.8) * this.param('humanVel'), 0.1, 1.1); }
+  human(vel) { return MathUtil.clamp(0.8 + (vel - 0.8) * this.param('humanVel'), 0.1, 1.1); }
 
   // Per-layer variable store (layers keep it across iterations and hot-swaps).
   vars() {
@@ -88,7 +106,7 @@ RA.LanguageApi = class LanguageApi {
     const key = 'phrase:' + name;
     let ph = store.get(key);
     if (!ph || ph.opts.beats !== beats) {
-      ph = new RA.Phrase(this.melody, { beats, density, rest, evolve });
+      ph = new Phrase(this.melody, { beats, density, rest, evolve });
       store.set(key, ph);
     }
     ph.opts.density = density;
@@ -108,7 +126,7 @@ RA.LanguageApi = class LanguageApi {
       return {
         note,
         dur: n.dur,
-        vel: RA.MathUtil.clamp(n.vel * (0.99 + (rng.float(0.9, 1.08) - 0.99) * this.param('humanVel')), 0.2, 1.1),
+        vel: MathUtil.clamp(n.vel * (0.99 + (rng.float(0.9, 1.08) - 0.99) * this.param('humanVel')), 0.2, 1.1),
         nudge: rng.float(0, 0.03) * edge * this.param('humanTime'),
         grace: note != null && n.grace ? this.harmony.degree(step + n.grace, octave) : null,
         last: k === all.length - 1,
@@ -119,8 +137,8 @@ RA.LanguageApi = class LanguageApi {
   buildEnv() {
     const { coder, audio, harmony, clock } = this;
     const self = this;
-    const T = RA.Theory;
-    const mod = RA.MathUtil.mod;
+    const T = Theory;
+    const mod = MathUtil.mod;
     const timed = (o, spb, keys) => { for (const k of keys) if (o[k] != null) o[k] *= spb; return o; };
 
     return {
@@ -220,7 +238,7 @@ RA.LanguageApi = class LanguageApi {
         coder.emit((t) => { const bus = audio.bus(id); if (bus) bus.setFx(p, t); });
       },
 
-      ring(...xs) { return RA.Ring.from(xs.length === 1 && Array.isArray(xs[0]) ? xs[0] : xs, coder.counters()); },
+      ring(...xs) { return Ring.from(xs.length === 1 && Array.isArray(xs[0]) ? xs[0] : xs, coder.counters()); },
       tick(key = '_') { const c = coder.counters(); c[key] = (c[key] == null ? -1 : c[key]) + 1; return c[key]; },
       look(key = '_') { return coder.counters()[key] || 0; },
 
@@ -228,7 +246,7 @@ RA.LanguageApi = class LanguageApi {
       spread(hits, steps, rot = 0) {
         const base = [];
         for (let k = 0; k < steps; k++) base.push(((k * hits) % steps) < hits);
-        return RA.Ring.from(base.map((_, k) => base[mod(k + rot, steps)]), coder.counters());
+        return Ring.from(base.map((_, k) => base[mod(k + rot, steps)]), coder.counters());
       },
 
       rrand: (a, b) => a + Math.random() * (b - a),
@@ -272,7 +290,7 @@ RA.LanguageApi = class LanguageApi {
         if (!st) { st = { v: self.rng.float(lo, hi), vel: 0 }; store.set(key, st); }
         st.vel = st.vel * 0.8 + self.rng.float(-1, 1) * speed * (hi - lo) * 0.5;
         st.v += st.vel;
-        if (st.v < lo || st.v > hi) { st.v = RA.MathUtil.clamp(st.v, lo, hi); st.vel = -st.vel; }
+        if (st.v < lo || st.v > hi) { st.v = MathUtil.clamp(st.v, lo, hi); st.vel = -st.vel; }
         return st.v;
       },
 
@@ -285,8 +303,8 @@ RA.LanguageApi = class LanguageApi {
       //   voicing: triad m7 add9 sus2 sus4 dub cluster wide quartal fifths
       //   rhythm: stab (offbeat dub techno hits) offbeat push long
       chords(name, { voicing = 'm7', octave = 1, rhythm = 'stab', density = 0.5 } = {}) {
-        const g = self.generator('chords:' + name, (x) => x.rhythm === rhythm, () => new RA.ChordGen(self.rng, rhythm));
-        const notes = RA.ChordGen.voice(harmony, coder.bar(), voicing, octave);
+        const g = self.generator('chords:' + name, (x) => x.rhythm === rhythm, () => new ChordGen(self.rng, rhythm));
+        const notes = ChordGen.voice(harmony, coder.bar(), voicing, octave);
         const hits = g.next(density).map((at) => ({ at, notes, vel: self.rng.float(0.75, 1), len: rhythm === 'long' ? null : 0.25 }));
         return self.timeline(hits, 4, { notes: null, vel: 0, len: 0 });
       },
@@ -294,7 +312,7 @@ RA.LanguageApi = class LanguageApi {
       // bassline('b', { style, octave }) -> [{ note, len, vel, accent, slide, dur }]
       //   style: dub sub 808 acid walk pedal
       bassline(name, { style = 'dub', octave = 0 } = {}) {
-        const g = self.generator('bass:' + name, (x) => x.style === style, () => new RA.BassGen(self.rng, style));
+        const g = self.generator('bass:' + name, (x) => x.style === style, () => new BassGen(self.rng, style));
         const root = harmony.degreeAt(coder.bar());
         const hits = g.next().map(([at, step, len, accent, slide]) => ({ at, note: harmony.degree(root + step, octave), len, accent: !!accent, slide: !!slide, vel: accent ? 1 : 0.8 }));
         return self.timeline(hits, 4, { note: null, len: 0, vel: 0 });
@@ -303,15 +321,15 @@ RA.LanguageApi = class LanguageApi {
       // collage('c', { pool, rate, beats }) -> [{ s, n, rate, begin, pan, amp, dur }]
       //   pool: sample folders (default: the genre's: voices, radio, field recordings)
       collage(name, { pool = null, rate = 0.5, beats = 4 } = {}) {
-        const list = pool || RA.Families.collagePool(self.genres ? self.genres() : null);
-        const g = self.generator('collage:' + name, (x) => !pool || x.pool.join() === pool.join(), () => new RA.CollageGen(self.rng, list));
+        const list = pool || Families.collagePool(self.genres ? self.genres() : null);
+        const g = self.generator('collage:' + name, (x) => !pool || x.pool.join() === pool.join(), () => new CollageGen(self.rng, list));
         const hits = g.next(beats, rate).map(({ at, sound }) => Object.assign({ at, amp: self.rng.float(0.25, 0.5) }, sound));
         return self.timeline(hits, beats, { s: null, amp: 0 });
       },
 
       // drone('d', { voices, octave }) -> { notes, changed }: chord tones that drift slowly
       drone(name, { voices = 3, octave = 1 } = {}) {
-        const g = self.generator('drone:' + name, (x) => x.steps.length === voices, () => new RA.DroneGen(self.rng, voices));
+        const g = self.generator('drone:' + name, (x) => x.steps.length === voices, () => new DroneGen(self.rng, voices));
         const root = harmony.degreeAt(coder.bar());
         const { steps, changed } = g.next();
         return { notes: steps.map((k) => harmony.degree(root + k, octave)), changed };
@@ -322,7 +340,7 @@ RA.LanguageApi = class LanguageApi {
       // crackles are a few clicks scattered over the bar (play them with sleep(c.dur)).
       tape(name) {
         const g = self.generator('tape:' + name, () => true, () => ({ level: self.rng.float(0.5, 1), wow: 0 }));
-        g.level = RA.MathUtil.clamp(g.level + self.rng.float(-0.08, 0.08), 0.3, 1);
+        g.level = MathUtil.clamp(g.level + self.rng.float(-0.08, 0.08), 0.3, 1);
         g.wow = self.rng.chance(0.08) ? self.rng.float(0.2, 0.6) : g.wow * 0.7;
         const hits = [];
         for (let at = 0; at < 4; at += 0.25) if (self.rng.chance(0.08)) hits.push({ at, amp: self.rng.float(0.2, 0.6) });
@@ -336,7 +354,7 @@ RA.LanguageApi = class LanguageApi {
       //   Melodies.js. `note` is null on rests; cells may sound several `notes` at once.
       //   chord (ostinato): follow the chord's root (true) or stay on the key (false).
       melody(name, { style = 'ostinato', octave = 2, beats = 4, chord = true } = {}) {
-        const makers = { ostinato: () => new RA.OstinatoGen(self.rng), drift: () => new RA.DriftGen(self.rng), probability: () => new RA.ProbabilityGen(self.rng), cells: () => new RA.CellsGen(self.rng) };
+        const makers = { ostinato: () => new OstinatoGen(self.rng), drift: () => new DriftGen(self.rng), probability: () => new ProbabilityGen(self.rng), cells: () => new CellsGen(self.rng) };
         const make = makers[style] || makers.ostinato;
         const g = self.generator('melody:' + name, (x) => x.style === style, () => Object.assign(make(), { style }));
         const bar = coder.bar();
@@ -353,7 +371,7 @@ RA.LanguageApi = class LanguageApi {
       // motif('m', { beats, density, octave }) -> [{ note, dur, vel }]: a short melody that
       // repeats and changes one detail at a time
       motif(name, { beats = 4, density = 0.4, octave = 2 } = {}) {
-        const g = self.generator('motif:' + name, (x) => x.opts.beats === beats, () => new RA.MotifGen(self.rng, self.melody, { beats, density }));
+        const g = self.generator('motif:' + name, (x) => x.opts.beats === beats, () => new MotifGen(self.rng, self.melody, { beats, density }));
         const bar = coder.bar();
         let pos = 0;
         return g.next().map((n) => {
@@ -370,7 +388,7 @@ RA.LanguageApi = class LanguageApi {
         const store = self.vars();
         const key = 'beat:' + name;
         let b = store.get(key);
-        if (!b || b.style !== style) { b = new RA.BeatGen(self.rng, style, density); store.set(key, b); }
+        if (!b || b.style !== style) { b = new BeatGen(self.rng, style, density); store.set(key, b); }
         return b.next(density);
       },
 

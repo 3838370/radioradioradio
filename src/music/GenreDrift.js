@@ -1,8 +1,11 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { Genres } from './Genres.js';
+
 // GenreDrift: the slow journey between the genres (see Genres), in a random order. Each leg
 // lasts 8-20 minutes: the first ~60% stays on one genre, the rest crossfades into the next.
 // The crossfade is in the weights: they decide which patterns fit, the dominant genre sets
 // the tempo and the harmony. Also produces `intensity` (ENERGY in code).
-RA.GenreDrift = class GenreDrift {
+export class GenreDrift {
   // The order is not fixed: at every leg the next genre is drawn at random from those not
   // heard recently, leaning on Genres' `tends`. Each leg has a random length, and each visit
   // its own tempo (±7%). The radio also starts at a random genre and a random point of its leg.
@@ -21,8 +24,8 @@ RA.GenreDrift = class GenreDrift {
   }
 
   static clean(names) {
-    const list = RA.Genres.migrate(names);
-    return list.length ? list : RA.Genres.LIST.slice();
+    const list = Genres.migrate(names);
+    return list.length ? list : Genres.LIST.slice();
   }
 
   newLegLength() { return this.rng.float(this.legMinutes[0], this.legMinutes[1]); }
@@ -44,12 +47,12 @@ RA.GenreDrift = class GenreDrift {
   // Any allowed genre except the current one and the last three heard, weighted by `tends`.
   // With a single genre allowed, it stays on that one.
   pickNext() {
-    const pool = this.allowed || RA.Genres.LIST;
+    const pool = this.allowed || Genres.LIST;
     const recent = new Set([this.from, ...this.history.slice(-3)]);
     let options = pool.filter((g) => !recent.has(g));
     if (!options.length) options = pool.filter((g) => g !== this.from);
     if (!options.length) return pool[0];
-    const tends = (RA.Genres.of(this.from) || {}).tends || {};
+    const tends = (Genres.of(this.from) || {}).tends || {};
     return this.rng.weighted(options.map((g) => [g, (tends[g] || 1) * this.leanWeight(g)]));
   }
 
@@ -65,7 +68,7 @@ RA.GenreDrift = class GenreDrift {
   leanWeight(g) {
     const l = this.lean;
     if (!l) return 1;
-    const G = RA.Genres.of(g);
+    const G = Genres.of(g);
     const near = Math.exp(-(((G.intensity - l.energy) / 0.2) ** 2) - (((G.tempo - l.bpm) / 30) ** 2));
     return 1 + 6 * l.strength * near;
   }
@@ -94,8 +97,8 @@ RA.GenreDrift = class GenreDrift {
 
   // One weight per genre, summing to 1.
   weights() {
-    const x = RA.MathUtil.smoothstep((this.t - 0.6) / 0.4);
-    const w = RA.Genres.zeroWeights();
+    const x = MathUtil.smoothstep((this.t - 0.6) / 0.4);
+    const w = Genres.zeroWeights();
     w[this.from] += 1 - x;
     w[this.to] += x;
     return w;
@@ -107,13 +110,13 @@ RA.GenreDrift = class GenreDrift {
   }
 
   intensity() {
-    return RA.MathUtil.clamp(RA.Genres.blend(this.weights(), (g) => g.intensity) + 0.18 * Math.sin(this.wavePhase), 0.05, 1);
+    return MathUtil.clamp(Genres.blend(this.weights(), (g) => g.intensity) + 0.18 * Math.sin(this.wavePhase), 0.05, 1);
   }
 
   // Tempos are too far apart to blend (76 vs 168), so follow the dominant genre, with this
   // visit's own variation.
   tempo() {
     const d = this.dominant();
-    return Math.round(RA.Genres.of(d).tempo * (this.tempoFactor[d] || 1));
+    return Math.round(Genres.of(d).tempo * (this.tempoFactor[d] || 1));
   }
 };

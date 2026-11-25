@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Generators behind chords(), bassline(), collage(), drone() and motif() in pattern code.
 // Like BeatGen and Phrase, each keeps its state per layer: it holds an idea for a few bars
 // (so it can be heard and remembered), then varies it a little, now and then a lot.
@@ -5,7 +7,7 @@
 //   { ..., dur }  dur = beats until the next event (rests are events with nothing to play)
 
 // Rhythm of chord hits in a bar, in beats. Dub techno lives on the offbeats.
-RA.ChordGen = class ChordGen {
+export class ChordGen {
   static RHYTHMS = {
     stab: [[0.5], [0.75], [0, 1.5], [0.5, 2.5], [1.5, 3.5], [0.75, 2.75], [0.5, 1.75, 3], [0, 0.75, 2.5], [0.5, 2, 3.5]],
     offbeat: [[0.5, 1.5, 2.5, 3.5], [0.5, 2.5], [1.5, 3.5], [0.5, 1.5, 3.5], [0.75, 1.5, 2.75]],
@@ -36,7 +38,7 @@ RA.ChordGen = class ChordGen {
       if (this.rng.chance(0.3)) this.hits = this.rng.pick(ChordGen.RHYTHMS[this.rhythm] || ChordGen.RHYTHMS.stab).slice();
       else {
         const k = this.rng.int(0, this.hits.length - 1);
-        this.hits[k] = RA.MathUtil.clamp(this.hits[k] + this.rng.pick([-0.5, -0.25, 0.25, 0.5]), 0, 3.75);
+        this.hits[k] = MathUtil.clamp(this.hits[k] + this.rng.pick([-0.5, -0.25, 0.25, 0.5]), 0, 3.75);
         this.hits = [...new Set(this.hits)].sort((a, b) => a - b);
       }
     }
@@ -54,7 +56,7 @@ RA.ChordGen = class ChordGen {
 
 // Basslines: templates of [beat, scale step over the chord root (7 = octave), length],
 // held a few bars and then varied; 'acid' is drawn fresh on 16ths.
-RA.BassGen = class BassGen {
+export class BassGen {
   static STYLES = {
     dub: [[[0, 0, 1.5], [2, 0, 1], [3.5, 4, 0.5]], [[0, 0, 3], [3, 7, 0.5]], [[0, 0, 1], [1.5, 0, 1], [3, 4, 1]], [[0, 0, 2.5], [3, 0, 0.75]], [[0, 0, 1.75], [2.5, -3, 0.5], [3, 0, 1]]],
     sub: [[[0, 0, 4]], [[0, 0, 2], [2, 0, 2]], [[0, 0, 3.5]], [[0, 0, 2.5], [3, 4, 1]]],
@@ -92,7 +94,7 @@ RA.BassGen = class BassGen {
       else {
         const n = this.rng.pick(this.line);
         if (this.rng.chance(0.5)) n[1] = this.rng.pick([0, 2, 4, 5, 7, -1, -3]);
-        else n[0] = RA.MathUtil.clamp(n[0] + this.rng.pick([-0.25, 0.25, 0.5]), 0, 3.75);
+        else n[0] = MathUtil.clamp(n[0] + this.rng.pick([-0.25, 0.25, 0.5]), 0, 3.75);
         this.line.sort((a, b) => a[0] - b[0]);
       }
     }
@@ -103,7 +105,7 @@ RA.BassGen = class BassGen {
 // Collage: a "scene" of two to four sounds from a pool (voices, radio, field recordings),
 // each with its own pitch, start point and place in the stereo field, scattered over the
 // bar; the scene changes every 8-16 bars, one sound at a time. FSOL-style.
-RA.CollageGen = class CollageGen {
+export class CollageGen {
   constructor(rng, pool) {
     this.rng = rng;
     this.pool = pool;
@@ -133,10 +135,10 @@ RA.CollageGen = class CollageGen {
 
 // Drone: a few chord tones held for minutes; now and then one voice moves a step along the
 // mode, so the chord drifts without ever jumping.
-RA.DroneGen = class DroneGen {
+export class DroneGen {
   constructor(rng, voices = 3) {
     this.rng = rng;
-    this.steps = [0, 2, 4, 6, 8].slice(0, RA.MathUtil.clamp(voices, 1, 5));
+    this.steps = [0, 2, 4, 6, 8].slice(0, MathUtil.clamp(voices, 1, 5));
     this.hold = rng.int(2, 5);
     this.bars = 0;
   }
@@ -158,7 +160,7 @@ RA.DroneGen = class DroneGen {
 // Motif: a short melody that repeats and changes one detail at a time (a note, a rhythm, a
 // rest), Selected Ambient Works-style: you hear the same few notes for a while, then notice
 // one has moved.
-RA.MotifGen = class MotifGen {
+export class MotifGen {
   constructor(rng, melody, { beats = 4, density = 0.4 } = {}) {
     this.rng = rng;
     this.melody = melody;
@@ -179,7 +181,7 @@ RA.MotifGen = class MotifGen {
         const r = this.rng.next();
         if (r < 0.55) n.step += this.rng.pick([-2, -1, 1, 2]);
         else if (r < 0.8) n.rest = !n.rest && notes.indexOf(n) > 0;
-        else n.vel = RA.MathUtil.clamp(n.vel + this.rng.float(-0.2, 0.2), 0.4, 1);
+        else n.vel = MathUtil.clamp(n.vel + this.rng.float(-0.2, 0.2), 0.4, 1);
       }
     }
     return this.motif.notes;

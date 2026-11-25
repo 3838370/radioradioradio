@@ -1,3 +1,5 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // SynthVoice: one note, built from native nodes on p5.sound's AudioContext.
 //   oscillators (+unison, FM, vibrato, drift, pitch envelope) -> drive -> filter (+envelope,
 //   LFO) -> tremolo -> amp envelope -> pan -> destination
@@ -19,7 +21,7 @@
 //   keytrack: 0..1                      the filter follows the pitch (1 = fully)
 //   per osc: ratio (frequency multiple, inharmonic partials), decay (s) the partial fades
 // Note options: amp, vel (0..1, also scales amp), dur, attack, release, cutoff, res, pan
-RA.SynthVoice = class SynthVoice {
+export class SynthVoice {
   static noiseBuffers = new WeakMap();
   static driveCurves = new Map();
   // Scales every note's random drift and its own detune (Settings: detune; 0 = in tune).
@@ -59,7 +61,7 @@ RA.SynthVoice = class SynthVoice {
 
   start(time, destination, onEnd) {
     const { ac, P, o } = this;
-    const clamp = RA.MathUtil.clamp;
+    const clamp = MathUtil.clamp;
     const drift = (Math.random() * 2 - 1) * (P.drift || 0) * SynthVoice.detuneScale;
     const freq = 440 * Math.pow(2, (this.midi - 69) / 12);
     const vel = o.vel == null ? 1 : clamp(+o.vel, 0, 1.5);

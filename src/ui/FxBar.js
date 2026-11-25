@@ -1,9 +1,11 @@
+import { FxRack } from '../audio/FxRack.js';
+
 // FxBar: the strip at the bottom of the page. Eight effect pads and the delay controls.
 //   left button  hold: the effect is on while the button is held
 //   right button latch: toggles the effect on/off
 //   keys 1-8     hold (Shift+number latches)
 // Pads light up for any source, including the composer's automatic gestures.
-RA.FxBar = class FxBar {
+export class FxBar {
   constructor(p, parent, settings) {
     this.p = p;
     this.settings = settings;
@@ -12,7 +14,7 @@ RA.FxBar = class FxBar {
     const root = p.createDiv().addClass('fxbar').parent(parent);
 
     const padBox = p.createDiv().addClass('pads').parent(root);
-    for (const pad of RA.FxRack.PADS) {
+    for (const pad of FxRack.PADS) {
       const b = p.createButton('').addClass('pad').parent(padBox).attribute('title', `${pad.hint} · esquerdo: segurar · direito: ligar/desligar · tecla ${pad.key}`);
       b.html(`<span class="k">${pad.key}</span>${pad.label}`);
       const el = b.elt;
@@ -40,7 +42,7 @@ RA.FxBar = class FxBar {
 
     let g = group('delay');
     this.time = p.createSelect().parent(g);
-    for (const [name, beats] of RA.FxRack.DELAY_NOTES) this.time.option(name, String(beats));
+    for (const [name, beats] of FxRack.DELAY_NOTES) this.time.option(name, String(beats));
     this.time.changed(() => settings.set('delayBeats', +this.time.value()));
     const auto = p.createCheckbox('auto', settings.get('delayAuto')).addClass('check').parent(g);
     auto.changed(() => settings.set('delayAuto', auto.checked()));
@@ -64,7 +66,7 @@ RA.FxBar = class FxBar {
 
   syncTime() {
     const beats = this.settings.get('delayBeats');
-    const match = RA.FxRack.DELAY_NOTES.find(([, b]) => Math.abs(b - beats) < 0.01);
+    const match = FxRack.DELAY_NOTES.find(([, b]) => Math.abs(b - beats) < 0.01);
     if (match) this.time.selected(String(match[1]));
   }
 

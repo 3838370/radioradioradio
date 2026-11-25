@@ -1,7 +1,10 @@
+import { InstrumentLibrary } from '../audio/InstrumentLibrary.js';
+import { SliderRow } from './SliderRow.js';
+
 // InstrumentPanel: designs synth instruments. Every change is live (the next note of every
 // layer using the instrument hears it). Built-ins can be tweaked and reset; "guardar como"
 // creates a new instrument usable in code as synth('name', ...).
-RA.InstrumentPanel = class InstrumentPanel {
+export class InstrumentPanel {
   static TYPES = ['off', 'sine', 'triangle', 'sawtooth', 'square', 'noise'];
   static FILTERS = ['lowpass', 'bandpass', 'highpass'];
 
@@ -68,7 +71,7 @@ RA.InstrumentPanel = class InstrumentPanel {
     this.render();
   }
 
-  spec() { return RA.InstrumentLibrary.clone(this.app.instruments.get(this.name)); }
+  spec() { return InstrumentLibrary.clone(this.app.instruments.get(this.name)); }
 
   static getPath(spec, path) {
     const [a, b] = path.split('.');
@@ -95,7 +98,7 @@ RA.InstrumentPanel = class InstrumentPanel {
   }
 
   slider(parent, label, min, max, value, step, log, apply) {
-    return new RA.SliderRow(this.p, parent, {
+    return new SliderRow(this.p, parent, {
       label, min, max, step, log, value,
       onInput: (v) => this.update((s) => apply(s, v), false),
       onChange: (v) => this.update((s) => apply(s, v), true),

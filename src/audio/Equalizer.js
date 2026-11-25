@@ -1,9 +1,11 @@
+import { MathUtil } from '../core/MathUtil.js';
+
 // Equalizer: four bands on the master, between the master filter and the compressor.
 //   low     shelf (40..400 Hz)            lomid  peak, Q 0.7 (100..1500 Hz)
 //   himid   peak, Q 0.7 (800..8000 Hz)    high   shelf (2..14 kHz)
 // The mids are wide (Q 0.7) so neighbouring bands blend into one smooth curve.
 // Gains are in dB, -12..+12. Changes glide over 40 ms so dragging the curve doesn't click.
-RA.Equalizer = class Equalizer {
+export class Equalizer {
   static BANDS = [
     { id: 'low', label: 'LOW', type: 'lowshelf', f: 100, range: [40, 400] },
     { id: 'lomid', label: 'LO-MID', type: 'peaking', f: 400, range: [100, 1500], q: 0.7 },
@@ -41,8 +43,8 @@ RA.Equalizer = class Equalizer {
     Equalizer.BANDS.forEach((b, k) => {
       const v = values[b.id];
       if (!v) return;
-      const f = RA.MathUtil.clamp(+v.f, b.range[0], b.range[1]);
-      const g = RA.MathUtil.clamp(+v.g, -Equalizer.GAIN, Equalizer.GAIN);
+      const f = MathUtil.clamp(+v.f, b.range[0], b.range[1]);
+      const g = MathUtil.clamp(+v.g, -Equalizer.GAIN, Equalizer.GAIN);
       this.values[b.id] = { f, g };
       this.filters[k].frequency.setTargetAtTime(f, t, 0.04);
       this.filters[k].gain.setTargetAtTime(g, t, 0.04);
@@ -93,7 +95,7 @@ RA.Equalizer = class Equalizer {
     let g = this.values[id].g;
     this.set({ [id]: { f, g } });
     for (let k = 0; k < 2; k++) {
-      g = RA.MathUtil.clamp(g + target - this.responseAt(this.handleFreq(id)), -G, G);
+      g = MathUtil.clamp(g + target - this.responseAt(this.handleFreq(id)), -G, G);
       this.set({ [id]: { f, g } });
     }
   }

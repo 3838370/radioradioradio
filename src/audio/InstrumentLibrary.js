@@ -1,7 +1,9 @@
+import { Emitter } from '../core/Emitter.js';
+
 // InstrumentLibrary: the synth presets the code can use. Built-ins come from SynthPresets;
 // the listener can override them or design new ones. Every note reads its preset when it
 // starts, so edits are heard on the next note. Emits 'change' with { name }.
-RA.InstrumentLibrary = class InstrumentLibrary extends RA.Emitter {
+export class InstrumentLibrary extends Emitter {
   static clone(spec) { return JSON.parse(JSON.stringify(spec)); }
 
   constructor(builtins) {

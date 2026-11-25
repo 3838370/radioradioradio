@@ -1,7 +1,7 @@
 // Memory: what this session has already heard. Patterns heard recently or often weigh less
 // when the composer picks (fatigue that wears off: half back after HALF_LIFE bars), and
 // recipe versions (signatures) already heard are avoided.
-RA.Memory = class Memory {
+export class Memory {
   static HALF_LIFE = 160; // bars: about 5 minutes at 120 BPM
 
   constructor() {

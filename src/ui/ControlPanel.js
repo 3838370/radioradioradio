@@ -1,6 +1,9 @@
+import { Harmony } from '../music/Harmony.js';
+import { PatternBank } from '../music/PatternBank.js';
+
 // ControlPanel: the HTML control strip (p5 DOM helpers). It only writes to Settings;
 // the composer and app react to the change events.
-RA.ControlPanel = class ControlPanel {
+export class ControlPanel {
   static PACE_STEPS = [4, 8, 16, 32, 48, 64];
   // the cycles the bank's patterns have: straight ones, then the odd IDM ones
   static STEPS = [4, 8, 16, 32, 7, 11, 12, 14, 17, 18, 20, 22, 24, 28];
@@ -58,7 +61,7 @@ RA.ControlPanel = class ControlPanel {
 
     // One layer per role, so at most PatternBank.ROLES.length (6).
     g = this.group('density', 'number of layers playing; auto: the arc moves between sparse and full. "2 → 5": 2 playing, heading for 5');
-    this.density = p.createSlider(1, RA.PatternBank.ROLES.length, settings.get('density'), 1).parent(g);
+    this.density = p.createSlider(1, PatternBank.ROLES.length, settings.get('density'), 1).parent(g);
     this.denVal = this.valueLabel(g);
     // Moving the slider takes over from auto and holds that many layers.
     this.density.input(() => {
@@ -103,7 +106,7 @@ RA.ControlPanel = class ControlPanel {
     key.changed(() => settings.set('key', key.value() === 'auto' ? 'auto' : +key.value()));
     const mode = p.createSelect().parent(g);
     mode.option('auto', 'auto');
-    for (const m of RA.Harmony.MODES) mode.option(m, m);
+    for (const m of Harmony.MODES) mode.option(m, m);
     mode.selected(settings.get('mode'));
     mode.changed(() => settings.set('mode', mode.value()));
 

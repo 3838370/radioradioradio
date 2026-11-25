@@ -1,3 +1,6 @@
+import { Settings } from '../core/Settings.js';
+import { Genres } from '../music/Genres.js';
+
 // ParamsBar: the PARAMS row under the top bar, opened by [PARAMS ▾]. Everything in it is
 // generated from Settings.SCHEMA (the `ui: 'params'` entries) and Settings.GENRE_SCHEMA, so a
 // new parameter only needs a line there. Two blocks:
@@ -6,7 +9,7 @@
 //   genre     a genre to tune (the one playing, until you pick another): its tempo, energy,
 //             max layers, tape wow, and its modes and bars per chord as chips to tick
 // EXPORT / IMPORT write and read the PARAMS as .json; RESET puts them all back.
-RA.ParamsBar = class ParamsBar {
+export class ParamsBar {
   static GROUPS = { variation: 'variation', feel: 'feel', harmony: 'harmony', transitions: 'transitions' };
 
   // opts: { playing: () => genre name, onResize, onExport, onImport(file) }
@@ -21,7 +24,7 @@ RA.ParamsBar = class ParamsBar {
     this.busy = false;     // our own change: don't rebuild under the slider
     settings.on('change', ({ name }) => {
       if (this.busy || !this.open) return;
-      if (name === 'genreTune' || RA.Settings.spec(name)?.ui === 'params') this.render();
+      if (name === 'genreTune' || Settings.spec(name)?.ui === 'params') this.render();
     });
   }
 
@@ -47,9 +50,9 @@ RA.ParamsBar = class ParamsBar {
 
   render() {
     const { p, settings } = this;
-    this.genre = this.genre || this.opts.playing() || RA.Genres.LIST[0];
+    this.genre = this.genre || this.opts.playing() || Genres.LIST[0];
     this.root.html('');
-    const S = RA.Settings;
+    const S = Settings;
     for (const [group, title] of Object.entries(ParamsBar.GROUPS)) {
       const g = this.group(title);
       for (const s of S.SCHEMA.filter((x) => x.ui === 'params' && x.group === group)) {
@@ -59,7 +62,7 @@ RA.ParamsBar = class ParamsBar {
     // the genre block
     const g = this.group('genre');
     const sel = p.createSelect().parent(g);
-    for (const name of RA.Genres.LIST) sel.option(RA.Genres.label(name).toUpperCase(), name);
+    for (const name of Genres.LIST) sel.option(Genres.label(name).toUpperCase(), name);
     sel.selected(this.genre);
     sel.changed(() => { this.genre = sel.value(); this.pinned = true; this.render(); });
     const G = this.genre;

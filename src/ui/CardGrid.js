@@ -1,12 +1,16 @@
+import { CodeCard } from './CodeCard.js';
+import { CodeHighlighter } from './CodeHighlighter.js';
+import { Theme } from './Theme.js';
+
 // CardGrid: keeps one CodeCard per layer in sync with composer events, lays them out in
 // columns, schedules border flashes at the audio time each sound plays, and turns
 // clicks into { action, layerId }.
-RA.CardGrid = class CardGrid {
+export class CardGrid {
   constructor(emitter) {
-    this.highlighter = new RA.CodeHighlighter();
+    this.highlighter = new CodeHighlighter();
     this.cards = new Map(); // layer id -> CodeCard
     this.flashes = [];      // { time, layerId }
-    emitter.on('layer:add', ({ layer }) => this.cards.set(layer.id, new RA.CodeCard(layer, this.highlighter)));
+    emitter.on('layer:add', ({ layer }) => this.cards.set(layer.id, new CodeCard(layer, this.highlighter)));
     emitter.on('layer:change', ({ layer, desc, instant }) => {
       const c = this.cards.get(layer.id);
       if (!c) return;
@@ -35,12 +39,12 @@ RA.CardGrid = class CardGrid {
   }
 
   metrics(p, colWidth) {
-    const ts = colWidth < 360 ? RA.Theme.size.small : RA.Theme.size.code;
-    p.textFont(RA.Theme.font);
+    const ts = colWidth < 360 ? Theme.size.small : Theme.size.code;
+    p.textFont(Theme.font);
     p.textSize(ts);
     const charW = p.textWidth('M');
     const pad = 10;
-    return { ts, small: RA.Theme.size.small, charW, lh: ts * 1.45, pad, header: 23, maxCols: Math.max(20, Math.floor((colWidth - pad * 2) / charW)) };
+    return { ts, small: Theme.size.small, charW, lh: ts * 1.45, pad, header: 23, maxCols: Math.max(20, Math.floor((colWidth - pad * 2) / charW)) };
   }
 
   draw(p, x0, y0, w, h, now) {

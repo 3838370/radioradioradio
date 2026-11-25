@@ -1,6 +1,6 @@
 // SavePanel: what's saved in this browser (your patterns, instruments and sounds), plus
 // export / import as a .json file, your patterns one by one as .rad files, and a reset.
-RA.SavePanel = class SavePanel {
+export class SavePanel {
   constructor(p, parent, app) {
     this.p = p;
     this.app = app;

@@ -1,3 +1,7 @@
+import { MathUtil } from '../core/MathUtil.js';
+import { CodeTools } from '../lang/CodeTools.js';
+import { Theme } from './Theme.js';
+
 // SequencerView: what's playing as step grids, one block per layer and one row per sound
 // ('folder:n' for samples, the instrument name for synths, marked ~). Each row shows the
 // cycle of the loop that plays it, in 16ths: 16 steps for a bar, or 12, 20, 22... for
@@ -10,7 +14,7 @@
 //   [×]      give the row back          → the hits row is removed
 //   a name   hear the sound
 //   [M] [L]  mute / lock the layer
-RA.SequencerView = class SequencerView {
+export class SequencerView {
   static MAX_STEPS = 32;
 
   constructor() {
@@ -37,7 +41,7 @@ RA.SequencerView = class SequencerView {
   // [{ key, kind, loop, steps, cells: [0..1 per step], head, hand, muted, last }]
   static rows(layer, beat) {
     const mutes = layer.mutes || new Set();
-    const hand = new Map(RA.CodeTools.hitsRows(layer.code).map((r) => [r.key, r]));
+    const hand = new Map(CodeTools.hitsRows(layer.code).map((r) => [r.key, r]));
     const byKey = new Map();
     const row = (key, kind) => {
       if (!byKey.has(key)) byKey.set(key, { key, kind, loop: null, events: [], hand: hand.has(key), muted: mutes.has(key), last: null });
@@ -64,10 +68,10 @@ RA.SequencerView = class SequencerView {
       } else {
         for (const ev of r.events) {
           const step = Math.floor((ev.beat - w.start) * 4 + 1e-6);
-          if (step >= 0 && step < w.steps) cells[step] = Math.max(cells[step], RA.MathUtil.clamp(ev.amp != null ? ev.amp : 0.6, 0.15, 1));
+          if (step >= 0 && step < w.steps) cells[step] = Math.max(cells[step], MathUtil.clamp(ev.amp != null ? ev.amp : 0.6, 0.15, 1));
         }
       }
-      const head = RA.MathUtil.mod(Math.floor((beat - w.start) * 4), w.steps);
+      const head = MathUtil.mod(Math.floor((beat - w.start) * 4), w.steps);
       out.push({ key: r.key, kind: r.kind, loop: h ? h.loop : r.loop, steps: w.steps, cells, head, hand: r.hand, muted: r.muted, last: r.last });
     }
     return out.sort((a, b) => (a.kind === b.kind ? a.key.localeCompare(b.key) : a.kind === 's' ? -1 : 1));
@@ -80,7 +84,7 @@ RA.SequencerView = class SequencerView {
     for (const layer of layers) {
       const count = new Map();
       for (const ev of layer.played || []) if (ev.beat > beat - 16 && ev.beat <= beat + 4 && !ev.silent) count.set(ev.loop, (count.get(ev.loop) || 0) + 1);
-      for (const r of RA.CodeTools.hitsRows(layer.code)) count.set(r.loop, (count.get(r.loop) || 0) + 100);
+      for (const r of CodeTools.hitsRows(layer.code)) count.set(r.loop, (count.get(r.loop) || 0) + 100);
       if (!count.size) continue;
       const main = [...count].sort((a, b) => b[1] - a[1])[0][0];
       const it = layer.iterationAt ? layer.iterationAt(main, beat) : null;
@@ -93,7 +97,7 @@ RA.SequencerView = class SequencerView {
   wheel(dy) { this.scroll = Math.max(0, this.scroll + dy); }
 
   draw(p, x, y, w, h, m, layers, beat, now) {
-    const T = RA.Theme;
+    const T = Theme;
     this.rect = { x, y, w, h };
     this.hits = [];
 
@@ -129,7 +133,7 @@ RA.SequencerView = class SequencerView {
   }
 
   drawBlock(p, layer, rows, g) {
-    const T = RA.Theme;
+    const T = Theme;
     const { x, w, lh, gridX, gridW, btnW, labelW, m } = g;
     const add = (hit) => { if (hit.y + hit.h > g.top && hit.y < g.bottom) this.hits.push(hit); };
     let cy = g.cy;

@@ -3,7 +3,7 @@
 //   fenv:    filter envelope start multiplier, fdecay its decay time
 //   vibrato: { rate (Hz), depth (cents), delay (s) }
 //   drift:   random detune per note (cents), the "never quite in tune" analog feel
-RA.SynthPresets = {
+export const SynthPresets = {
   haze: {
     osc: [{ type: 'sawtooth', detune: -7, level: 0.5 }, { type: 'sawtooth', detune: 7, level: 0.5 }, { type: 'triangle', octave: -1, level: 0.6 }],
     attack: 1.5, release: 3, cutoff: 1100, res: 0.3, gain: 0.12, vibrato: { rate: 4.2, depth: 6, delay: 0.8 }, drift: 10,
