@@ -1,0 +1,11 @@
+// role: texture
+// genres: dub 0.5
+// energy: 0-1
+params({ bell: 'efd_bell' })
+fx({ rev: 0.6, delay: 0.5 })
+loop('wash', (i) => {
+  const wait = choose([1, 2, 3])
+  sleep(wait)
+  synth(P.bell, degree(choose([0, 2, 4, 7]), 3), { amp: 0.12 })
+  sleep(4 - wait)
+})

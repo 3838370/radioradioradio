@@ -1,5 +1,5 @@
 // role: lead
-// genres: dub 1, minimal 0.7
+// genres: dub 1
 // energy: 0-1
 params({ bell: 'dx_bell' })
 fx({ delay: 0.6, rev: 0.4 })

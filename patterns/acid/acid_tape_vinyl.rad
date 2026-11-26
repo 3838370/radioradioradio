@@ -1,5 +1,5 @@
 // role: texture
-// genres: acid 1, saw 0.6
+// genres: acid 1
 // energy: 0-1
 fx({ lpf: 9000 })
 loop('crackle', (i) => {

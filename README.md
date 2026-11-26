@@ -25,18 +25,13 @@ Windows), and lets the Instrumentos panel save sounds to their files.
 
 ## Playing it
 
-Click **▶ TUNE IN**. The radio drifts between nine IDM genres:
+Click **▶ TUNE IN**. The radio drifts between four IDM genres:
 
 | Genre | In the spirit of | BPM |
 |---|---|---|
-| **SAW** | Aphex Twin's ambient side, the prepared pianos | ~96 |
 | **ACID** | Aphex Twin's acid and braindance: raw 303, 808/909 | ~132 |
-| **DRILL** | drill'n'bass: chopped amen with ratchets under slow, sad melodies | ~168 |
-| **BOC** | Boards of Canada: dusty hip-hop breaks, detuned drifting synths, tape, voices | ~90 |
-| **MINIMAL** | Efdemin: dry 4/4, bells and organ in shifting little figures | ~122 |
 | **DUB** | dub techno and Gas | ~120 |
 | **SPACE** | drifting space ambient and collage | ~84 |
-| **DARK** | slow tension: drones, low brass, detuned pianos | ~76 |
 | **AE** | Autechre live: generated, shifting rhythms, harsh FM, no tonic | ~118 |
 
 It moves along an arc of sections. Tension comes fast (**surge**: full and accelerating) or
@@ -46,14 +41,13 @@ through a quiet stretch, and key changes wait for a calm moment.
 
 Nothing repeats for long:
 - every pattern comes in as a new version of itself: its instruments and kits swapped for
-  others of the same family that the genre allows (a Boards of Canada pad never turns into
-  an Efdemin one);
-- melodies are generated in each genre's own way: ostinatos that turn (Aphex), long detuned
-  lines (Boards of Canada), probability sequences that leave the key (Autechre), bell figures
-  in different cycle lengths (Efdemin);
+  others of the same family that the genre allows (a dub pad never turns into an acid one);
+- melodies are generated in each genre's own way: ostinatos that turn (acid), long drifting
+  lines (space), probability sequences that leave the key (Autechre), bell figures in
+  different cycle lengths (dub);
 - generators also write chords, basslines, drones and collages that keep evolving;
 - the harmony moves within each genre, at its own pace (one chord for 16 bars in acid, every
-  2-4 bars in saw);
+  4-8 bars in space);
 - the radio remembers what it has played this session.
 
 ## The controls

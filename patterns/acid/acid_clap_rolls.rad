@@ -1,5 +1,5 @@
 // role: perc
-// genres: acid 1, drill 0.5
+// genres: acid 1
 // energy: 0.45-1
 params({ clap: 'realclaps', odds: 2, odds2: 12 })
 fx({ rev: 0.2, lpf: 8000 })

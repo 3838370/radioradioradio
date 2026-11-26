@@ -1,5 +1,5 @@
 // role: texture
-// genres: acid 1, dark 0.5
+// genres: acid 1
 // energy: 0-1
 fx({ lpf: 700 })
 loop('hum', (i) => {

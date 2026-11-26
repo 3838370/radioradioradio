@@ -1,5 +1,5 @@
 // role: bass
-// genres: space 1, dark 0.5
+// genres: space 1
 // energy: 0-0.8
 params({ pad_dark: 'space_drone_slow' })
 fx({ lpf: 500, rev: 0.3 })

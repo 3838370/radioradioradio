@@ -1,9 +1,0 @@
-// role: keys
-// genres: boc 1, space 0.6
-// energy: 0-0.9
-params({ boc_pad: 'boc_choir' })
-fx({ rev: 0.55, lpf: 2200, wobble: 0.2 })
-loop('choir', (i) => {
-  synth(P.boc_pad, harm(1, vary('ext', ['', '7'], 16)), { dur: 7, amp: 0.22 })
-  sleep(8)
-})

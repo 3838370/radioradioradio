@@ -1,5 +1,5 @@
 // role: lead
-// genres: acid 1, saw 0.6
+// genres: acid 1
 // energy: 0.3-1
 params({ lead: 'saw2_square' })
 fx({ rev: 0.35, delay: 0.25, lpf: 3000 })

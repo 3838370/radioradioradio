@@ -1,0 +1,14 @@
+// role: perc
+// genres: ae 0.5
+// energy: 0.45-1
+params({ hat: 'hh', odds: 5 })
+fx({ lpf: 12000, rev: 0.1 })
+loop('hats', (i) => {
+  for (let k = 0; k < 16; k++) {
+    const r = one_in(P.odds) ? choose([2, 3, 4]) : 1
+    for (let j = 0; j < r; j++) {
+      s(P.hat, { n: 8, amp: 0.07 + (k % 4 == 2 ? 0.04 : 0), pan: rrand(-0.3, 0.3), rate: 1 + j * 0.08 })
+      sleep(0.25 / r)
+    }
+  }
+})

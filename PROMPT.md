@@ -2,18 +2,13 @@
 
 The radio never plays AI audio. It plays **code**. The `patterns/` files hold the bank of
 AI-written code layers, and the composer picks, mutates and chains them while the genre
-drifts slowly (8–20 minutes each) through nine IDM genres, each at its own tempo:
-- **saw** (~96 BPM): Aphex Twin's ambient side (*Selected Ambient Works 85-92* and *II*, the *Drukqs* prepared pianos). FM pads, loose 808, ostinatos, tape.
+drifts slowly (8–20 minutes each) through four IDM genres, each at its own tempo:
 - **acid** (~132 BPM): Aphex Twin's acid and braindance (*Analord*, *Richard D. James Album*). Raw 303, 808/909, odd-interval motifs.
-- **drill** (~168 BPM): drill'n'bass (*Drukqs*, *Come to Daddy*). The amen chopped at speed with ratchets, under slow, sad melodies.
-- **boc** (~90 BPM): Boards of Canada. Slow dusty hip-hop breaks, detuned drifting synths, tape, voices and numbers stations.
-- **minimal** (~122 BPM): Efdemin. Dry 4/4 with shuffled hats, bells and organ in little figures of different cycle lengths.
-- **dub** (~120 BPM): dub techno and Gas. Chord stabs into long delays, a muffled kick, hiss.
+- **dub** (~120 BPM): dub techno and Gas. Chord stabs into long delays, a muffled kick.
 - **space** (~84 BPM): drifting space ambient (*Aethereon*) and FSOL collage.
-- **dark** (~76 BPM): slow tension. Half-time weight, drones, low brass, detuned pianos, the metro.
 - **ae** (~118 BPM): Autechre (*AE_LIVE 2016–2018*). Generated, shifting rhythms, harsh FM, lines with no tonic.
 
-The order is drawn at random, leaning on each genre's `tends` (`src/music/Genres.js`) (ambient into acid, acid into drill, drill into dark or ae...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours.
+The order is drawn at random, leaning on each genre's `tends` (`src/music/Genres.js`) (acid into ae, ae into acid or space, space into dub...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours; SAW, DRILL, BOC, MINIMAL and DARK were taken out (their patterns that also served these four moved into their folders).
 
 On top of the genre, an **arc** moves through sections. Tension comes two ways, fast or slow:
 
@@ -32,10 +27,11 @@ On top of the genre, an **arc** moves through sections. Tension comes two ways, 
 
 - With density on **auto**, the section gives the range of layers and the genre's energy picks within it.
 - Each genre prefers some sections and avoids others, and caps the layers:
-  - dark → dread and suspense;
-  - drill → surge, peak and collapse;
-  - saw, boc and space → drift, sparse, suspense (space at most 4 layers);
-  - acid, drill, minimal and ae → up to 6 layers.
+  - acid → build, tension and surge;
+  - ae → surge, suspense, collapse and dread;
+  - dub → drift, build and dread;
+  - space → sparse, suspense and drift (at most 4 layers);
+  - acid and ae → up to 6 layers.
 - Over hours, auto spends about a quarter of the time on 1–2 layers, 45% on 3–4 and 30% on 5–6, and over 40% in tense sections.
 
 **Steering by hand.** When density or tempo is on manual, the radio reads what you're doing and holds the arc in the matching section. The HUD shows it with **MANUAL** next to the section name.
@@ -53,11 +49,10 @@ On top of the genre, an **arc** moves through sections. Tension comes two ways, 
 When you tick auto again, the arc carries on from that section and keeps your **register**:
 - The next sections are drawn close to it in level and tempo, staying in the same one included.
 - The tempo stays near yours.
-- The next genre leans towards genres of similar intensity and tempo (slow and sparse → dark, space, saw; full and fast → drill, acid).
+- The next genre leans towards genres of similar intensity and tempo (slow and sparse → space, dub; full and fast → acid, ae).
 
 The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½ minutes, gone at 5. After that the radio wanders freely again.
 
-(The previous IDM bank, BoC / SAW / Autechre / drill, is archived in `Temp\patterns-idm-v2`.)
 
 ## Running it
 - Start the local server in this folder, `serve.py`: it turns browser caching off so code
@@ -178,11 +173,10 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 You are writing layers for an endless IDM radio. Each layer is a short program in a tiny
 JavaScript live-coding language with Sonic Pi semantics. Write **N new patterns** with role
 **ROLE** (`drums`, `perc`, `bass`, `keys`, `lead` or `texture`) for the genre **GENRE**
-(one of `saw`, `acid`, `drill`, `boc`, `minimal`, `dub`, `space`, `dark`, `ae`; see the list
-at the top of this file). Nothing EDM: no supersaws, hoovers, risers with drops, festival
-stabs or "yeah" shouts. Melodies should not close like songs: use `melody()` with the style of
-the genre (ostinato for saw/acid/drill, drift for boc/space, probability for ae, cells for
-minimal/dub).
+(one of `acid`, `dub`, `space`, `ae`; see the list at the top of this file). Nothing EDM: no
+supersaws, hoovers, risers with drops, festival stabs or "yeah" shouts. Melodies should not
+close like songs: use `melody()` with the style of the genre (ostinato for acid, drift for
+space, probability for ae, cells for dub).
 
 Write each pattern in 4-beat bars at its own genre's tempo.
 
@@ -192,7 +186,7 @@ Return each pattern as a `.rad` file: a short header in comments, then the code.
 
 ```js
 // role: perc
-// genres: dub 1, minimal 0.3
+// genres: dub 1, space 0.3
 // energy: 0.2-0.9
 params({ rim: 'rs', odds: 3 })
 fx({ lpf: 1800, rev: 0.45, crush: 0.2 })
@@ -202,7 +196,7 @@ loop('name', (i) => {
   sleep(0.25)
 })
 ```
-- the file name (the id): prefixed with the genre (`saw_`, `acid_`, `drill_`, `boc_`, `min_`, `dub_`, `space_`, `dark_`, `ae_`), snake_case, unique.
+- the file name (the id): prefixed with the genre (`acid_`, `dub_`, `space_`, `ae_`), snake_case, unique.
 - `role`: `drums`, `perc`, `bass`, `keys`, `lead` or `texture`.
 - `genres`: how well the layer fits each genre, 0..1. Use crossover weights so layers can bridge between genres.
 - `energy`: the min-max range of intensity (0..1) where it fits.
@@ -251,7 +245,7 @@ loop('name', (i) => {
 - `setup({ bpm, key, mode, progression, chordBars })`: the tempo and harmony of a whole program. The full code starts with it; pasting the full code back ([COLAR]) applies it.
 - `params({ name: value, ... })`: top level, what the radio may vary in this layer; the code reads `P.name`.
 - **Harmony.** Always use these; never write note names.
-  - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 2-4 bars in saw and boc, 8-16 in acid, minimal, dub and ae).
+  - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 4-8 bars in space, 8-16 in acid, dub and ae).
   - `ROOT`: its root in the bass register. `QUAL`: `'minor'` or `'major'`.
   - `degree(d, octave)`: a note of the current mode, where 0 is the key's root.
   - `modal(octave, octaves)`: the mode's notes.
@@ -294,7 +288,7 @@ loop('name', (i) => {
     - `drone(name, { voices, octave })` returns `{ notes, changed }`: chord tones held for minutes, with one voice moving a step now and then.
     - `motif(name, { beats, density, octave })` returns `[{ note, dur, vel }]`: a short melody that repeats and changes one detail at a time (Selected Ambient Works-style). Two motifs on alternate bars make a call and response.
     - `melody(name, { style, octave, beats, chord })` returns `[{ note, notes, len, vel, detune, ratchet, dur }]`. The melody styles, built on a bank of 63 original cells (`src/music/Melodies.js`):
-      - `ostinato` (Aphex: saw, acid, drill): a short cell repeats, then rotates, transposes, swaps an octave or a note. Cells of 1.5, 2.5 or 3 beats run against the bar. `chord: true` follows the chord's root.
+      - `ostinato` (Aphex: acid): a short cell repeats, then rotates, transposes, swaps an octave or a note. Cells of 1.5, 2.5 or 3 beats run against the bar. `chord: true` follows the chord's root.
       - `drift` (Boards of Canada, space): long modal notes and rests, each with its own `detune` in cents. Pass it on: `synth(x, n.note, { detune: n.detune })`.
       - `probability` (Autechre): an odd-length step sequence where each step plays with its own chance; notes leave the mode, slightly detuned, now and then a `ratchet` (play it twice in the step).
       - `cells` (Efdemin, dub): two or three tiny bell figures each in its own cycle length; play `n.notes` (it can be several at once, or none).
@@ -309,7 +303,7 @@ loop('name', (i) => {
   - Loops may last 1, 2, 3, 4, 5, 6, 7, 8 or 16 beats. Odd lengths run against the 4-beat bar (polymeter).
 - **Live values:** `ENERGY` (0..1, the current intensity), `BAR`, `BPM`, `SECTION` (`sparse`, `drift`, `build`, `tension`, `surge`, `peak`, `dread`, `suspense`, `release` or `collapse`).
   - After a euphoric, accelerating `peak` the radio usually `collapse`s: slower, darker and wetter.
-  - After drill it tends to fall into dark or ae; acid leads into drill.
+  - Acid tends to lead into ae, ae back to acid or into space, space into dub.
 
 ### Samples (Dirt-Samples folders; `n` picks a file)
 - **Vintage drum machines:**

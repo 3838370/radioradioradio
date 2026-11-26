@@ -1,5 +1,5 @@
 // role: drums
-// genres: dub 1, minimal 0.7
+// genres: dub 1
 // energy: 0.25-1
 params({ kick: 'clubkick', rim: 'rs', hat: 'hh', perc: 'perc' })
 fx({ lpf: 5500, rev: 0.15, delay: 0.08 })

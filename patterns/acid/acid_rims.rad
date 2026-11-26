@@ -1,5 +1,5 @@
 // role: perc
-// genres: acid 1, minimal 0.5
+// genres: acid 1
 // energy: 0.3-1
 params({ rim: 'rs' })
 fx({ delay: 0.2, lpf: 6000 })

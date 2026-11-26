@@ -1,5 +1,5 @@
 // role: keys
-// genres: space 1, dark 0.4
+// genres: space 1
 // energy: 0-0.9
 params({ pad: 'space_choir' })
 fx({ rev: 0.6, lpf: 2400 })

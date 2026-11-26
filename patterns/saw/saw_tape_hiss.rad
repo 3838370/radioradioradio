@@ -1,9 +1,0 @@
-// role: texture
-// genres: saw 1, boc 0.7
-// energy: 0-1
-fx({ lpf: 8000, wobble: 0.15 })
-loop('tape', (i) => {
-  const t = tape('t')
-  synth('hiss_bed', 70, { dur: 3.5, attack: 0.5, release: 1, amp: 0.3 * t.level })
-  sleep(4)
-})

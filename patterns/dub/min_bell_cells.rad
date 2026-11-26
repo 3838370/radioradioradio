@@ -1,0 +1,11 @@
+// role: lead
+// genres: dub 0.5
+// energy: 0-1
+params({ bell: 'efd_bell' })
+fx({ delay: 0.35, rev: 0.3 })
+loop('bells', (i) => {
+  for (const n of melody('c', { style: 'cells', octave: 3 })) {
+    if (n.notes.length) synth(P.bell, n.notes, { amp: 0.2 * n.vel })
+    sleep(n.dur)
+  }
+})

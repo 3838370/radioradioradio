@@ -1,5 +1,5 @@
 // role: keys
-// genres: acid 1, minimal 0.6
+// genres: acid 1
 // energy: 0.4-1
 params({ organ: 'efd_organ' })
 fx({ lpf: 4000, rev: 0.15 })

@@ -1,0 +1,11 @@
+// role: perc
+// genres: ae 0.5
+// energy: 0.1-1
+params({ metal: 'ae_fm_perc', odds: 2 })
+fx({ rev: 0.5, delay: 0.3, lpf: 3000 })
+loop('drops', (i) => {
+  for (let k = 0; k < 4; k++) {
+    if (one_in(P.odds)) synth(P.metal, degree(choose([0, 1, 4]), 0), { amp: 0.25, pan: rrand(-0.5, 0.5) })
+    sleep(1)
+  }
+})

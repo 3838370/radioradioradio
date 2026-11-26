@@ -314,8 +314,8 @@ export class Composer {
     const W = Composer.WEIGHTS;
     const I = (kind) => Composer.intent(kind, sec) * (W[kind] ? this.settings.get(W[kind]) : 1);
     const age = (l) => bar - (l.enteredBar == null ? bar : l.enteredBar);
-    const dubby = (w.dub || 0) + 0.8 * (w.minimal || 0) + 0.4 * (w.boc || 0);
-    const collagey = (w.space || 0) + (w.boc || 0) + 0.6 * (w.saw || 0) + 0.5 * (w.dark || 0) + 0.3 * (w.ae || 0);
+    const dubby = w.dub || 0;
+    const collagey = (w.space || 0) + 0.3 * (w.ae || 0);
     const variation = this.deck.variation;
     const out = [];
     for (const l of free) {

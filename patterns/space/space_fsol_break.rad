@@ -1,0 +1,16 @@
+// role: drums
+// genres: space 0.7
+// energy: 0.35-1
+params({ perc: 'tabla' })
+fx({ lpf: walk('lpf', 2500, 7000, 0.1), rev: 0.2, delay: 0.1 })
+loop('break', (i) => {
+  const b = beat('b', { style: 'fsol_break', density: 0.55 })
+  for (let k = 0; k < b.length; k++) {
+    const st = b[k]
+    if (st.k) s('jungle', { n: 5, amp: 0.7 * st.v, rate: 0.85 })
+    if (st.s) s('jungle', { n: 11, amp: 0.45 * st.v, rate: 0.85 })
+    if (st.h) s('jungle', { n: 0, amp: 0.12 * st.v, rate: 0.85, pan: 0.2 })
+    if (st.p) s(P.perc, { n: 9, amp: 0.12 * st.v, pan: -0.3 })
+    sleep(0.25)
+  }
+})

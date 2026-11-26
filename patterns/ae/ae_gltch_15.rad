@@ -1,5 +1,5 @@
 // role: perc
-// genres: ae 0.95, drill 0.5, acid 0.4
+// genres: ae 0.95, acid 0.4
 // energy: 0.4-1
 params({ gl_crunch: 'gl_crunch_fast', gl_buzz: 'gl_buzz', gl_hiss: 'gl_hiss', gl_crunch2: 'gl_crunch', gl_ping: 'gl_ping' })
 fx({ crush: 0.34, lpf: 15000, rev: 0.08, delay: 0.06, amp: 0.85 })

@@ -1,9 +1,0 @@
-// role: texture
-// genres: saw 1
-// energy: 0-1
-params({ space: 'space' })
-fx({ rev: 0.65, lpf: 3500 })
-loop('space', (i) => {
-  if (i % 2 == 0) s(P.space, { n: 3, amp: 0.2, rate: 0.5, pan: -0.3 })
-  sleep(8)
-})

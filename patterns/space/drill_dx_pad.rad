@@ -1,0 +1,11 @@
+// role: keys
+// genres: space 0.5
+// energy: 0.2-1
+params({ pad: 'dx_pad' })
+fx({ rev: 0.45, delay: 0.2 })
+loop('pad', (i) => {
+  for (const c of chords('c', { voicing: vary('v', ['add9', 'sus2', 'wide'], 16), rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.pad, c.notes, { dur: c.len, amp: 0.18 * c.vel })
+    sleep(c.dur)
+  }
+})

@@ -1,5 +1,5 @@
 // role: drums
-// genres: acid 1, saw 0.5
+// genres: acid 1
 // energy: 0.4-1
 params({ kick: '808bd', snare: '808sd', hat: '808oh' })
 fx({ lpf: 9000, crush: 0.05 })

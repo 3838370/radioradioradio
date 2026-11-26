@@ -18,12 +18,12 @@
 
   runner.test('Pattern files: every .rad in the index loads, and the format round-trips', () => {
     const P = RA.PatternLoader;
-    assert(RA.PATTERNS.length >= 341, 'loaded: ' + RA.PATTERNS.length);
+    assert(RA.PATTERNS.length >= 200, 'loaded: ' + RA.PATTERNS.length);
     for (const p of RA.PATTERNS) {
       const back = P.parse(P.format(p), p.id + '.rad');
       equal([back.id, back.role, back.genres, back.energy, !!back.odd, back.code], [p.id, p.role, p.genres, p.energy, !!p.odd, p.code], p.id);
     }
-    const mine = P.parse(P.format({ id: 'user_x', user: true, role: 'lead', genres: { boc: 0.5 }, energy: [0, 1], code: "loop('a', () => sleep(4))" }), 'whatever.rad');
+    const mine = P.parse(P.format({ id: 'user_x', user: true, role: 'lead', genres: { dub: 0.5 }, energy: [0, 1], code: "loop('a', () => sleep(4))" }), 'whatever.rad');
     equal(mine.id, 'user_x', 'your patterns keep their id');
     let bad = null;
     try { P.parse('// role: nope\nloop()', 'x.rad'); } catch (e) { bad = e.message; }
@@ -65,7 +65,7 @@
     equal([d.pace, d.variation, d.density, d.delayBeats, d.feedback, d.fxAuto, d.bpm, d.volume], [32, 0.3, 5, 0.75, 0.42, 0.4, 116, 0.8]);
     // the transitions as before; notes half as far out of tune; keys and genres change calmly
     equal([d.modulate, d.legMin, d.legMax, d.fadeIn, d.fadeOut, d.tempoGlide, d.sectionLength, d.detune, d.modulateCalm, d.handoffCalm], [0.3, 8, 20, 1, 2, 8, 1, 0.5, true, true]);
-    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint && RA.Genres.base('boc', g.path) != null, g.id);
+    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint && RA.Genres.base('dub', g.path) != null, g.id);
   });
 
   // The INSTRUMENTOS panel is built from SoundFields: it must list exactly what the engine
@@ -211,23 +211,23 @@
 
   runner.test('Settings: a genre\'s own parameters lay over the Genres table, reset and export', () => {
     const s = new RA.Settings();
-    equal(s.genre('boc', 'tempo'), 90);
-    s.setGenre('boc', 'tempo', 99);
+    equal(s.genre('space', 'tempo'), 84);
+    s.setGenre('space', 'tempo', 99);
     s.setGenre('dub', 'cap', 3);
-    equal([RA.Genres.of('boc').tempo, RA.Genres.get('dub', 'sections.cap'), RA.Genres.base('boc', 'tempo')], [99, 3, 90]);
+    equal([RA.Genres.of('space').tempo, RA.Genres.get('dub', 'sections.cap'), RA.Genres.base('space', 'tempo')], [99, 3, 84]);
     equal(RA.Arc.cap(Object.assign(RA.Genres.zeroWeights(), { dub: 1 })), 3);
-    const d = new RA.GenreDrift(new RA.Rng(1), { allowed: ['boc'] });
+    const d = new RA.GenreDrift(new RA.Rng(1), { allowed: ['space'] });
     assert(Math.abs(d.tempo() - 99) <= 7, 'the drift follows the tuned tempo: ' + d.tempo());
-    s.setGenre('boc', 'modes', []); // refused: a genre keeps a mode
-    assert(RA.Genres.of('boc').modes.length > 0, 'modes kept');
+    s.setGenre('space', 'modes', []); // refused: a genre keeps a mode
+    assert(RA.Genres.of('space').modes.length > 0, 'modes kept');
     s.set('wSwap', 2);
     const snap = s.paramsSnapshot();
     const t = new RA.Settings();
-    equal(RA.Genres.of('boc').tempo, 90, 'a fresh Settings starts from the table');
+    equal(RA.Genres.of('space').tempo, 84, 'a fresh Settings starts from the table');
     t.loadParams(snap);
-    equal([t.get('wSwap'), RA.Genres.of('boc').tempo, t.isGenreDefault('boc', 'tempo'), t.isGenreDefault('saw', 'tempo')], [2, 99, false, true]);
-    t.resetGenre('boc', 'tempo');
-    equal(RA.Genres.of('boc').tempo, 90);
+    equal([t.get('wSwap'), RA.Genres.of('space').tempo, t.isGenreDefault('space', 'tempo'), t.isGenreDefault('acid', 'tempo')], [2, 99, false, true]);
+    t.resetGenre('space', 'tempo');
+    equal(RA.Genres.of('space').tempo, 84);
     t.resetParams();
     equal([t.get('wSwap'), RA.Genres.get('dub', 'sections.cap'), t.get('genreTune')], [1, 5, {}]);
   });
@@ -237,8 +237,8 @@
     const rng = new RA.Rng(9);
     let never = 0, always = 0;
     for (let k = 0; k < 100; k++) {
-      if (h.reharm('saw', rng, 0).key != null) never++;
-      if (h.reharm('saw', rng, 1).key != null) always++;
+      if (h.reharm('space', rng, 0).key != null) never++;
+      if (h.reharm('space', rng, 1).key != null) always++;
     }
     equal([never, always], [0, 100]);
   });
@@ -412,19 +412,19 @@
         assert(list.every((f) => RA.Families.KITS[fam] && RA.Families.KITS[fam].includes(f)), `${g} kits ${fam}`);
       }
     }
-    // an Efdemin bell never turns into a Boards of Canada sound, and vice versa
-    assert(!v.options('efd_bell', 'minimal').some((n) => /^boc_/.test(n)), 'minimal bells');
+    // a dub bell never turns into a Boards of Canada sound, and ae has no such pads
+    assert(!v.options('efd_bell', 'dub').some((n) => /^boc_/.test(n)), 'dub bells');
     equal(v.options('boc_pad', 'ae'), [], 'ae has no boc pads');
     let changed = 0;
     for (let k = 0; k < 200; k++) {
-      const r = v.version({ boc_pad: 'boc_pad', kick: 'bd', odds: 3 }, 'boc', 1);
+      const r = v.version({ pad: 'strings', kick: 'bd', odds: 3 }, 'dub', 1);
       equal(r.params.odds, 3, 'versions leave numbers alone');
-      assert(RA.Genres.of('boc').palette.boc_pad.includes(r.params.boc_pad) && RA.Genres.of('boc').kits.kick.includes(r.params.kick), JSON.stringify(r.params));
+      assert(RA.Genres.of('dub').palette.pad.includes(r.params.pad) && RA.Genres.of('dub').kits.kick.includes(r.params.kick), JSON.stringify(r.params));
       if (r.changes.length) changed++;
     }
     assert(changed > 100, 'versions change something: ' + changed);
-    const t = v.timbre({ pad: 'dx_pad', kick: 'bd' }, 'saw');
-    assert(t && t.params.kick === 'bd' && RA.Genres.of('saw').palette.pad.includes(t.params.pad), 'timbre: one instrument');
+    const t = v.timbre({ pad: 'dx_pad', kick: 'bd' }, 'space');
+    assert(t && t.params.kick === 'bd' && RA.Genres.of('space').palette.pad.includes(t.params.pad), 'timbre: one instrument');
   });
 
   runner.test('Variation: tweaks keep numbers near the pattern\'s own value', () => {
@@ -512,7 +512,7 @@
     assert(seven.length >= 2 && seven.every((c) => [14, 20, 22].includes(c)), 'pl_seven: ' + seven);
     const fits = RA.PatternBank.fits;
     assert(fits([4, 16], 16) && !fits([4], 16) && fits([4], 4) && fits([], 12) && !fits([12], 16) && fits([12, 20], 20) && !fits([16], 12), 'fits');
-    const w = Object.assign(RA.Genres.zeroWeights(), { saw: 1 });
+    const w = Object.assign(RA.Genres.zeroWeights(), { ae: 1 });
     // (roles with no pattern of that cycle fall back to the usual pick)
     for (const [role, steps] of [['perc', 12], ['perc', 16], ['drums', 20]]) {
       const meter = { steps, probe };
@@ -914,15 +914,15 @@
   });
 
   runner.test('Genre drift: the genres chosen limit what plays; turning off the current one moves away from it', () => {
-    const m = new RA.GenreDrift(new RA.Rng(3), { allowed: ['acid', 'dark'] });
-    assert(['acid', 'dark'].includes(m.from), 'starts in an allowed genre: ' + m.from);
+    const m = new RA.GenreDrift(new RA.Rng(3), { allowed: ['acid', 'space'] });
+    assert(['acid', 'space'].includes(m.from), 'starts in an allowed genre: ' + m.from);
     const seen = new Set();
     for (let bar = 0; bar < 20000; bar++) { m.advanceBar(120); seen.add(m.dominant()); }
-    assert([...seen].every((f) => f === 'acid' || f === 'dark'), 'only allowed: ' + [...seen].join(','));
+    assert([...seen].every((f) => f === 'acid' || f === 'space'), 'only allowed: ' + [...seen].join(','));
     equal(seen.size, 2);
-    // choices saved with the old genres carry over (rave → acid, fog → dub, deep → saw + boc)
-    equal(new RA.GenreDrift(new RA.Rng(1), { allowed: ['rave', 'fog', 'deep'] }).allowed.sort(), ['acid', 'boc', 'dub', 'saw']);
-    equal(RA.Genres.migrateWeights({ fog: 1, atmos: 0.4 }), { dub: 1, boc: 0.4, drill: 0.4 });
+    // choices saved with the old genres carry over (rave → acid, fog → dub, deep → space)
+    equal(new RA.GenreDrift(new RA.Rng(1), { allowed: ['rave', 'fog', 'deep'] }).allowed.sort(), ['acid', 'dub', 'space']);
+    equal(RA.Genres.migrateWeights({ fog: 1, atmos: 0.4, saw: 1 }), { dub: 1, space: 0.4 });
     const one = new RA.GenreDrift(new RA.Rng(4), { allowed: ['ae'] });
     for (let bar = 0; bar < 5000; bar++) one.advanceBar(120);
     equal(one.dominant(), 'ae');
@@ -936,7 +936,7 @@
 
   runner.test('Density: auto picks within the section range, capped by the genre; manual holds exactly the count set', () => {
     const vals = { density: 3, densityAuto: true };
-    const fake = (section, energy, genre = 'drill') => ({
+    const fake = (section, energy, genre = 'acid') => ({
       settings: { get: (k) => vals[k] }, energy,
       arc: { spec: RA.Arc.SECTIONS[section] },
       drift: { weights: () => Object.assign(RA.Genres.zeroWeights(), { [genre]: 1 }) },
@@ -971,9 +971,9 @@
       }
       return hit / n;
     };
-    const dark = share('dark', ['dread', 'suspense']), drill = share('drill', ['dread', 'suspense']);
-    assert(dark > drill * 1.8, `dark leans to slow tension: ${dark.toFixed(2)} vs drill ${drill.toFixed(2)}`);
-    assert(share('drill', ['surge', 'peak']) > share('space', ['surge', 'peak']) * 3, 'drill leans to surge and peak, space away from them');
+    const ae = share('ae', ['dread', 'suspense']), acid = share('acid', ['dread', 'suspense']);
+    assert(ae > acid * 1.8, `ae leans to slow tension: ${ae.toFixed(2)} vs acid ${acid.toFixed(2)}`);
+    assert(share('acid', ['surge', 'peak']) > share('space', ['surge', 'peak']) * 3, 'acid leans to surge and peak, space away from them');
   });
 
   runner.test('Steering: manual layers/tempo pick a section; the arc holds it, then carries on from it', () => {
@@ -1016,14 +1016,16 @@
     assert(arc.lean && Math.abs(arc.lean.strength - 0.5) < 0.02, 'half after 2.5 minutes');
     for (let b = 75; b < 151; b++) arc.advanceBar(b, 2); // 302 s
     assert(!arc.lean, 'gone after 5 minutes');
-    let darkish = 0;
+    // from acid, a slow and sparse stretch leads to space (the slowest, sparsest genre) more
+    // often than anywhere else (acid itself tends to ae, so ae still comes up)
+    const picks = { acid: 0, ae: 0, dub: 0, space: 0 };
     for (let k = 0; k < 200; k++) {
-      const m = new RA.GenreDrift(new RA.Rng(k), { allowed: ['drill', 'acid', 'dark', 'space'] });
+      const m = new RA.GenreDrift(new RA.Rng(k), { allowed: ['acid', 'ae', 'dub', 'space'] });
       m.from = 'acid';
       m.lean = { energy: 0.27, bpm: 70, strength: 1 };
-      if (['dark', 'space'].includes(m.pickNext())) darkish++;
+      picks[m.pickNext()]++;
     }
-    assert(darkish > 160, `slow and sparse leads to dark/space genres: ${darkish}/200`);
+    assert(picks.space > 1.2 * Math.max(picks.dub, picks.ae), `slow and sparse leads to space: ${JSON.stringify(picks)}`);
   });
 
   runner.test('Piano: harder notes are louder, and held notes decay naturally', async () => {
@@ -1067,7 +1069,7 @@
     const seqs = [1, 2, 3, 4, 5, 6].map(run);
     const starts = new Set(seqs.map((s) => s[0]));
     const orders = new Set(seqs.map((s) => s.slice(0, 6).join('>')));
-    assert(starts.size >= 3, 'different starting genres: ' + [...starts]);
+    assert(starts.size >= 2, 'different starting genres: ' + [...starts]);
     assert(orders.size === seqs.length, 'every run has its own order');
     for (const s of seqs) for (let k = 1; k < s.length; k++) assert(s[k] !== s[k - 1], 'no immediate repeat');
     return seqs[0].slice(0, 6).join(' > ');

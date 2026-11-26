@@ -1,0 +1,12 @@
+// role: bass
+// genres: dub 0.6
+// energy: 0.3-1
+params({ sub: 'dub_sub' })
+fx({ lpf: 600 })
+loop('bass', (i) => {
+  for (let k = 0; k < 4; k++) {
+    sleep(0.5)
+    synth(P.sub, ROOT, { dur: 0.3, amp: 0.4 })
+    sleep(0.5)
+  }
+})

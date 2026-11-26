@@ -1,5 +1,5 @@
 // role: lead
-// genres: space 1, saw 0.6
+// genres: space 1
 // energy: 0-0.9
 params({ bell: 'dx_bell', odds: 3 })
 fx({ rev: 0.6, delay: 0.35 })
