@@ -56,7 +56,11 @@ export class GridView {
   // What a box shows: { name, g (grid), own (a grid() of the layer) } or a derived 4×4 grid.
   shown(layer, beat) {
     const own = GridView.gridsOf(layer).find((x) => x.g.opts.tipo === 'instrumento') || GridView.gridsOf(layer)[0];
-    if (own) return { name: own.name, rows: own.g.rows.map((r) => r.map((c) => c.raw)), g: own.g, own: true, legend: GridView.legendOf(own.g) };
+    if (own) {
+      const rows = own.g.rows.map((r) => r.map((c) => c.raw));
+      this.noteChanges(layer.id, rows);
+      return { name: own.name, rows, g: own.g, own: true, legend: GridView.legendOf(own.g) };
+    }
     // any other layer: the program it would get with its own sounds (a preview; [pôr em
     // grelha] installs exactly this), made again only when its sounds change
     const bar = Math.floor(beat / 4);
@@ -78,6 +82,21 @@ export class GridView {
     const view = { name: null, rows: rows.map((r) => r.split(' ')), own: false, legend: GridView.legendOf({ sounds }), empty: !letters.length, sounds, preview: true };
     this.derived.set(layer.id, { bar, key, view });
     return view;
+  }
+
+  // A cell that changed (a mutation, an edit) is typed in like the cards' code: for
+  // CHANGE_MS the old symbol is erased and the new one typed under a blinking cursor.
+  static CHANGE_MS = 1500;
+
+  noteChanges(layerId, rows) {
+    if (!this.lastRows) { this.lastRows = new Map(); this.changes = new Map(); }
+    const old = this.lastRows.get(layerId);
+    this.lastRows.set(layerId, rows);
+    if (!old || old.length !== rows.length || old[0].length !== rows[0].length) return;
+    const now = performance.now();
+    const list = (this.changes.get(layerId) || []).filter((c) => now - c.at < GridView.CHANGE_MS);
+    rows.forEach((r, y) => r.forEach((raw, x) => { if (old[y][x] !== raw) list.push({ x, y, from: old[y][x], to: raw, at: now }); }));
+    this.changes.set(layerId, list);
   }
 
   // The grid sizes a box goes through, clicking its size in the footer.
@@ -227,6 +246,44 @@ export class GridView {
       p.text(s, px + (part.cw - p.textWidth(s)) / 2, py + part.ch / 2 + part.fs * 0.35);
     }
     p.noStroke();
+    // the frame pulses each time the layer sounds (as the cards' border)
+    const now = performance.now();
+    const flashAt = status.flashAt ? status.flashAt(layer.id) : 0;
+    const f = Math.exp(-(now - (flashAt || 0)) / 160);
+    if (f > 0.02) {
+      p.noFill();
+      p.stroke(T.bright[0], T.bright[1], T.bright[2], 255 * f);
+      p.strokeWeight(1 + 2 * f);
+      p.rect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
+      p.strokeWeight(1);
+      p.noStroke();
+    }
+    // cells that just changed: erased, then typed in under a blinking cursor (as the cards)
+    for (const c of (this.changes && this.changes.get(layer.id)) || []) {
+      const t = now - c.at;
+      if (t > GridView.CHANGE_MS || c.y >= part.h || c.x >= part.w) continue;
+      const px = b.x + part.x + c.x * part.cw, py = b.y + part.y + c.y * part.ch;
+      const playing = (positions || []).some(([x, y]) => x === c.x && y === c.y);
+      if (!playing) {
+        p.noStroke();
+        p.fill(T.bg);
+        p.rect(px + 1, py + 1, part.cw - 1, part.ch - 1);
+        // the old symbol going (first third), then the new one typed in
+        const from = GridView.symbol(c.from), to = GridView.symbol(c.to);
+        const shown = t < 500 ? from.slice(0, Math.max(0, from.length - Math.floor(t / (500 / from.length)))) : to.slice(0, Math.min(to.length, 1 + Math.floor((t - 500) / 150)));
+        p.textSize(part.fs);
+        p.fill(T.bright);
+        const tw = p.textWidth(shown);
+        const tx = px + (part.cw - tw) / 2, ty = py + part.ch / 2 + part.fs * 0.35;
+        p.text(shown, tx, ty);
+        if ((now >> 8) % 2 === 0) { p.fill(T.accent); p.rect(tx + tw + 1, ty - part.fs * 0.8, part.fs * 0.55, part.fs); }
+      }
+      // a frame fading out, like the card's highlighted line
+      p.noFill();
+      p.stroke(T.bright[0], T.bright[1], T.bright[2], 255 * (1 - t / GridView.CHANGE_MS));
+      p.rect(px + 1.5, py + 1.5, part.cw - 2, part.ch - 2);
+      p.noStroke();
+    }
     // the card's buttons, top right: [≈] sound panel, [S] solo, [M] mute, [L] lock, [↻] another pattern
     p.textSize(m.small);
     let hx = b.x + b.w - m.pad;

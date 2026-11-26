@@ -880,7 +880,7 @@ export class App {
         this.gridView.genre = this.drift.dominant();
         if (this.composer.bar !== this.gridBar) { this.gridBar = this.composer.bar; this.gridTick(this.gridBar); }
         this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now,
-          { bpm: this.clock.bpm, bar: this.composer.bar, freeze: this.settings.get('freeze') });
+          { bpm: this.clock.bpm, bar: this.composer.bar, freeze: this.settings.get('freeze'), flashAt: (id) => (this.grid.cards.get(id) || {}).flashAt });
       } else {
         this.seq.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now);
       }
