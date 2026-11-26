@@ -538,4 +538,48 @@ export const SynthPresets = {
     osc: [{ type: 'sine' }, { type: 'sine', octave: 1, level: 0.05 }],
     attack: 0.005, release: 0.4, cutoff: 400, res: 0.4, gain: 0.6, drift: 1,
   },
+
+  // ───── glitch (rebuilt from analyses of a glitch sample pack: Erald, GLTCH) ─────
+  // buzz: a very low saw/square (play notes 20-40: 25-80 Hz) chopped by a fast tremolo and
+  // high-passed: a comb of bright harmonics, the "digital buzz". The note sets the spacing.
+  gl_buzz: {
+    osc: [{ type: 'sawtooth', level: 0.8 }, { type: 'square', detune: 25, level: 0.4 }],
+    attack: 0.002, release: 0.04, ftype: 'highpass', cutoff: 1600, res: 4, trem: { rate: 31, depth: 0.9 }, drive: 0.75, gain: 0.3,
+  },
+  gl_buzz_slow: {
+    osc: [{ type: 'sawtooth', level: 0.8 }, { type: 'square', detune: 40, level: 0.4 }],
+    attack: 0.003, release: 0.06, ftype: 'highpass', cutoff: 1100, res: 5, trem: { rate: 17, depth: 0.95 }, drive: 0.7, gain: 0.3,
+  },
+  gl_buzz_fast: {
+    osc: [{ type: 'sawtooth', level: 0.8 }, { type: 'square', detune: 15, level: 0.4 }],
+    attack: 0.001, release: 0.03, ftype: 'highpass', cutoff: 2200, res: 3, trem: { rate: 59, depth: 0.9 }, drive: 0.8, gain: 0.28,
+  },
+  // crunch: noise and a square torn into slices: the broken-data bursts
+  gl_crunch: {
+    osc: [{ type: 'noise', level: 0.8 }, { type: 'square', level: 0.4 }],
+    attack: 0.001, release: 0.05, ftype: 'highpass', cutoff: 2500, res: 2, trem: { rate: 47, depth: 1 }, flfo: { rate: 9, depth: 1200 }, drive: 0.8, gain: 0.35,
+  },
+  gl_crunch_fast: {
+    osc: [{ type: 'noise', level: 0.8 }, { type: 'square', level: 0.3 }],
+    attack: 0.001, release: 0.04, ftype: 'highpass', cutoff: 3500, res: 2, trem: { rate: 83, depth: 1 }, flfo: { rate: 13, depth: 1500 }, drive: 0.85, gain: 0.33,
+  },
+  // hiss: a narrow band of noise, high up (set cutoff to move it)
+  gl_hiss: {
+    osc: [{ type: 'noise' }],
+    attack: 0.001, release: 0.03, ftype: 'bandpass', cutoff: 8600, res: 7, gain: 0.6,
+  },
+  // ping: a short metallic FM blip (high notes, 90-110)
+  gl_ping: {
+    osc: [{ type: 'sine', fm: { ratio: 3.73, index: 6, decay: 0.06 } }, { type: 'square', ratio: 1.5, level: 0.2, decay: 0.05 }],
+    attack: 0.001, dur: 0, decay: 0.15, sustain: 0, release: 0.08, cutoff: 9000, res: 1, pitch: { from: 7, time: 0.03 }, gain: 0.25,
+  },
+  gl_blip: {
+    osc: [{ type: 'square', fm: { ratio: 2.01, index: 3, decay: 0.03 } }],
+    attack: 0.001, dur: 0, decay: 0.08, sustain: 0, release: 0.04, cutoff: 7000, res: 2, gain: 0.18,
+  },
+  // thump: a low, dirty knock (notes 30-45), the low hits under the glitches
+  gl_thump: {
+    osc: [{ type: 'sine' }, { type: 'noise', level: 0.25, decay: 0.01 }],
+    attack: 0.001, dur: 0.03, release: 0.12, cutoff: 1800, res: 1, pitch: { from: 24, time: 0.04 }, drive: 0.6, gain: 0.7,
+  },
 };

@@ -29,6 +29,12 @@ export class Families {
     machine: ['grind', 'machine', 'steam', 'hum', 'ae_grain'],
     voice: ['voice_ah', 'voice_oo', 'formant_voice'],
     radio: ['radio_tune', 'shortwave'],
+    // glitch, rebuilt in code from a glitch sample pack (see SynthPresets)
+    gl_buzz: ['gl_buzz', 'gl_buzz_slow', 'gl_buzz_fast'],
+    gl_crunch: ['gl_crunch', 'gl_crunch_fast'],
+    gl_ping: ['gl_ping', 'gl_blip'],
+    gl_hiss: ['gl_hiss'],
+    gl_thump: ['gl_thump'],
   };
 
   // Sample folders by kit role (Dirt-Samples).

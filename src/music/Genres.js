@@ -42,7 +42,7 @@ export class Genres {
       progressions: [[0], [0, 1], [0, 0, 0, 6], [0, 6], [0, 0, 1, 0], [0, 4], [0, 0, 5, 1], [0, 3]],
       roleOrder: ['bass', 'drums', 'perc', 'lead', 'keys', 'texture'],
       collage: ['glitch', 'diphone', 'mouth', 'numbers'],
-      palette: { acid: ['acid', 'acid_dirty', 'acid_303', 'acid_sq', 'tb303_saw', 'tb303_square'], acid_bass: ['sh_bass', 'braindance_bass'], lead: ['sh_lead', 'aphex_lead', 'saw2_square', 'pulse', 'sync_lead'], bell: ['dx_marimba', 'fm_glass', 'dx_bell'], organ: ['efd_organ'], pad: ['dx_pad', 'pwm_pad'], sub: ['sub808', 'fm_sub'], fm_bass: ['fm_bass'], stab: ['stab', 'dx_brass'], pluck: ['glitch_blip', 'pluck'], metal: ['zap', 'clank'], prepared: ['prepared_mute'] },
+      palette: { acid: ['acid', 'acid_dirty', 'acid_303', 'acid_sq', 'tb303_saw', 'tb303_square'], acid_bass: ['sh_bass', 'braindance_bass'], lead: ['sh_lead', 'aphex_lead', 'saw2_square', 'pulse', 'sync_lead'], bell: ['dx_marimba', 'fm_glass', 'dx_bell'], organ: ['efd_organ'], pad: ['dx_pad', 'pwm_pad'], sub: ['sub808', 'fm_sub'], fm_bass: ['fm_bass'], stab: ['stab', 'dx_brass'], pluck: ['glitch_blip', 'pluck'], metal: ['zap', 'clank'], prepared: ['prepared_mute'], gl_buzz: ['gl_buzz', 'gl_buzz_fast'], gl_crunch: ['gl_crunch', 'gl_crunch_fast'], gl_ping: ['gl_ping', 'gl_blip'], gl_hiss: ['gl_hiss'], gl_thump: ['gl_thump'] },
       kits: { kick: ['808bd', 'bd', 'clubkick', 'kicklinn'], snare: ['808sd', 'sd', 'sn'], clap: ['realclaps', 'cp'], hat: ['808oh', 'linnhats', 'hh', 'hh27'], rim: ['rs', 'click'], kit: ['drumtraks', 'dr2', 'dr55', 'odx'], glitch: ['glitch', 'glitch2', 'blip'], voice: ['mouth', 'diphone'] },
     },
     // drill'n'bass (Drukqs, Come to Daddy): the amen chopped at speed under slow, sad melodies.
@@ -54,7 +54,7 @@ export class Genres {
       progressions: [[0, 5, 3, 4], [0, 3], [5, 3, 0, 4], [0, 2, 5, 4], [0, 5], [3, 4, 0, 0], [0, 6, 5, 4], [5, 4, 3, 4], [0, 1, 5, 4]],
       roleOrder: ['drums', 'lead', 'bass', 'keys', 'texture', 'perc'],
       collage: ['speech', 'mouth', 'glitch2', 'alphabet'],
-      palette: { keys: ['piano', 'felt', 'rhodes', 'grand'], prepared: ['prepared_piano', 'prepared_mute', 'broken_piano'], pad: ['strings', 'dx_pad', 'string_machine', 'haze'], sub: ['drill_sub', 'sub', 'sub808'], lead: ['aphex_lead', 'saw2_square', 'mono'], bell: ['dx_bell', 'fm_glass', 'glass'], boc_pad: ['warm_pad'], pad_dark: ['dark_pad'], acid: ['acid_303'] },
+      palette: { keys: ['piano', 'felt', 'rhodes', 'grand'], prepared: ['prepared_piano', 'prepared_mute', 'broken_piano'], pad: ['strings', 'dx_pad', 'string_machine', 'haze'], sub: ['drill_sub', 'sub', 'sub808'], lead: ['aphex_lead', 'saw2_square', 'mono'], bell: ['dx_bell', 'fm_glass', 'glass'], boc_pad: ['warm_pad'], pad_dark: ['dark_pad'], acid: ['acid_303'], gl_buzz: ['gl_buzz_fast', 'gl_buzz'], gl_crunch: ['gl_crunch', 'gl_crunch_fast'], gl_ping: ['gl_ping'], gl_hiss: ['gl_hiss'], gl_thump: ['gl_thump'] },
       kits: { kick: ['bd', '808bd'], snare: ['sn', 'sd', '808sd'], hat: ['hh', 'hh27'], rim: ['rs', 'click'], kit: ['drumtraks', 'dr', 'drum'], glitch: ['glitch', 'glitch2'], voice: ['speech', 'mouth'] },
     },
     // Boards of Canada: slow hip-hop breaks, detuned drifting synths, tape, voices. Leans on
@@ -80,7 +80,7 @@ export class Genres {
       progressions: [[0], [0, 3], [0, 0, 0, 5], [0, 0, 6, 0], [0, 5], [0, 0, 3, 0], [3, 0], [0, 4, 0, 0]],
       roleOrder: ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'],
       collage: ['east', 'outdoor', 'noise2', 'speechless'],
-      palette: { organ: ['efd_organ', 'efd_stab', 'dub_stab_m7'], bell: ['efd_bell', 'dx_marimba', 'glass', 'bell', 'fm_glass'], pad: ['efd_pad', 'dx_pad', 'pwm_pad'], sub: ['dub_sub', 'sub', 'dx_bass'], stab: ['dub_chord', 'stab', 'dx_brass'], keys: ['rhodes', 'epiano'], pluck: ['pluck', 'glitch_blip'], acid_bass: ['sh_bass'], lead: ['pulse', 'mono'] },
+      palette: { organ: ['efd_organ', 'efd_stab', 'dub_stab_m7'], bell: ['efd_bell', 'dx_marimba', 'glass', 'bell', 'fm_glass'], pad: ['efd_pad', 'dx_pad', 'pwm_pad'], sub: ['dub_sub', 'sub', 'dx_bass'], stab: ['dub_chord', 'stab', 'dx_brass'], keys: ['rhodes', 'epiano'], pluck: ['pluck', 'glitch_blip'], acid_bass: ['sh_bass'], lead: ['pulse', 'mono'], gl_ping: ['gl_blip', 'gl_ping'], gl_hiss: ['gl_hiss'], gl_thump: ['gl_thump'] },
       kits: { kick: ['bd', 'clubkick', '808bd'], snare: ['sn', 'sd'], clap: ['realclaps', 'cp', 'hand'], hat: ['hh', 'hh27', 'linnhats'], rim: ['rs', 'click', 'tok', 'hc'], kit: ['dr2', 'dr55', 'odx', 'drumtraks'], perc: ['perc', 'tabla', 'hand', 'tok'], metal: ['glasstap'] },
     },
     // dub techno and Gas: chord stabs into long delays, muffled kick, hiss. One chord for minutes.
@@ -116,7 +116,7 @@ export class Genres {
       progressions: [[0, 1], [0, 0, 1, 0], [0, 5, 1, 0], [0], [0, 6], [0, 1, 6, 0], [0, 0, 4, 1], [0, 3, 1, 0], [0, 5, 4, 1]],
       roleOrder: ['texture', 'keys', 'bass', 'drums', 'lead', 'perc'],
       collage: ['crow', 'insect', 'speechless', 'noise2', 'seawolf', 'industrial'],
-      palette: { pad_dark: ['horror', 'choir_dark', 'dark_pad', 'noise_drone', 'drone', 'dread_pad', 'space_drone_slow'], dread: ['dread_sub', 'low_brass'], tension: ['riser_slow', 'tension_string', 'metal_scrape'], prepared: ['broken_piano', 'prepared_piano'], keys: ['piano', 'felt'], bell: ['dx_bell', 'bell', 'glass'], sub: ['sub', 'fm_sub'], metal: ['anvil', 'clank', 'welder'], machine: ['hum', 'steam', 'grind', 'machine'], voice: ['voice_oo', 'formant_voice'], lead_harsh: ['screech', 'metal_lead'], drone: ['space_drone_slow', 'cosmic_sweep'] },
+      palette: { pad_dark: ['horror', 'choir_dark', 'dark_pad', 'noise_drone', 'drone', 'dread_pad', 'space_drone_slow'], dread: ['dread_sub', 'low_brass'], tension: ['riser_slow', 'tension_string', 'metal_scrape'], prepared: ['broken_piano', 'prepared_piano'], keys: ['piano', 'felt'], bell: ['dx_bell', 'bell', 'glass'], sub: ['sub', 'fm_sub'], metal: ['anvil', 'clank', 'welder'], machine: ['hum', 'steam', 'grind', 'machine'], voice: ['voice_oo', 'formant_voice'], lead_harsh: ['screech', 'metal_lead'], drone: ['space_drone_slow', 'cosmic_sweep'], gl_buzz: ['gl_buzz_slow', 'gl_buzz'], gl_crunch: ['gl_crunch'], gl_ping: ['gl_ping'], gl_hiss: ['gl_hiss'], gl_thump: ['gl_thump'] },
       kits: { kick: ['808bd', 'bd'], snare: ['sn', '808sd'], hat: ['hh27'], rim: ['tok', 'click'], perc: ['tabla', 'perc'], kit: ['dr', 'drum'], metal: ['metal', 'industrial', 'glasstap'], nature: ['crow', 'insect', 'wind'], voice: ['speechless'] },
     },
     // Autechre (AE_LIVE 2016-2018): generated, shifting rhythms, harsh FM, no tonic.
@@ -128,7 +128,7 @@ export class Genres {
       progressions: [[0], [0, 1], [0, 4, 1], [0, 3, 6], [0, 6, 1, 5], [1, 0, 5], [0, 2, 1], [0, 5, 2, 6], [0, 0, 1, 0], [0, 6, 0, 1]],
       roleOrder: ['perc', 'drums', 'bass', 'texture', 'lead', 'keys'],
       collage: ['glitch', 'diphone2', 'tacscan', 'invaders', 'numbers', 'sid'],
-      palette: { lead_harsh: ['metal_lead', 'screech', 'fm_metal'], metal: ['clank', 'anvil', 'welder', 'zap', 'ae_fm_perc'], machine: ['ae_grain', 'machine', 'grind'], pluck: ['ae_blip', 'glitch_blip'], fm_bass: ['fm_bass', 'ae_bass'], sub: ['fm_sub', 'sub808'], bell: ['fm_glass', 'dx_marimba', 'glass'], pad: ['pwm_pad', 'dx_pad'], pad_dark: ['dark_pad', 'noise_drone'], lead: ['sync_lead', 'sh_lead', 'pulse'], acid: ['acid_sq'], radio: ['shortwave'], voice: ['formant_voice'] },
+      palette: { lead_harsh: ['metal_lead', 'screech', 'fm_metal'], metal: ['clank', 'anvil', 'welder', 'zap', 'ae_fm_perc'], machine: ['ae_grain', 'machine', 'grind'], pluck: ['ae_blip', 'glitch_blip'], fm_bass: ['fm_bass', 'ae_bass'], sub: ['fm_sub', 'sub808'], bell: ['fm_glass', 'dx_marimba', 'glass'], pad: ['pwm_pad', 'dx_pad'], pad_dark: ['dark_pad', 'noise_drone'], lead: ['sync_lead', 'sh_lead', 'pulse'], acid: ['acid_sq'], radio: ['shortwave'], voice: ['formant_voice'], gl_buzz: ['gl_buzz', 'gl_buzz_slow', 'gl_buzz_fast'], gl_crunch: ['gl_crunch', 'gl_crunch_fast'], gl_ping: ['gl_ping', 'gl_blip'], gl_hiss: ['gl_hiss'], gl_thump: ['gl_thump'] },
       kits: { kick: ['bd', '808bd', 'kicklinn'], snare: ['sn', 'sd', '808sd'], hat: ['hh', 'linnhats'], rim: ['click', 'rs', 'hc'], kit: ['drumtraks', 'dr2', 'odx', 'dr55'], glitch: ['glitch', 'glitch2', 'blip', 'bleep'], metal: ['metal', 'industrial', 'glasstap'], voice: ['diphone', 'diphone2', 'mouth'] },
     },
   };

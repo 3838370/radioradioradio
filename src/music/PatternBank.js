@@ -82,26 +82,29 @@ export class PatternBank {
   }
 
   // Weighted pick among the best six, so good fits are likelier but it's rarely predictable.
+  // Each score gets a little jitter (±5%) before the six are chosen, so ties and near-ties
+  // aren't always settled by the order of the files.
   // meter ({ steps, probe }): the listener chose a step count; only patterns that fit it,
   // from any genre (the genre still weighs in). null when none fit.
   // weightOf(p): an extra factor per pattern (the session memory's fatigue).
   pick(role, weights, intensity, rng, exclude = [], meter = null, weightOf = null) {
     const extra = (p) => (weightOf ? weightOf(p) : 1);
+    const best = (list) => list
+      .map(([p, s]) => [p, s, s * rng.float(0.95, 1.05)])
+      .sort((a, b) => b[2] - a[2])
+      .slice(0, 6)
+      .map(([p, s]) => [p, s]);
     if (meter) {
-      const fitting = this.byRole(role)
+      const fitting = best(this.byRole(role)
         .filter((p) => !exclude.includes(p.id) && PatternBank.fits(this.cycles(p, meter.probe), meter.steps))
-        .map((p) => [p, (this.fit(p, weights) + 0.15) * this.energyFit(p, intensity) * extra(p)])
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6);
+        .map((p) => [p, (this.fit(p, weights) + 0.15) * this.energyFit(p, intensity) * extra(p)]));
       return fitting.length ? rng.weighted(fitting) : null;
     }
-    const scored = this.byRole(role)
+    const scored = best(this.byRole(role)
       .filter((p) => !exclude.includes(p.id))
       .filter((p) => this.fit(p, weights) * this.energyFit(p, intensity) > 0.05)
-      .map((p) => [p, this.fit(p, weights) * this.energyFit(p, intensity) * extra(p)])
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
+      .map((p) => [p, this.fit(p, weights) * this.energyFit(p, intensity) * extra(p)]));
     if (!scored.length) return null;
-    return rng.weighted(scored.map(([p, s]) => [p, s]));
+    return rng.weighted(scored);
   }
 };
