@@ -146,14 +146,11 @@ export class Grid {
 
   static at(g, c) { return g.rows[c.y][c.x]; }
 
-  // Off the right edge the cursor goes on at the start of the next row (it reads like text:
-  // a 4×4 grid is 16 steps); off the left edge, the end of the row above; up and down wrap
-  // around the column.
+  // As in Befunge: the cursor keeps to its row (or column) and wraps around it, off the right
+  // edge back in at the left of the same row; only an arrow or ? sends it another way.
   static move(g, c) {
     const [dx, dy] = Grid.MOVES[c.dir] || Grid.MOVES['>'];
-    let x = c.x + dx, y = c.y + dy;
-    if (x >= g.w) { x = 0; y++; } else if (x < 0) { x = g.w - 1; y--; }
-    return { x, y: (y + g.h) % g.h, dir: c.dir };
+    return { x: (c.x + dx + g.w) % g.w, y: (c.y + dy + g.h) % g.h, dir: c.dir };
   }
 
   // A fresh state: the cursors on their @, step 0.
@@ -174,14 +171,15 @@ export class Grid {
   static stepCursor(g, cur, step, ci) {
     let c = { x: cur.x, y: cur.y, dir: cur.dir };
     let cell = Grid.at(g, c);
-    for (let guard = 0; cell.kind === 'skip' && guard < g.w * g.h; guard++) { c = Grid.move(g, c); cell = Grid.at(g, c); }
+    // # is Befunge's bridge: the cursor jumps over the next cell (no time spent on either)
+    for (let guard = 0; cell.kind === 'skip' && guard < g.w * g.h; guard++) { c = Grid.move(g, Grid.move(g, c)); cell = Grid.at(g, c); }
     if (cell.kind === 'wait') {
       const perBar = 4 / g.opts.passo;
       if (Number.isInteger(perBar) && step % perBar !== 0) return { cursor: c, cell: null, x: c.x, y: c.y };
       // a new bar: go on to the next cell and play it now
       c = Grid.move(g, c);
       cell = Grid.at(g, c);
-      for (let guard = 0; cell.kind === 'skip' && guard < g.w * g.h; guard++) { c = Grid.move(g, c); cell = Grid.at(g, c); }
+      for (let guard = 0; cell.kind === 'skip' && guard < g.w * g.h; guard++) { c = Grid.move(g, Grid.move(g, c)); cell = Grid.at(g, c); }
       if (cell.kind === 'wait') return { cursor: c, cell: null, x: c.x, y: c.y };
     }
     if (cell.dir === '?') c.dir = '><^v'[Math.floor(Grid.draw(g.opts.semente, step, ci, 3) * 4)];

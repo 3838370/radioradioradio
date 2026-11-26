@@ -42,6 +42,7 @@ export * from './music/Generators.js';
 export * from './music/Generators.js';
 export * from './music/GenreDrift.js';
 export * from './music/GridFreeze.js';
+export * from './music/GridGen.js';
 export * from './music/Genres.js';
 export * from './music/Harmony.js';
 export * from './music/Layers.js';

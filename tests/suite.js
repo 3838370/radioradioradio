@@ -467,7 +467,10 @@
     // with no @, a cursor starts at the top left; it reads like text (4×4 = 16 steps)
     equal(G.parse('t', ['a .'], { a: 'x' }).starts, [{ x: 0, y: 0, dir: '>' }]);
     const four = G.parse('t', ['> K S H', 'K ? . S', 'H K . v', '. S H H'], { k: 'x', s: 'y', h: 'z' });
-    equal(G.walk(four, G.init(four), 6).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 3,0 0,1 1,1');
+    // as in Befunge: it keeps to its row (wrapping around it) until an arrow turns it
+    equal(G.walk(four, G.init(four), 6).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 3,0 0,0 1,0');
+    const loop = G.parse('t', ['> a v', '. . b', '^ . <'], { a: 'x', b: 'y' });
+    equal(G.walk(loop, G.init(loop), 9).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 2,1 2,2 1,2 0,2 0,1 0,0', 'arrows turn it round the grid');
     assert(/não serve/.test(err(() => G.parse('t', ['@>a'], { v: 'x' }))), 'v is the down arrow, not a sound');
     const steps = (rows, n, opts = {}) => {
       const g = G.parse('t', rows, { a: 'x', b: 'y' }, opts);
@@ -475,7 +478,7 @@
     };
     equal(steps(['@>a . b'], 4), '0:@>a 2:b 3:@>a', 'right, and around the edge');
     equal(steps(['@>a vb', ' .  . '], 4), '0:@>a 1:vb 3:vb', 'a turn down, around the bottom edge');
-    equal(steps(['@>a # b'], 3), '0:@>a 1:b 2:@>a', '# takes no time');
+    equal(steps(['@>a # b a'], 3), '0:@>a 1:a 2:@>a', '# jumps over the next cell (Befunge bridge)');
     equal(steps(['@>a . ='], 18), '0:@>a 16:@>a', '= waits for the next bar');
     // chance: the same seed walks the same way, another seed another way
     const walk = (seed) => steps(['@>a ?b . a', '. a ?b .', 'b . . ?a'], 64, { semente: seed });

@@ -448,11 +448,12 @@ export class App {
     const deck = this.composer.deck;
     const layer = deck.find(id);
     if (!layer || Object.keys(layer.grids || {}).length) return;
+    // the program the GRELHA view shows for it (its own sounds, a Befunge-like path)
     const beat = this.clock.beatAt(this.audio.ac.currentTime);
-    // the last whole bar, as the 4×4 grid the GRELHA view shows
-    const f = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
-    const r = f.compact(layer.played, (Math.floor(beat / 4) - 1) * 4, GridFreeze.fxLine(layer.code));
-    if (r.empty) { this.logger.add(`congelar: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
+    if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
+    const v = this.gridView.shown(layer, beat);
+    if (v.own || v.empty) { this.logger.add(`pôr em grelha: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
+    const r = { code: GridFreeze.gridCode(v.rows.map((row) => row.join(' ')), v.sounds, GridFreeze.fxLine(layer.code)) };
     const before = layer.code;
     const res = deck.liveEdit(id, CodeTools.withInstruments(r.code, this.instruments), { desc: 'congelada em grelha', final: true });
     if (!res.ok) { this.logger.add(`congelar: ${res.error}`, 'err'); return; }
@@ -767,6 +768,7 @@ export class App {
         this.fullCode.draw(p, 12, top, p.width - 24, stageH - 34, m, this.fullCodeText(), flashes, now);
       } else if (this.view === 'grid') {
         if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
+        this.gridView.genre = this.drift.dominant();
         this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now,
           { bpm: this.clock.bpm, bar: this.composer.bar, nextMove: this.composer.nextMove, interval: this.composer.interval() });
       } else {

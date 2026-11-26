@@ -1,5 +1,6 @@
 import { PatternBank } from '../music/PatternBank.js';
-import { GridFreeze } from '../music/GridFreeze.js';
+import { GridGen } from '../music/GridGen.js';
+import { Rng } from '../core/Rng.js';
 import { Theme } from './Theme.js';
 
 // GridView: the GRELHA view. Every layer is a box with a small grid, like a little 2D
@@ -56,12 +57,20 @@ export class GridView {
   shown(layer, beat) {
     const own = GridView.gridsOf(layer).find((x) => x.g.opts.tipo === 'instrumento') || GridView.gridsOf(layer)[0];
     if (own) return { name: own.name, rows: own.g.rows.map((r) => r.map((c) => c.raw)), g: own.g, own: true, legend: GridView.legendOf(own.g) };
+    // any other layer: the program it would get with its own sounds (a preview; [pôr em
+    // grelha] installs exactly this), made again only when its sounds change
     const bar = Math.floor(beat / 4);
     const d = this.derived.get(layer.id);
     if (d && d.bar === bar) return d.view;
-    const c = this.freezer ? this.freezer.compact(layer.played || [], (bar - 1) * 4) : { rows: ['. . . .', '. . . .', '. . . .', '. . . .'], legend: '', empty: true };
-    const view = { name: null, rows: c.rows.map((r) => r.split(' ')), own: false, legend: c.legend, empty: c.empty };
-    this.derived.set(layer.id, { bar, view });
+    const sounds = this.freezer ? this.freezer.soundsOf(layer.played || [], beat - 16, beat) : {};
+    const key = Object.entries(sounds).sort().join('|');
+    if (d && d.key === key) { d.bar = bar; return d.view; }
+    const letters = Object.keys(sounds);
+    let seed = 7;
+    for (const c of layer.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+    const rows = letters.length ? new GridGen(new Rng(seed)).make(letters, layer.role, this.genre) : ['. . . .', '. . . .', '. . . .', '. . . .'];
+    const view = { name: null, rows: rows.map((r) => r.split(' ')), own: false, legend: GridView.legendOf({ sounds }), empty: !letters.length, sounds, preview: true };
+    this.derived.set(layer.id, { bar, key, view });
     return view;
   }
 
@@ -121,7 +130,7 @@ export class GridView {
       b.h = rowH[b.row];
       if (b.y > top + vh || b.y + b.h < top) continue;
       const pic = this.picture(p, b, m);
-      ctx.globalAlpha = b.layer.muted || b.layer.silenced ? 0.45 : 1;
+      ctx.globalAlpha = b.layer.muted || b.layer.silenced ? 0.45 : b.v.own ? 1 : 0.55; // a preview is dimmer
       ctx.drawImage(pic.canvas, b.x, b.y, pic.canvas.width / pic.d, pic.canvas.height / pic.d);
       ctx.globalAlpha = 1;
       this.overlay(p, b, pic, beat, status);
@@ -188,7 +197,6 @@ export class GridView {
     // the cursor(s)
     let positions = null;
     if (v.own) { const at = GridView.cursorsAt(layer, v.name, beat); positions = at && at.positions; }
-    else if (!v.empty) { const k = Math.floor((beat - Math.floor(beat / 4) * 4) * 4); positions = [[k % 4, Math.floor(k / 4)]]; }
     for (const [cx, cy] of positions || []) {
       const px = b.x + part.x + cx * part.cw, py = b.y + part.y + cy * part.ch;
       p.noStroke();
@@ -214,8 +222,8 @@ export class GridView {
     const left = Math.max(0, (status.nextMove || 0) - (status.bar || 0));
     p.fill(T.dim);
     p.textSize(m.small - 1);
-    p.text(layer.locked ? 'BLOQUEADA: NÃO MUTA' : `MUTA: A CADA ${every} C`, b.x + m.pad, fy + 8);
-    const act = layer.frozenFrom ? ['unfreeze', '[↺ original]'] : !v.own && !v.empty ? ['freeze', '[congelar]'] : null;
+    p.text(!v.own ? 'AINDA EM CÓDIGO · PRÉVIA' : layer.locked ? 'BLOQUEADA: NÃO MUTA' : `MUTA: A CADA ${every} C`, b.x + m.pad, fy + 8);
+    const act = layer.frozenFrom ? ['unfreeze', '[↺ original]'] : !v.own && !v.empty ? ['freeze', '[pôr em grelha]'] : null;
     if (act) {
       const aw = p.textWidth(act[1]);
       p.fill(T.text);

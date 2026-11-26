@@ -128,6 +128,29 @@ export class GridFreeze {
     return notes && notes.length >= 3 ? 'c' : 'a';
   }
 
+  // The sounds a layer played between two beats, one per letter: { k: name, s: ..., a: ... }
+  soundsOf(events, from, to) {
+    const out = {};
+    for (const e of events) {
+      if (e.silent || e.beat < from || e.beat >= to) continue;
+      const inst = this.instrumentOf(e);
+      if (!inst) continue;
+      const cls = this.classOf(inst, e.notes);
+      if (!out[cls]) out[cls] = inst;
+    }
+    return out;
+  }
+
+  // The code of a grid() with these rows and sounds (the GRELHA view's "pôr em grelha").
+  static gridCode(rows, sounds, fxLine = '', name = 'grelha') {
+    const tom = sounds.c ? 'c' : sounds.a ? 'a' : null;
+    const opts = ['passo: 1/4'];
+    if (tom) opts.push(`tom: '${tom}'`);
+    if (sounds.c && !sounds.a) opts.push('acorde: 3');
+    const list = Object.entries(sounds).map(([l, s]) => `${l}: '${s}'`).join(', ');
+    return (fxLine ? fxLine + '\n' : '') + `grid('${name}', [\n${rows.map((r) => `  '${r}',`).join('\n')}\n], { ${list} }, { ${opts.join(', ')} })`;
+  }
+
   // A bar (16 steps from `start`) as a 4×4 grid, one symbol per cell (the GRELHA view and
   // the "congelar" button): where several sounds share a step, K before S before H before P
   // before C before A. -> { rows: ['k . s h', ...] (4), sounds: { k: name, ... }, legend,
