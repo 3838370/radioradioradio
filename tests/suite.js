@@ -919,7 +919,12 @@
 
   runner.test('Every sound renders: sound, no blow-ups, sane level', async () => {
     const levels = [];
+    const random = Math.random;
     for (const [name, preset] of Object.entries(RA.SOUNDS)) {
+      // the noise drawn from a fixed seed (the one the sounds' levels were set with), so a
+      // noisy sound's peak is the same every run
+      let seed = 11;
+      Math.random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
       const off = new OfflineAudioContext(1, 48000 * 2, 48000);
       // a sound made of parts plays each part (as the AudioEngine does)
       const midi = preset.layers ? 60 : name.includes('brake') ? 84 : 48;
@@ -929,6 +934,7 @@
       const opts = preset.layers ? { amp: 0.5 } : { dur: 0.5, amp: 0.5 };
       for (const l of preset.layers || [preset]) new RA.SynthVoice(off, l, midi + (l.transpose || 0), opts).start(0.01 + (l.at || 0), off.destination, () => {});
       const d = (await off.startRendering()).getChannelData(0);
+      Math.random = random;
       let peak = 0;
       for (const v of d) { if (!Number.isFinite(v)) throw new Error(name + ': not finite'); peak = Math.max(peak, Math.abs(v)); }
       assert(peak > 0.005, `${name}: silent (${peak})`);
