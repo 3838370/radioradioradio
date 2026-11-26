@@ -46,6 +46,7 @@ import { XYPad } from './ui/XYPad.js';
 import { LevelMeter } from './ui/LevelMeter.js';
 import { GridView } from './ui/GridView.js';
 import { GridFreeze } from './music/GridFreeze.js';
+import { GridGen } from './music/GridGen.js';
 
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
@@ -460,6 +461,98 @@ export class App {
     layer.frozenFrom = before;
   }
 
+  // ───── the + square (cards and GRELHA views): a new block of sounds ─────
+
+  // A white square with a +; open, the roles not playing yet above it, to pick one.
+  drawPlus(p, x, y) {
+    const T = Theme, s = 22;
+    this.plusRect = { x, y, w: s, h: s };
+    p.noFill();
+    p.stroke(T.bright);
+    p.rect(x + 0.5, y + 0.5, s, s);
+    p.line(x + s / 2 + 0.5, y + 6, x + s / 2 + 0.5, y + s - 5);
+    p.line(x + 6, y + s / 2 + 0.5, x + s - 5, y + s / 2 + 0.5);
+    p.noStroke();
+    this.plusHits = [];
+    if (!this.plusOpen) return;
+    const missing = PatternBank.ROLES.filter((r) => !this.composer.deck.has(r));
+    p.textSize(Theme.size.small);
+    const items = missing.length ? missing : [null];
+    items.forEach((role, i) => {
+      const label = role ? '+ ' + PatternBank.roleLabel(role).toUpperCase() : 'todos os papéis já tocam';
+      const by = y - 6 - (items.length - i) * 22;
+      const w = p.textWidth(label) + 16;
+      p.fill(T.bg);
+      p.stroke(T.bright);
+      p.rect(x + 0.5, by + 0.5, w, 20);
+      p.noStroke();
+      p.fill(role ? T.bright : T.dim);
+      p.text(label, x + 8, by + 14);
+      if (role) this.plusHits.push({ role, x, y: by, w, h: 20 });
+    });
+  }
+
+  // A press on the + square or its list (true when it took the press).
+  plusPress(mx, my) {
+    const r = this.plusRect;
+    if (r && mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) { this.plusOpen = !this.plusOpen; return true; }
+    if (!this.plusOpen) return false;
+    const h = (this.plusHits || []).find((b) => mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h);
+    this.plusOpen = false;
+    if (h) { this.addLayer(h.role); return true; }
+    return false;
+  }
+
+  // A new layer for a role not playing: the composer picks one of the genre's patterns.
+  addLayer(role) {
+    const pat = this.composer.pickPattern(role);
+    if (!pat) { this.logger.add(`não há padrões de ${PatternBank.roleLabel(role)} para este género`); return; }
+    const layer = this.composer.deck.enter(role, pat, this.composer.bar + 1);
+    if (layer) layer.keep = true; // the composer won't drop or swap it (its grid still changes)
+    if (layer) this.logger.add(`compasso ${this.composer.bar + 1}: + ${PatternBank.roleLabel(role)} (por ti): ${pat.id}`);
+  }
+
+  // A layer's code changed by the radio itself (not the listener: it stays unlocked).
+  setLayerCode(layer, code, desc) {
+    const probe = this.coder.probe(code, 2);
+    if (!probe.ok) return false;
+    if (!this.coder.load(layer, code).ok) return false;
+    this.emitter.emit('layer:change', { layer, desc });
+    this.logger.add(`compasso ${this.composer.bar}: ${PatternBank.roleLabel(layer.role)}: ${desc}`);
+    return true;
+  }
+
+  // A layer becomes the grid the GRELHA view shows for it (unlocked: it keeps changing).
+  toGrid(layer) {
+    if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
+    const v = this.gridView.shown(layer, this.clock.beatAt(this.audio.ac.currentTime));
+    if (v.own || v.empty) return false;
+    const before = layer.code;
+    const code = CodeTools.withInstruments(GridFreeze.gridCode(v.rows.map((r) => r.join(' ')), v.sounds, GridFreeze.fxLine(layer.code)), this.instruments);
+    if (!this.setLayerCode(layer, code, 'em grelha')) return false;
+    layer.frozenFrom = before;
+    return true;
+  }
+
+  // GRELHA mode, once a bar: the layers still in code become grids (as soon as they've
+  // played a bar), and the grids keep changing, one cell at a time at the start of a phrase
+  // (more often with more "variação"); locked layers and BLOQUEAR are left alone.
+  gridTick(bar) {
+    if (this.settings.get('freeze')) return;
+    for (const layer of this.composer.layers.values()) {
+      if (layer.locked || layer.editing) continue;
+      const names = Object.keys(layer.grids || {});
+      if (!names.length) { if (bar - (layer.enteredBar || 0) >= 1) this.toGrid(layer); continue; }
+      if (bar % 4 !== 0 || !this.rng.chance(0.3 + 0.7 * this.settings.get('variation'))) continue;
+      const g = layer.grids[names[0]];
+      if (g.opts.tipo !== 'instrumento') continue;
+      const cells = CodeTools.gridCells(layer.code, names[0]);
+      if (!cells) continue;
+      const mu = new GridGen(this.rng).mutate(cells.map((r) => r.join(' ')), Object.keys(g.sounds));
+      this.setLayerCode(layer, CodeTools.setGridCell(layer.code, names[0], mu.x, mu.y, mu.to), `grelha muda (${mu.x + 1},${mu.y + 1}): ${mu.from} → ${mu.to}`);
+    }
+  }
+
   // [↺ original]: a frozen layer back to the code it had before.
   unfreezeLayer(id) {
     const layer = this.composer.deck.find(id);
@@ -769,6 +862,7 @@ export class App {
       } else if (this.view === 'grid') {
         if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
         this.gridView.genre = this.drift.dominant();
+        if (this.composer.bar !== this.gridBar) { this.gridBar = this.composer.bar; this.gridTick(this.gridBar); }
         this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now,
           { bpm: this.clock.bpm, bar: this.composer.bar, nextMove: this.composer.nextMove, interval: this.composer.interval() });
       } else {
@@ -780,6 +874,8 @@ export class App {
     p.fill(Theme.bg);
     p.rect(0, top + stageH - 32, p.width, 40);
     this.drawViewButton(p, p.width - 12 - 26, top + stageH - 26);
+    if (this.view === 'cards' || this.view === 'grid') this.drawPlus(p, 12, top + stageH - 28);
+    else this.plusRect = null;
     if (this.editor.isOpen && this.view === 'cards') {
       const card = this.grid.cards.get(this.editor.layer.id);
       this.editor.follow(card && card.rect, { x: 12, w: p.width - 24 });

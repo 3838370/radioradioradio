@@ -22,6 +22,7 @@ export class Input {
       return;
     }
     if (this.app.inViewButton(mx, my)) return this.app.nextView();
+    if (this.app.plusPress(mx, my)) return;
     if (this.app.view === 'code') {
       const b = this.app.fullCode.hit(mx, my);
       if (b && b.type === 'copy') this.app.copyFullCode();

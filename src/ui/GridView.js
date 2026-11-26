@@ -94,27 +94,22 @@ export class GridView {
     const top = y0 + 20;
     const vh = h - 20;
     this.area = { x: x0, y: top, w, h: vh };
-    const cols = w > 1100 ? 4 : w > 760 ? 3 : w > 480 ? 2 : 1;
-    const gap = 14;
+    // the boxes always fill the space: 1-3 side by side, 4 as 2×2, 5-6 as 3×2 (more: 3 a row)
+    const n = Math.max(1, layers.length);
+    const cols = w < 560 ? 1 : n <= 3 ? n : n === 4 ? 2 : 3;
+    const rowsN = Math.ceil(n / cols);
+    const gap = 12;
     const bw = (w - gap * (cols - 1)) / cols;
-    const grid = bw - 2 * m.pad;
+    const bh = Math.max(GridView.HEADER + GridView.FOOTER + 80, (vh - gap * (rowsN - 1)) / Math.min(rowsN, 2));
     const views = layers.map((l) => this.shown(l, beat));
-    const heightOf = (l, v) => {
-      const rows = v.rows.length, wcells = Math.max(...v.rows.map((r) => r.length));
-      const cell = grid / Math.max(4, wcells);
-      return GridView.HEADER + rows * cell + GridView.FOOTER + (this.sel && this.sel.layerId === l.id ? GridView.RULER_H : 0) + 8;
-    };
     const place = [];
     layers.forEach((l, i) => {
       const col = i % cols, row = Math.floor(i / cols);
-      place.push({ layer: l, v: views[i], i, col, row, x: x0 + col * (bw + gap), w: bw, h: heightOf(l, views[i]) });
+      place.push({ layer: l, v: views[i], i, col, row, x: x0 + col * (bw + gap), w: bw, h: bh });
     });
-    // rows of boxes: each row as tall as its tallest box
-    const rowH = [];
-    for (const b of place) rowH[b.row] = Math.max(rowH[b.row] || 0, b.h);
-    let acc = 0;
-    const rowTop = rowH.map((hh) => { const t = acc; acc += hh + gap; return t; });
-    this.contentH = Math.max(0, acc - gap);
+    const rowTop = Array.from({ length: rowsN }, (_, r) => r * (bh + gap));
+    const rowH = rowTop.map(() => bh);
+    this.contentH = rowsN * bh + (rowsN - 1) * gap;
     this.scroll = Math.max(0, Math.min(this.scroll, this.contentH - vh));
     const ctx = p.drawingContext;
     ctx.save();
@@ -158,7 +153,8 @@ export class GridView {
     g.setTransform(d, 0, 0, d, 0, 0);
     g.clearRect(0, 0, b.w, b.h);
     const col = (c, a = 1) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`;
-    g.strokeStyle = col(T.dim);
+    // no fills: thin white lines on black, white letters
+    g.strokeStyle = col(T.text, 0.8);
     g.lineWidth = 1;
     g.strokeRect(0.5, 0.5, b.w - 1, b.h - 1);
     g.font = `${m.small}px ${Theme.font}`;
@@ -167,26 +163,31 @@ export class GridView {
     let t = label;
     while (t.length > 4 && g.measureText(t).width > b.w - 2 * m.pad - 40) t = t.slice(0, -1);
     g.fillText(t, m.pad, 17);
+    // the cells stretch to fill the box (they needn't be square)
     const wcells = Math.max(...v.rows.map((r) => r.length));
-    const cell = (b.w - 2 * m.pad) / Math.max(4, wcells);
-    const part = { x: m.pad, y: GridView.HEADER, cw: cell, ch: cell, w: wcells, h: v.rows.length };
-    const fs = Math.max(10, Math.min(30, cell * 0.36));
+    const cw = (b.w - 2 * m.pad) / wcells;
+    const ch = (b.h - GridView.HEADER - GridView.FOOTER) / v.rows.length;
+    const part = { x: m.pad, y: GridView.HEADER, cw, ch, w: wcells, h: v.rows.length };
+    const fs = Math.max(9, Math.min(16, Math.min(cw, ch) * 0.22));
+    part.fs = fs;
     g.font = `${fs}px ${Theme.font}`;
+    g.strokeStyle = col(T.text, 0.45);
     v.rows.forEach((row, yy) => row.forEach((raw, xx) => {
-      const px = part.x + xx * cell, py = part.y + yy * cell;
-      g.fillStyle = col(T.faint, 0.35);
-      g.fillRect(px + 2, py + 2, cell - 4, cell - 4);
-      g.strokeStyle = col(T.faint);
-      g.strokeRect(px + 2.5, py + 2.5, cell - 5, cell - 5);
-      const s = raw === '.' ? '.' : raw.length > 3 ? raw.slice(0, 3) : raw;
-      const sound = /[a-z]/i.test(s.replace(/^[><^v?@]/, ''));
-      g.fillStyle = col(s === '.' ? T.dim : sound ? T.bright : T.text, s === '.' ? 0.6 : 1);
-      const tw = g.measureText(s.toUpperCase()).width;
-      g.fillText(s === 'v' ? 'v' : s.toUpperCase(), px + (cell - tw) / 2, py + cell / 2 + fs * 0.35);
+      const px = part.x + xx * cw, py = part.y + yy * ch;
+      g.strokeRect(px + 0.5, py + 0.5, cw, ch);
+      const s = GridView.symbol(raw);
+      g.fillStyle = col(T.bright, s === '.' ? 0.45 : 1);
+      g.fillText(s, px + (cw - g.measureText(s).width) / 2, py + ch / 2 + fs * 0.35);
     }));
     const pic = { key, canvas, d, part };
     this.pictures.set(layer.id, pic);
     return pic;
+  }
+
+  // A cell's text as shown: upper case, at most 3 characters (v stays the down arrow).
+  static symbol(raw) {
+    const s = raw === '.' ? '.' : raw.length > 3 ? raw.slice(0, 3) : raw;
+    return s === 'v' ? 'v' : s.toUpperCase();
   }
 
   // What moves: the cursor (a lit cell), ON/OFF, the footer's bar, buttons, the selection.
@@ -197,16 +198,16 @@ export class GridView {
     // the cursor(s)
     let positions = null;
     if (v.own) { const at = GridView.cursorsAt(layer, v.name, beat); positions = at && at.positions; }
+    // the cell playing, inverted: white square, black letter
+    p.textSize(part.fs);
     for (const [cx, cy] of positions || []) {
       const px = b.x + part.x + cx * part.cw, py = b.y + part.y + cy * part.ch;
       p.noStroke();
-      p.fill(T.bright[0], T.bright[1], T.bright[2], 60);
-      p.rect(px + 2, py + 2, part.cw - 4, part.ch - 4);
-      p.noFill();
-      p.stroke(T.bright);
-      p.strokeWeight(2);
-      p.rect(px + 2, py + 2, part.cw - 4, part.ch - 4);
-      p.strokeWeight(1);
+      p.fill(T.bright);
+      p.rect(px + 1, py + 1, part.cw - 1, part.ch - 1);
+      const s = GridView.symbol((v.rows[cy] || [])[cx] || '.');
+      p.fill(T.bg);
+      p.text(s, px + (part.cw - p.textWidth(s)) / 2, py + part.ch / 2 + part.fs * 0.35);
     }
     p.noStroke();
     // ON / OFF (mute), top right
@@ -217,7 +218,7 @@ export class GridView {
     p.text(on, b.x + b.w - m.pad - ow, b.y + 17);
     this.hits.push({ type: 'layer-mute', layerId: layer.id, x: b.x + b.w - m.pad - ow - 4, y: b.y + 2, w: ow + 8, h: 20 });
     // the footer: how often it changes, and the bar to the next change
-    const fy = b.y + b.h - GridView.FOOTER + 6 - (this.sel && this.sel.layerId === layer.id ? GridView.RULER_H : 0);
+    const fy = b.y + b.h - GridView.FOOTER + 6;
     const every = Math.max(1, status.interval || 8);
     const left = Math.max(0, (status.nextMove || 0) - (status.bar || 0));
     p.fill(T.dim);
@@ -259,7 +260,10 @@ export class GridView {
     }
     const g = b.layer.grids[s.name];
     const keys = GridView.RULER.concat(Object.keys(g.sounds).map((k) => k.toUpperCase()), ['⌫', 'OK', '×']);
-    const ry = b.y + b.h - GridView.RULER_H - 4;
+    const ry = b.y + b.h - GridView.FOOTER - GridView.RULER_H;
+    p.noStroke();
+    p.fill(T.bg);
+    p.rect(b.x + 1, ry - 4, b.w - 2, GridView.RULER_H + 2);
     p.textSize(m.small);
     let rx = b.x + m.pad, row = 0;
     for (const k of keys) {

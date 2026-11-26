@@ -27,7 +27,8 @@ export class Layers {
   get(role) { return this.map.get(role); }
   has(role) { return this.map.has(role); }
   values() { return this.map.values(); }
-  free() { return [...this.map.values()].filter((l) => !l.locked); }
+  // the layers the composer may swap or drop: not locked, not added by hand (+)
+  free() { return [...this.map.values()].filter((l) => !l.locked && !l.keep); }
   find(id) { return [...this.map.values()].find((l) => l.id === id) || null; }
 
   // A layer's code carries everything that makes its sound: the inst(...) definitions of

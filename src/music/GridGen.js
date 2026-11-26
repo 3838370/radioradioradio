@@ -52,6 +52,24 @@ export class GridGen {
     return best.rows;
   }
 
+  // One change to a program, the way it grows while it plays: a cell (never the start)
+  // turns another way, swaps its sound, falls silent or starts to sound.
+  // -> { x, y, from, to }
+  mutate(rows, letters) {
+    const cells = rows.map((r) => r.trim().split(/\s+/));
+    const spots = [];
+    cells.forEach((r, y) => r.forEach((c, x) => { if (x || y) spots.push([x, y]); }));
+    const [x, y] = this.rng.pick(spots);
+    const from = cells[y][x];
+    const arrows = ['>', '<', '^', 'v'];
+    let to;
+    if (arrows.includes(from)) to = this.rng.chance(0.25) ? '?' : this.rng.pick(arrows.filter((a) => a !== from));
+    else if (from === '?') to = this.rng.pick(arrows);
+    else if (from === '.') { const r = this.rng.float(0, 1); to = r < 0.6 ? this.rng.pick(letters) : r < 0.85 ? this.rng.pick(arrows) : '?'; }
+    else { const others = letters.filter((l) => l !== from.toLowerCase()); to = others.length && this.rng.chance(0.5) ? this.rng.pick(others) : '.'; }
+    return { x, y, from, to };
+  }
+
   // Walks a program two bars: how close its density is to the role's, how many cells it
   // visits (a path, not a 1-cell loop), how many different sounds it plays.
   score(rows, letters, density) {
