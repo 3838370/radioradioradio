@@ -44,7 +44,11 @@
       assert(t.collage.length >= 3, g + ' collage');
     }
     equal(G.migrate(['fog', 'rave', 'nope', 'dub']).sort(), ['acid', 'dub']);
-    equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100 }), { bpm: 100, genres: ['acid'] });
+    // styles → genres; saved settings from before the grid mode take its four genres, once
+    // (genresV 2); after that, the listener's choice stays
+    equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100, genresV: 2 }), { bpm: 100, genresV: 2, genres: ['acid'] });
+    equal(RA.Settings.migrate({ genres: null, bpm: 100 }), { genres: ['acid', 'ae', 'dub', 'space'], bpm: 100, genresV: 2 });
+    equal(new RA.Settings().get('genres'), ['acid', 'ae', 'dub', 'space']);
   });
 
   runner.test('Settings: one schema; PARAMS defaults within their ranges', () => {

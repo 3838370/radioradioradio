@@ -32,7 +32,11 @@ export class Settings extends Emitter {
     { id: 'mode', def: 'auto' },           // 'auto' or a mode name
     { id: 'steps', def: 'auto' },          // 'auto' or a loop cycle in 16th steps the patterns should have
     { id: 'volume', def: 0.8 },
-    { id: 'genres', def: null },           // the genres allowed to play (array of names); null = all
+    // the genres allowed to play (array of names); null = all. While the grid mode is built,
+    // only these four (the others stay in the bank, switched off; their genre names can be
+    // clicked back on)
+    { id: 'genres', def: ['acid', 'ae', 'dub', 'space'] },
+    { id: 'genresV', def: 2 },             // which default genre choice the saved settings have
     { id: 'eq', def: null },               // master EQ { low, lomid, himid, high: { f, g } }; null = flat
     { id: 'genreTune', def: {} },          // the listener's values for genre parameters: { genre: { id: value } }
 
@@ -89,6 +93,8 @@ export class Settings extends Emitter {
       delete s.styles;
     }
     delete s.codedSamples;
+    // the four genres of the grid mode (ACID, AE, DUB, SPACE), once, over an older choice
+    if (saved && s.genresV !== 2) { s.genres = ['acid', 'ae', 'dub', 'space']; s.genresV = 2; }
     return s;
   }
 

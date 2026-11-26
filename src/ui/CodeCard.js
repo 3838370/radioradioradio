@@ -160,37 +160,42 @@ export class CodeCard {
       p.fill(T.text[0], T.text[1], T.text[2], this.typing ? 22 : 22 * (1 - (now - this.editAt) / 1500));
       p.rect(x + 1, ty + cursor.row * m.lh + 2, w - 2, m.lh);
     }
-    if (this.typing) {
-      for (let r = 0; r < rows.length; r++) {
-        for (const seg of rows[r]) {
-          p.fill(seg.color[0], seg.color[1], seg.color[2], 255 * alpha);
-          p.text(seg.str, x + m.pad + seg.col * m.charW, ty + r * m.lh + m.ts);
-        }
-      }
-    } else {
+    {
       // The coloured code is drawn once into a picture of its own, and that picture is what
       // each frame shows (thousands of coloured pieces every frame kept the page busy, and
-      // the note scheduler late): it's redrawn only when the code, width or look changes.
+      // the note scheduler late): it's redrawn only when the code, width or look changes,
+      // and while the composer types new code in, at most every 60 ms (the typing still shows,
+      // a few letters at a time).
       const ctx = p.drawingContext;
       const d = p.pixelDensity();
       const key = `${this.viewKey}|${w}|${alpha}|${d}|${ctx.font}`;
-      if (this.textKey !== key || this.textView !== this.view) {
+      const wait = this.typing && this.textCanvas && now - (this.textAt || 0) < 60;
+      if (!wait && (this.textKey !== key || this.textView !== this.view)) {
+        this.textAt = now;
         const cw = Math.max(1, Math.ceil((w - m.pad) * d)), chh = Math.max(1, Math.ceil((rows.length + 1) * m.lh * d));
         const c = this.textCanvas || (this.textCanvas = document.createElement('canvas'));
-        c.width = cw;
-        c.height = chh;
+        // Only the rows that changed are drawn again (an edit in the panel changes one or two
+        // rows of a long card); a new size or look draws them all.
+        const look = `${w}|${alpha}|${d}|${ctx.font}|${m.lh}|${m.charW}`;
+        const sig = rows.map((row) => row.map((s) => `${s.col}:${s.color}:${s.str}`).join('\u0001'));
+        const all = c.width !== cw || c.height !== chh || this.textLook !== look || !this.textRows;
+        if (all) { c.width = cw; c.height = chh; }
         const g = c.getContext('2d');
         g.setTransform(d, 0, 0, d, 0, 0);
-        g.clearRect(0, 0, cw, chh);
+        if (all) g.clearRect(0, 0, cw, chh);
         g.font = ctx.font;
         g.textBaseline = ctx.textBaseline;
         g.textAlign = 'left';
         for (let r = 0; r < rows.length; r++) {
+          if (!all && this.textRows[r] === sig[r]) continue;
+          if (!all) g.clearRect(0, r * m.lh, cw / d, m.lh);
           for (const seg of rows[r]) {
             g.fillStyle = `rgba(${seg.color[0]}, ${seg.color[1]}, ${seg.color[2]}, ${alpha})`;
             g.fillText(seg.str, seg.col * m.charW, r * m.lh + m.ts);
           }
         }
+        this.textRows = sig;
+        this.textLook = look;
         this.textKey = key;
         this.textView = this.view;
       }
