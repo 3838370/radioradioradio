@@ -173,7 +173,7 @@ export class GridView {
     g.fillStyle = col(T.bright);
     g.textBaseline = 'alphabetic';
     let t = label;
-    while (t.length > 4 && g.measureText(t).width > b.w - 2 * m.pad - 40) t = t.slice(0, -1);
+    while (t.length > 4 && g.measureText(t).width > b.w - 2 * m.pad - 170) t = t.slice(0, -1); // room for [≈] [S] [M] [L] [↻]
     g.fillText(t, m.pad, 17);
     // the cells stretch to fill the box (they needn't be square)
     const wcells = Math.max(...v.rows.map((r) => r.length));
@@ -222,20 +222,28 @@ export class GridView {
       p.text(s, px + (part.cw - p.textWidth(s)) / 2, py + part.ch / 2 + part.fs * 0.35);
     }
     p.noStroke();
-    // ON / OFF (mute), top right
+    // the card's buttons, top right: [≈] sound panel, [S] solo, [M] mute, [L] lock, [↻] another pattern
     p.textSize(m.small);
-    const on = layer.muted ? 'OFF' : 'ON';
-    const ow = p.textWidth(on);
-    p.fill(layer.muted ? T.dim : T.bright);
-    p.text(on, b.x + b.w - m.pad - ow, b.y + 17);
-    this.hits.push({ type: 'layer-mute', layerId: layer.id, x: b.x + b.w - m.pad - ow - 4, y: b.y + 2, w: ow + 8, h: 20 });
-    // the footer: how often it changes, and the bar to the next change
+    let hx = b.x + b.w - m.pad;
+    for (const [type, label, on] of [['regen', '[↻]', false], ['layer-lock', '[L]', layer.locked], ['layer-mute', '[M]', layer.muted], ['layer-solo', '[S]', layer.soloed], ['sound', '[≈]', false]]) {
+      const bw = p.textWidth(label);
+      hx -= bw;
+      if (on) { p.fill(T.bright); p.rect(hx - 1, b.y + 17 - m.small - 1, bw + 2, m.small + 5); p.fill(T.bg); } else p.fill(T.dim);
+      p.text(label, hx, b.y + 17);
+      this.hits.push({ type, layerId: layer.id, x: hx - 2, y: b.y + 2, w: bw + 4, h: 20 });
+      hx -= 6;
+    }
+    // the footer: when the grid changes next (they change at the start of each 4-bar
+    // phrase, one cell at a time), with a bar filling up to it
     const fy = b.y + b.h - GridView.FOOTER + 6;
-    const every = Math.max(1, status.interval || 8);
-    const left = Math.max(0, (status.nextMove || 0) - (status.bar || 0));
+    const bar = status.bar || 0;
+    const left = 4 - (bar % 4);
+    const still = layer.locked || status.freeze;
     p.fill(T.dim);
     p.textSize(m.small - 1);
-    p.text(!v.own ? 'AINDA EM CÓDIGO · PRÉVIA' : layer.locked ? 'BLOQUEADA: NÃO MUTA' : `MUTA: A CADA ${every} C`, b.x + m.pad, fy + 8);
+    p.text(!v.own ? 'ainda é código: esta grelha é só uma ideia'
+      : still ? (layer.locked ? 'bloqueada: não muda' : 'BLOQUEAR ligado: não muda')
+      : `muda daqui a ${left} compasso${left > 1 ? 's' : ''}`, b.x + m.pad, fy + 8);
     const act = layer.frozenFrom ? ['unfreeze', '[↺ original]'] : !v.own && !v.empty ? ['freeze', '[pôr em grelha]'] : null;
     let ax = b.x + b.w - m.pad;
     if (act) {
@@ -253,11 +261,13 @@ export class GridView {
     p.fill(T.bright);
     p.text(size, ax, fy + 8);
     this.hits.push({ type: 'size', layerId: layer.id, x: ax - 3, y: fy - 4, w: sw + 6, h: 16 });
-    const bwid = b.w - 2 * m.pad;
-    p.fill(T.faint);
-    p.rect(b.x + m.pad, fy + 14, bwid, 6);
-    p.fill(layer.locked ? T.dim : T.bright);
-    p.rect(b.x + m.pad, fy + 14, layer.locked ? bwid : bwid * Math.max(0, Math.min(1, 1 - left / every)), 6);
+    if (v.own && !still) {
+      const bwid = b.w - 2 * m.pad;
+      p.fill(T.faint);
+      p.rect(b.x + m.pad, fy + 14, bwid, 4);
+      p.fill(T.bright);
+      p.rect(b.x + m.pad, fy + 14, bwid * ((bar % 4) / 4), 4);
+    }
     const s = this.sel;
     if (s && s.layerId === layer.id && v.own) this.drawSelection(p, b, part);
   }
