@@ -450,6 +450,71 @@
     assert(!layer.loops.has('a') && loop.stopped, 'removed loop stops');
   });
 
+  // ───── grid() ─────
+
+  runner.test('Grid: cells, cursors and paths (arrows, #, =, ?, wrap)', () => {
+    const G = RA.Grid;
+    const c = G.cell("@>K*%", 'x');
+    equal([c.start, c.dir, c.kind, c.hits[0].letter, c.hits[0].accent, c.ratchet, c.chance], [true, '>', 'play', 'k', true, 2, 0.5]);
+    equal(G.cell("b3'", 'x').hits, [{ letter: 'b', accent: false, degree: 3, octave: 1 }]);
+    equal(G.cell('5,,', 'x').hits[0].octave, -2);
+    equal(G.cell('kh', 'x').hits.map((h) => h.letter), ['k', 'h']);
+    equal(['.', '#', '=', '~', 'v'].map((t) => G.cell(t, 'x').kind), ['rest', 'skip', 'wait', 'hold', 'rest']);
+    equal(G.cell('vh', 'x').dir, 'v');
+    const err = (f) => { try { f(); } catch (e) { return e.message; } return ''; };
+    assert(/máximo 4/.test(err(() => G.parse('t', ['@a @a @a @a @a'], { a: 'x' }))), 'at most 4 cursors');
+    assert(/não está nos sons/.test(err(() => G.parse('t', ['@>z'], { a: 'x' }))), 'unknown letter');
+    assert(/falta um @/.test(err(() => G.parse('t', ['a .'], { a: 'x' }))), 'needs a cursor');
+    assert(/não serve/.test(err(() => G.parse('t', ['@>a'], { v: 'x' }))), 'v is the down arrow, not a sound');
+    const steps = (rows, n, opts = {}) => {
+      const g = G.parse('t', rows, { a: 'x', b: 'y' }, opts);
+      return G.walk(g, G.init(g), n).hits.map((h) => `${h.step}:${h.cell.raw}`).join(' ');
+    };
+    equal(steps(['@>a . b'], 4), '0:@>a 2:b 3:@>a', 'right, and around the edge');
+    equal(steps(['@>a vb', ' .  . '], 4), '0:@>a 1:vb 3:vb', 'a turn down, around the bottom edge');
+    equal(steps(['@>a # b'], 3), '0:@>a 1:b 2:@>a', '# takes no time');
+    equal(steps(['@>a . ='], 18), '0:@>a 16:@>a', '= waits for the next bar');
+    // chance: the same seed walks the same way, another seed another way
+    const walk = (seed) => steps(['@>a ?b . a', '. a ?b .', 'b . . ?a'], 64, { semente: seed });
+    equal(walk(3), walk(3));
+    assert(walk(3) !== walk(4), 'another seed, another path');
+  });
+
+  runner.test('Grid in the language: degrees follow the chord, cursors carry on, the same code plays the same', () => {
+    const harmony = new RA.Harmony(); // key 45, dorian, chords [0, 3], 4 bars each
+    const run = (code, beats = 32) => {
+      const coder = makeCoder(harmony);
+      const layer = new RA.Layer({ id: 'G', role: 'lead', pattern: { id: 'g', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, beats);
+      return { layer, played: layer.played.filter((e) => e.kind === 'synth') };
+    };
+    const code = "grid('g', [\"@>a1 a3 a5\"], { a: 'pluck' }, { oitava: 1 })";
+    const { layer, played } = run(code);
+    assert(layer.grids.g && layer.grids.g.w === 3, 'the layer keeps its grids');
+    equal(played.slice(0, 3).map((e) => e.notes[0]), [57, 60, 64], 'degrees 1 3 5 of the first chord (D dorian on A: A C E)');
+    // a turn of 16 steps on 3 cells: the next turn starts on the second cell (it carries on)
+    equal(played.find((e) => e.beat === 4).notes[0], 60);
+    // bar 4 is the next chord (degree 3 of the progression): its root
+    equal(played.find((e) => e.beat === 16).notes[0], harmony.degree(3 + ((16 * 4) % 3 === 0 ? 0 : (16 * 4) % 3 === 1 ? 2 : 4), 1));
+    const steps = RA.Theory.SCALES.dorian;
+    assert(played.every((e) => steps.includes(RA.MathUtil.mod(e.notes[0] - harmony.key, 12))), 'never out of the mode');
+    // the same code, twice, from scratch: the same notes at the same times (chance included)
+    const busy = "grid('g', ['@>a1 ?a3 . a5%', '. ?a2 a4* .', '@<a6 . ?a1 ~'], { a: 'pluck' }, { semente: 9 })";
+    const sig = (p) => p.map((e) => `${e.beat}:${e.notes[0]}:${e.dur}`).join(' ');
+    equal(sig(run(busy).played), sig(run(busy).played), 'copy and paste plays the same');
+    assert(makeCoder(harmony).probe(busy).ok && makeCoder(harmony).probe(busy).grids.g, 'the probe runs it');
+    // a held note (~) lasts its steps; a ratchet plays twice in its step
+    const tie = run("grid('g', ['@>a1 ~ ~ a3 a5* . . . . . . . . . . .'], { a: 'pluck' })", 4).played;
+    equal([tie[0].dur, tie[1].beat, tie[2].beat, tie[3].beat], [0.75, 0.75, 1, 1.125]);
+    // mute() silences the grid's sound like any other; errors come back as errors
+    const muted = run("mute('pluck')\ngrid('g', ['@>a1 a3'], { a: 'pluck' })", 4).played;
+    assert(muted.length && muted.every((e) => e.silent === 'mute'), 'muted');
+    const bad = makeCoder(harmony).probe("grid('g', ['@>a1 b3'], { a: 'pluck' })");
+    assert(!bad.ok && /não está nos sons/.test(bad.error), bad.error);
+  });
+
   runner.test('Sequencer lines: mute() and hits() rows round-trip in the code', () => {
     const CT = RA.CodeTools;
     const base = "fx({ amp: 0.8 })\nloop('kit', (i) => {\n  s('bd', { n: 1 })\n  sleep(1)\n})";

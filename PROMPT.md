@@ -243,6 +243,13 @@ loop('name', (i) => {
 - `fx({ lpf, res, rev, delay, amp, wobble, crush })`: the layer's filter, reverb send (0..0.7), delay send (0..0.6), level, tape wobble (0..0.9, pitch drift) and bit-crush (0..0.6). At the top level it sets the layer. Inside a loop it changes it at that moment.
 - `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or changes a sound (the fields of `SoundFields`; `{ layers: [...] }` for a sound made of parts). A third argument `{ substitui: '808bd:5' }` makes it play instead of that sample (always). The radio writes these lines itself, so patterns don't need them. Every sound lives in its own file, `instrumentos/<instrument>/<group>/<name>.inst`.
 - `setup({ bpm, key, mode, progression, chordBars })`: the tempo and harmony of a whole program. The full code starts with it; pasting the full code back ([COLAR]) applies it.
+- `grid(name, rows, sounds, opts)`: a loop with memory, top level. Each turn its cursors walk `ciclo` steps (16 sixteenths by default) of a grid and play what they land on; the next turn carries on from there. Rows are strings of cells separated by spaces; `sounds` maps letters to instruments of the Instrumentos panel; degrees follow the current chord and never leave the mode.
+  ```js
+  grid('bat', ['@>K h% h h% Ks h% h h% K h% h h% Ks h% o h*'],
+    { k: 'bombo_808bd_05', s: 'tarola_808sd_12', h: 'hihat_808_01', o: 'hihat_aberto_808oh_00' })
+  grid('303', ["@>B1 .  1' .  3  B1 ~  5,  1  .  B4 1' ~  .  7, 1"], { b: 'acid_303' }, { tom: 'b', oitava: 0 })
+  ```
+  Cells: `@` a cursor starts (with `> < ^ v` its direction; 4 at most), `> < ^ v` turn, `?` a direction by chance, `.` rest, `#` skipped (no time), `=` wait for the next bar, `~` hold the note, `a`–`z` a sound (`v` is never a sound), `A`–`Z` accented, `kh` together, `1`–`7` a degree for the `tom` sound, `b3` sound b on degree 3, `'` `,` an octave up/down, `*` ratchet, `%` half the time. Chance comes from the grid's `semente` (seed), so the probe, the sound and a pasted copy walk the same way. Options: `passo` (beats per step), `ciclo` (steps per turn), `tom`, `oitava`, `graus` ('acorde' or 'tom'), `fixo`, `acorde` (3 or 4: chord stabs), `dur`, `vol`, `semente`, `tipo` ('instrumento', 'maestro', 'efeitos').
 - `params({ name: value, ... })`: top level, what the radio may vary in this layer; the code reads `P.name`.
 - **Harmony.** Always use these; never write note names.
   - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 4-8 bars in space, 8-16 in acid, dub and ae).

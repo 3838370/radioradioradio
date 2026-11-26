@@ -88,6 +88,9 @@ export class CodeTools {
         if (!line.includes('synth(')) continue;
         for (const [, w] of line.matchAll(/'(\w+)'/g)) if (set.has(w)) names.push(w);
       }
+      // the sounds of a grid(): its map { k: 'bombo_808bd_05', ... } (the rows are cells, never
+      // sound names)
+      if (/\bgrid\(/.test(code)) for (const [, w] of code.matchAll(/:\s*'(\w+)'/g)) if (set.has(w)) names.push(w);
     }
     return [...new Set(names)];
   }

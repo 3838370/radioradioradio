@@ -41,13 +41,14 @@ export class LiveCoder {
       this.compiling = null;
       return { ok: false, error: e.message };
     }
-    const { fx, mute, params } = this.compiling;
+    const { fx, mute, params, grids } = this.compiling;
     this.compiling = null;
     if (!Object.keys(defined).length) return { ok: false, error: 'no loop() defined' };
 
     const start = startBeat != null ? startBeat : Math.ceil(this.scheduler.clock.beat / 4) * 4;
     layer.define(defined, start);
     layer.params = params || {};
+    layer.grids = grids || {}; // its grid()s, read: name -> Grid.parse(...)
     layer.mutes = new Set(mute || []);
     layer.hand = new Set(CodeTools.hitsKeys(code));
     layer.prevGood = layer.code || null;
@@ -139,11 +140,12 @@ export class LiveCoder {
     this.inProbe = true; // side effects such as inst() are skipped while probing
     let error = null;
     this.compiling = { defined, fx: null, params: null };
-    let params = {};
+    let params = {}, grids = {};
     try {
       this.compile(code)(this.env);
       if (!Object.keys(defined).length) throw new Error('no loop() defined');
       params = this.compiling.params || {};
+      grids = this.compiling.grids || {};
       this.compiling = null;
       this.probing = found;
       const layer = { id: 'probe', vars: new Map(), params };
@@ -160,7 +162,7 @@ export class LiveCoder {
       error = e.message;
     }
     Object.assign(this, saved);
-    return { ok: !error, error, samples: [...found].map((k) => JSON.parse(k)), lengths, params };
+    return { ok: !error, error, samples: [...found].map((k) => JSON.parse(k)), lengths, params, grids };
   }
 
   noteSample(name, n) {

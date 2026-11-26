@@ -2,7 +2,7 @@ import { Theme } from './Theme.js';
 
 // CodeHighlighter: tokenizes code lines for colouring and hard-wraps them to a column width.
 export class CodeHighlighter {
-  static KEYWORDS = new Set(['loop', 'sleep', 's', 'synth', 'fx', 'if', 'else', 'for', 'const', 'let']);
+  static KEYWORDS = new Set(['loop', 'grid', 'sleep', 's', 'synth', 'fx', 'if', 'else', 'for', 'const', 'let']);
   static LIVE = new Set(['KEY', 'ROOT', 'QUAL', 'MODE', 'ENERGY', 'BAR', 'BPM']);
 
   constructor() {

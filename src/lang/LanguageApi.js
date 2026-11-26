@@ -1,5 +1,6 @@
 import { MathUtil } from '../core/MathUtil.js';
 import { Rng } from '../core/Rng.js';
+import { Grid } from './Grid.js';
 import { Ring } from './Ring.js';
 import { Theory } from './Theory.js';
 import { BeatGen } from '../music/BeatGen.js';
@@ -29,6 +30,7 @@ import { Phrase } from '../music/Phrase.js';
 //   beat(name, { style, density })  swing(step, k, amount)
 //   chords(name, opts)  bassline(name, opts)  collage(name, opts)  drone(name, opts)  motif(name, opts)  tape(name)
 //   melody(name, { style: 'ostinato' | 'drift' | 'probability' | 'cells', octave, beats })
+//   grid(name, ['@>K . h .', ...], { k: 'bombo_808bd_05', h: ... }, { passo, ciclo, tom, ... })
 //   KEY ROOT QUAL MODE ENERGY BAR BPM
 //
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
@@ -135,6 +137,76 @@ export class LanguageApi {
     });
   }
 
+  // ───── grid() ─────
+
+  // A drum or percussion sound (it plays at its own pitch, degrees don't move it).
+  isDrum(name) {
+    const m = this.instruments && this.instruments.info(name);
+    return !!m && (m.role === 'bateria' || m.role === 'percussao' || !!m.replaces);
+  }
+
+  // The scale step a grid degree (1-7) plays at `bar`: from the chord's root, or from the
+  // key's tonic with graus: 'tom'; on strong beats near a chord tone with fixo: true.
+  gridStep(g, degree, bar, beatInBar) {
+    const o = g.opts;
+    let step = (o.graus === 'tom' ? 0 : this.harmony.degreeAt(bar)) + degree - 1;
+    if (o.fixo && Math.abs(beatInBar - Math.round(beatInBar)) < 1e-6) step = this.harmony.snapToChord(step, bar);
+    return step;
+  }
+
+  // One turn of a grid's loop: walks its cursors through `ciclo` steps (from where they
+  // stopped last time, kept in the layer's store) and plays what they land on through
+  // synth(), so the sequencer, the card's lights, mute() and solo see it as any other sound.
+  playGrid(g) {
+    const it = this.coder.cur;
+    if (!it) return;
+    const o = g.opts;
+    const len = o.ciclo * o.passo;
+    if (o.tipo !== 'instrumento') { it.sleep(len); return; } // maestro and efeitos: phase 7
+    const store = this.vars();
+    const key = 'grid:' + g.name;
+    const state = Grid.keep(g, store.get(key));
+    store.set(key, state);
+    const step0 = state.step;
+    const { hits, path } = Grid.walk(g, state, o.ciclo);
+    // where the cursors were, step by step, for the GRELHA view (a few turns back)
+    state.trace.push({ start: it.start + it.cursor, passo: o.passo, step0, path });
+    if (state.trace.length > 4) state.trace.shift();
+    const base = it.cursor;
+    try {
+      for (const h of hits) {
+        const at = base + h.k * o.passo;
+        const beat = it.start + at;
+        const bar = Math.floor(beat / 4 + 1e-6);
+        for (const hit of h.cell.hits) {
+          const snd = g.sounds[hit.letter || o.tom];
+          if (!snd) continue;
+          const acc = hit.accent ? 1.3 : 1;
+          let notes, opts;
+          if (this.isDrum(snd.som)) {
+            notes = [60];
+            opts = { amp: 0.4 * o.vol * snd.vol * acc };
+          } else {
+            const step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4);
+            const octave = o.oitava + hit.octave;
+            const size = o.acorde >= 4 ? 4 : o.acorde ? 3 : 1;
+            notes = [];
+            for (let k = 0; k < size; k++) notes.push(this.harmony.degree(step + 2 * k, octave));
+            opts = { amp: 0.3 * o.vol * snd.vol * acc, dur: (o.dur + h.hold) * o.passo };
+          }
+          const n = h.cell.ratchet;
+          for (let r = 0; r < n; r++) {
+            it.cursor = at + (r * o.passo) / n;
+            this.env.synth(snd.som, notes, n > 1 && opts.dur ? Object.assign({}, opts, { dur: opts.dur / n }) : opts);
+          }
+        }
+      }
+    } finally {
+      it.cursor = base;
+    }
+    it.sleep(len);
+  }
+
   buildEnv() {
     const { coder, audio, harmony, clock } = this;
     const self = this;
@@ -150,6 +222,22 @@ export class LanguageApi {
       },
 
       sleep(beats) { if (coder.cur) coder.cur.sleep(beats); },
+
+      // grid('bat', ['@>K . h . S . h .'], { k: 'bombo_808bd_05', s: ..., h: ... }, { passo: 1/4 }):
+      // a loop with memory. Each turn its cursors walk `ciclo` steps of the grid, playing what
+      // they land on, and the next turn carries on from there. Top level only. The symbols are
+      // in Grid.js (and Entregas\grelha-especificacao.md).
+      grid(name, rows, sounds = {}, opts = {}) {
+        if (!coder.compiling) throw new Error('grid() só pode estar no nível de cima do código');
+        const g = Grid.parse(name, rows, sounds, opts);
+        if (self.instruments && self.instruments.names().length) {
+          for (const s of Object.values(g.sounds)) {
+            if (!self.instruments.has(s.som)) throw new Error(`grid('${name}'): o som '${s.som}' não existe no painel INSTRUMENTOS`);
+          }
+        }
+        (coder.compiling.grids = coder.compiling.grids || {})[name] = g;
+        coder.compiling.defined[name] = () => self.playGrid(g);
+      },
 
       // inst('name', { osc: [...], attack, release, cutoff, ... }): defines or changes a sound
       // (the same recipe the INSTRUMENTOS panel edits; { layers: [...] } for a sound made of

@@ -21,6 +21,7 @@ export * from './core/Rng.js';
 export * from './core/Settings.js';
 export * from './core/Store.js';
 export * from './lang/CodeTools.js';
+export * from './lang/Grid.js';
 export * from './lang/Iteration.js';
 export * from './lang/LanguageApi.js';
 export * from './lang/Layer.js';
