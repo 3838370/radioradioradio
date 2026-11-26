@@ -36,7 +36,8 @@ import { Phrase } from '../music/Phrase.js';
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 export class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng(), onSetup = null }) {
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng(), onSetup = null, arc = null }) {
+    this.arc = arc;         // the Arc, for maestro grids (sections)
     this.onSetup = onSetup; // setup({ bpm, key, mode, progression, chordBars }): the App applies it
     this.settings = settings; // the feel parameters (humanTime, humanVel)
     this.genres = genres;   // () => the genre weights, for collage()'s default pool
@@ -162,11 +163,12 @@ export class LanguageApi {
     if (!it) return;
     const o = g.opts;
     const len = o.ciclo * o.passo;
-    if (o.tipo !== 'instrumento') { it.sleep(len); return; } // maestro and efeitos: phase 7
     const store = this.vars();
     const key = 'grid:' + g.name;
     const state = Grid.keep(g, store.get(key));
     store.set(key, state);
+    if (o.tipo === 'maestro') return this.playMaestro(g, state, it, len);
+    if (o.tipo === 'efeitos') return this.playEffects(g, state, it, len);
     const step0 = state.step;
     const { hits, path } = Grid.walk(g, state, o.ciclo);
     // where the cursors were, step by step, for the GRELHA view (a few turns back)
@@ -187,7 +189,9 @@ export class LanguageApi {
             notes = [60];
             opts = { amp: 0.4 * o.vol * snd.vol * acc };
           } else {
-            const step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4);
+            // a letter alone (A, C) walks an arpeggio of the chord: root, 3rd, 5th, octave
+            const arp = hit.degree == null && !o.acorde ? [0, 2, 4, 7][(state.arp = (state.arp || 0) + 1) % 4] : 0;
+            const step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4) + arp;
             const octave = o.oitava + hit.octave;
             const size = o.acorde >= 4 ? 4 : o.acorde ? 3 : 1;
             notes = [];
@@ -204,6 +208,79 @@ export class LanguageApi {
     } finally {
       it.cursor = base;
     }
+    it.sleep(len);
+  }
+
+  // A maestro grid's turn: one column per step (a bar by default). Row 1 sets the chord (a
+  // degree 1-7; '.' keeps the last), row 2 the arc's section (letters, Grid.SECTIONS). Each
+  // column is set for its own bar and again a bar ahead, so every other layer's turn for
+  // that bar already finds it (turns of the same bar run in any order).
+  playMaestro(g, state, it, len) {
+    const o = g.opts;
+    const path = [];
+    const live = !this.coder.inProbe; // a probe (code checked without sound) conducts nothing
+    const set = (col, bar) => {
+      const chord = g.rows[0][col].raw;
+      if (/^[1-7]$/.test(chord)) state.chord = +chord - 1;
+      if (live && state.chord != null) this.harmony.conduct(bar, state.chord);
+      const sec = g.rows[1] && Grid.SECTIONS[g.rows[1][col].raw];
+      if (live && sec && this.arc) this.arc.conduct(bar, sec);
+    };
+    for (let k = 0; k < o.ciclo; k++) {
+      const col = state.step % g.w;
+      const beat = it.start + it.cursor + k * o.passo;
+      const bar = Math.floor(beat / 4 + 1e-6);
+      set(col, bar);
+      // a bar ahead: the next column when a step is a bar or more, else this one again
+      const next = o.passo >= 4 ? (col + 1) % g.w : col;
+      set(next, Math.floor((beat + Math.max(4, o.passo)) / 4 + 1e-6));
+      path.push(g.rows.map((_, y) => [col, y]));
+      state.step++;
+    }
+    state.trace.push({ start: it.start + it.cursor, passo: o.passo, step0: state.step - o.ciclo, path });
+    if (state.trace.length > 4) state.trace.shift();
+    it.sleep(len);
+  }
+
+  // An effects grid's turn: one column per step (a sixteenth by default), all rows at once.
+  // A curve row (filtro, reverb, crush, volume, delay, wobble) moves the layer's own setting
+  // to 0-9 of its range ('.' leaves it); a pads row fires pad 1-8 on the whole mix, held one
+  // step more for each ~ after it.
+  playEffects(g, state, it, len) {
+    const o = g.opts;
+    const base = it.cursor;
+    const path = [];
+    try {
+      for (let k = 0; k < o.ciclo; k++) {
+        const col = state.step % g.w;
+        it.cursor = base + k * o.passo;
+        const fx = {};
+        o.linhas.forEach((name, y) => {
+          const raw = g.rows[y][col].raw;
+          if (name === 'pads') {
+            if (!/^[1-8]$/.test(raw)) return;
+            let held = 1;
+            for (let j = 1; j < g.w && g.rows[y][(col + j) % g.w].raw === '~'; j++) held++;
+            const pad = (this.fx && this.fx.constructor.PADS || [])[+raw - 1];
+            if (pad) this.env.pad(pad.id, held * o.passo);
+            return;
+          }
+          if (!/^\d$/.test(raw)) return;
+          const c = Grid.CURVES[name];
+          const v = Grid.curveValue(c, +raw);
+          if (state.curves && state.curves[name] === v) return; // already there: nothing to send
+          (state.curves = state.curves || {})[name] = v;
+          fx[c.key] = Math.round(v * 1000) / 1000;
+        });
+        if (Object.keys(fx).length) this.env.fx(fx);
+        path.push(g.rows.map((_, y) => [col, y]));
+        state.step++;
+      }
+    } finally {
+      it.cursor = base;
+    }
+    state.trace.push({ start: it.start + base, passo: o.passo, step0: state.step - o.ciclo, path });
+    if (state.trace.length > 4) state.trace.shift();
     it.sleep(len);
   }
 

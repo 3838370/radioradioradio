@@ -464,7 +464,10 @@
     const err = (f) => { try { f(); } catch (e) { return e.message; } return ''; };
     assert(/máximo 4/.test(err(() => G.parse('t', ['@a @a @a @a @a'], { a: 'x' }))), 'at most 4 cursors');
     assert(/não está nos sons/.test(err(() => G.parse('t', ['@>z'], { a: 'x' }))), 'unknown letter');
-    assert(/falta um @/.test(err(() => G.parse('t', ['a .'], { a: 'x' }))), 'needs a cursor');
+    // with no @, a cursor starts at the top left; it reads like text (4×4 = 16 steps)
+    equal(G.parse('t', ['a .'], { a: 'x' }).starts, [{ x: 0, y: 0, dir: '>' }]);
+    const four = G.parse('t', ['> K S H', 'K ? . S', 'H K . v', '. S H H'], { k: 'x', s: 'y', h: 'z' });
+    equal(G.walk(four, G.init(four), 6).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 3,0 0,1 1,1');
     assert(/não serve/.test(err(() => G.parse('t', ['@>a'], { v: 'x' }))), 'v is the down arrow, not a sound');
     const steps = (rows, n, opts = {}) => {
       const g = G.parse('t', rows, { a: 'x', b: 'y' }, opts);
@@ -533,6 +536,44 @@
     const grown = CT.setGridCell(code, '303', 5, 0, 'b2');
     equal(CT.gridCells(grown, '303')[0], ['@>B1', '.', "1'", '.', '.', 'b2']);
     assert(makeCoder().probe(grown).ok, 'still valid');
+  });
+
+  runner.test('Maestro and effects grids: chords and sections bar by bar; curves and pads', () => {
+    const harmony = new RA.Harmony();
+    const arc = new RA.Arc(new RA.Rng(1));
+    const events = [], fxCalls = [], pads = [];
+    class FakeFx { static PADS = RA.FxRack.PADS; pulse(id, secs) { pads.push([id, secs]); } }
+    const clock = new RA.Clock(120);
+    const coder = new RA.LiveCoder({ scheduler: { clock, at: (beat, fn) => events.push([beat, fn]) }, audio: { bus: () => ({ setFx: (p) => fxCalls.push(p) }), createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+    coder.attach(new RA.LanguageApi({ coder, audio: { bus: () => ({ setFx: (p) => fxCalls.push(p) }), playSynth() {} }, harmony, clock, energy: () => 0.5, arc, fx: new FakeFx() }));
+    const maestro = new RA.Layer({ id: 'M', role: 'texture', pattern: { id: 'm', code: '' } });
+    const r = coder.load(maestro, "grid('m', ['1 . 4 5', 'b . p .'], {}, { tipo: 'maestro' })", 0);
+    assert(r.ok, r.error);
+    const lead = new RA.Layer({ id: 'L', role: 'lead', pattern: { id: 'l', code: '' } });
+    coder.load(lead, "grid('l', ['@>a1 . . .'], { a: 'pluck' })", 0);
+    coder.pump(0, 16);
+    equal([0, 1, 2, 3].map((b) => harmony.degreeAt(b)), [0, 0, 3, 4], 'the chords follow the maestro (. keeps the last)');
+    equal([arc.conductedAt(0), arc.conductedAt(1), arc.conductedAt(2)], ['build', 'build', 'peak']);
+    arc.advanceBar(2);
+    equal(arc.section, 'peak', 'the arc goes where the maestro says');
+    const atBar2 = lead.played.find((e) => e.beat === 8);
+    equal(atBar2.notes[0], harmony.degree(3, 1), 'another layer plays on the maestro\'s chord');
+    // when the maestro stops, the progression comes back; checking its code conducts nothing
+    equal(harmony.conducting(40), false);
+    const h2 = new RA.Harmony();
+    const c2 = makeCoder(h2);
+    assert(c2.probe("grid('m', ['3 4'], {}, { tipo: 'maestro' })").ok && !h2.conducting(0), 'the probe leaves the harmony alone');
+    // effects: filter and reverb curves (the CAMADA ranges), a pad held for 3 steps
+    events.length = 0;
+    const fxl = new RA.Layer({ id: 'X', role: 'texture', pattern: { id: 'x', code: '' } });
+    const rx = coder.load(fxl, "grid('fx', ['9 . . . 0 . . . . . . . . . . .', '. . 4 . . . . . . . . . . . . .', '. 2 ~ ~ . . . . . . . . . . . .'], {}, { tipo: 'efeitos', linhas: ['filtro', 'reverb', 'pads'] })", 16);
+    assert(rx.ok, rx.error);
+    coder.pump(16, 20);
+    for (const [beat, fn] of events) fn(beat * 0.5, 0.5);
+    equal(fxCalls.map((p) => JSON.stringify(p)), ['{"lpf":16000}', '{"rev":0.356}', '{"lpf":100}']);
+    equal(pads, [['dub', 0.75 * 0.5]], 'pad 2 (DUB ECHO) for 3 steps');
+    const bad = makeCoder().probe("grid('fx', ['1 2'], {}, { tipo: 'efeitos', linhas: ['brilho'] })");
+    assert(!bad.ok && /brilho/.test(bad.error), bad.error);
   });
 
   runner.test('Freeze into a grid: what a layer played comes back the same from the grid', () => {

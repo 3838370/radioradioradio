@@ -264,7 +264,7 @@ export class App {
     this.coder = new LiveCoder({ scheduler: this.scheduler, audio: this.audio, emitter: this.emitter, logger: this.logger });
     this.coder.attach(new LanguageApi({
       coder: this.coder, audio: this.audio, harmony: this.harmony, clock: this.clock, fx: this.fx, rng: this.rng,
-      instruments: this.instruments, settings: this.settings,
+      instruments: this.instruments, settings: this.settings, arc: this.arc,
       onSetup: (cfg) => this.applySetup(cfg),
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
@@ -449,22 +449,14 @@ export class App {
     const layer = deck.find(id);
     if (!layer || Object.keys(layer.grids || {}).length) return;
     const beat = this.clock.beatAt(this.audio.ac.currentTime);
-    // the loop that plays most of its sounds sets the cycle
-    const count = new Map();
-    for (const e of layer.played) if (e.beat > beat - 16 && e.beat <= beat) count.set(e.loop, (count.get(e.loop) || 0) + 1);
-    const main = [...count].sort((a, b) => b[1] - a[1])[0];
-    if (!main) { this.logger.add('congelar: esta camada ainda não tocou nada'); return; }
-    const w = SequencerView.window(layer, main[0], beat);
-    const start = w.start - w.len >= 0 ? w.start - w.len : w.start; // the last whole cycle
+    // the last whole bar, as the 4×4 grid the GRELHA view shows
     const f = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
-    const r = f.freeze(layer.played, start, w.steps, GridFreeze.fxLine(layer.code));
-    if (!Object.keys(r.sounds).length) { this.logger.add(`congelar: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
+    const r = f.compact(layer.played, (Math.floor(beat / 4) - 1) * 4, GridFreeze.fxLine(layer.code));
+    if (r.empty) { this.logger.add(`congelar: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
     const before = layer.code;
     const res = deck.liveEdit(id, CodeTools.withInstruments(r.code, this.instruments), { desc: 'congelada em grelha', final: true });
     if (!res.ok) { this.logger.add(`congelar: ${res.error}`, 'err'); return; }
     layer.frozenFrom = before;
-    if (r.left.length) this.logger.add(`congelar: ficaram de fora (sem som em código): ${r.left.join(', ')}`);
-    if (r.offKey) this.logger.add(`congelar: ${r.offKey} nota(s) fora do modo foram para a nota do modo mais perto`);
   }
 
   // [↺ original]: a frozen layer back to the code it had before.
@@ -774,7 +766,9 @@ export class App {
         const flashes = layers.map((l) => (this.grid.cards.get(l.id) || {}).flashAt || 0);
         this.fullCode.draw(p, 12, top, p.width - 24, stageH - 34, m, this.fullCodeText(), flashes, now);
       } else if (this.view === 'grid') {
-        this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now);
+        if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
+        this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now,
+          { bpm: this.clock.bpm, bar: this.composer.bar, nextMove: this.composer.nextMove, interval: this.composer.interval() });
       } else {
         this.seq.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now);
       }

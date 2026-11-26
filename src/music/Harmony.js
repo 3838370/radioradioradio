@@ -79,8 +79,24 @@ export class Harmony {
   steps() { return Theory.SCALES[this.mode] || Theory.SCALES.aeolian; }
 
   degreeAt(bar) {
+    if (this.conducting(bar)) {
+      let best = null;
+      for (const [b, d] of this.conducted) if (b <= bar && (!best || b > best[0])) best = [b, d];
+      if (best) return best[1];
+    }
     return this.prog[MathUtil.mod(Math.floor(bar / this.barsPerChord), this.prog.length)];
   }
+
+  // A maestro grid sets the chord bar by bar (a scale degree, 0 = tonic). It holds while the
+  // grid keeps conducting (a bar ahead); when it stops, the progression takes over again.
+  conduct(bar, degree) {
+    if (!this.conducted) this.conducted = new Map();
+    this.conducted.set(bar, degree);
+    this.conductedUntil = Math.max(this.conductedUntil == null ? -1 : this.conductedUntil, bar + 1);
+    if (this.conducted.size > 64) for (const b of [...this.conducted.keys()].sort((x, y) => x - y).slice(0, 32)) this.conducted.delete(b);
+  }
+
+  conducting(bar) { return this.conductedUntil != null && bar <= this.conductedUntil && !!this.conducted; }
 
   // degree(0, 0) is KEY itself; degree(2, 1) is the mode's third, one octave up.
   degree(d, octave = 1) {

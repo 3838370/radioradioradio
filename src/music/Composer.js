@@ -381,6 +381,7 @@ export class Composer {
 
   // A new progression within the genre (sometimes a key move too), from the next 4 bars.
   reharmonize(bar) {
+    if (this.harmony.conducting(bar)) return; // a maestro grid sets the chords
     const change = this.harmony.reharm(this.genre, this.rng, this.settings.get('key') === 'auto' ? this.settings.get('modulate') : 0);
     if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
     this.harmony.request(change);

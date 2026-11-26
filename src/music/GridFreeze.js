@@ -120,6 +120,53 @@ export class GridFreeze {
     return { code, sounds, steps, left: [...left], offKey };
   }
 
+  // The class (and letter) of a sound in a 4×4 grid: K kick, S snare / clap, H hat / cymbal,
+  // P other percussion, C chord, A a note line.
+  classOf(inst, notes) {
+    const m = this.lib.info(inst) || {};
+    if (this.isDrum(inst)) return { bombos: 'k', tarolas: 's', claps: 's', hihats: 'h', pratos: 'h' }[m.group] || 'p';
+    return notes && notes.length >= 3 ? 'c' : 'a';
+  }
+
+  // A bar (16 steps from `start`) as a 4×4 grid, one symbol per cell (the GRELHA view and
+  // the "congelar" button): where several sounds share a step, K before S before H before P
+  // before C before A. -> { rows: ['k . s h', ...] (4), sounds: { k: name, ... }, legend,
+  // code, empty }
+  compact(events, start, fxLine = '', name = 'grelha') {
+    const order = ['k', 's', 'h', 'p', 'c', 'a'];
+    const cells = new Array(16).fill('.');
+    const sounds = {};
+    const amps = [];
+    for (const e of events) {
+      if (e.silent || e.beat < start - 1e-6 || e.beat >= start + 4 - 1e-6) continue;
+      const inst = this.instrumentOf(e);
+      if (!inst) continue;
+      const cls = this.classOf(inst, e.notes);
+      if (!sounds[cls]) sounds[cls] = inst;
+      if (sounds[cls] !== inst) continue; // one sound per letter
+      const k = Math.min(15, Math.max(0, Math.round((e.beat - start) * 4)));
+      const cur = cells[k].toLowerCase();
+      if (cur === '.' || order.indexOf(cls) < order.indexOf(cur)) cells[k] = cls;
+      amps.push([k, e.amp != null ? e.amp : 0.5]);
+    }
+    // accents: the loudest quarter, upper case
+    const sorted = amps.map((a) => a[1]).sort((a, b) => a - b);
+    const loud = sorted.length > 3 ? sorted[Math.floor(sorted.length * 0.75)] : Infinity;
+    for (const [k, a] of amps) if (a >= loud && cells[k] !== '.') cells[k] = cells[k].toUpperCase();
+    const rows = [0, 1, 2, 3].map((r) => cells.slice(r * 4, r * 4 + 4).join(' '));
+    const letters = Object.keys(sounds);
+    const drums = letters.filter((l) => 'kshp'.includes(l)).map((l) => l.toUpperCase());
+    const tonal = letters.filter((l) => 'ca'.includes(l)).map((l) => l.toUpperCase());
+    const legend = [drums.length ? drums[0] + (drums.length > 1 ? ' + ' + drums.slice(1).join('/') : '') : '', tonal.join('/')].filter(Boolean).join(' · ');
+    const tom = sounds.c ? 'c' : sounds.a ? 'a' : null;
+    const opts = [`passo: 1/4`];
+    if (tom) opts.push(`tom: '${tom}'`);
+    if (sounds.c) opts.push('acorde: 3');
+    const list = letters.map((l) => `${l}: '${sounds[l]}'`).join(', ');
+    const code = (fxLine ? fxLine + '\n' : '') + `grid('${name}', [\n${rows.map((r) => `  '${r}',`).join('\n')}\n], { ${list} }, { ${opts.join(', ')} })`;
+    return { rows, sounds, legend, code, empty: !letters.length };
+  }
+
   // The fx(...) line at the head of a layer's code, to keep the sound's colour.
   static fxLine(code) {
     const m = /^fx\(\{[^\n]*\}\)\s*$/m.exec(CodeTools.withoutCoded(code));

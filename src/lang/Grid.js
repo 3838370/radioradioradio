@@ -18,6 +18,24 @@ export class Grid {
   static MAX_CURSORS = 4;
   static MOVES = { '>': [1, 0], '<': [-1, 0], '^': [0, -1], v: [0, 1] };
   static TYPES = ['instrumento', 'maestro', 'efeitos'];
+  // what each row of an effects grid can move: the layer's settings (the CAMADA tab's ranges;
+  // lpf on a log scale) or the effect pads
+  static CURVES = {
+    filtro: { key: 'lpf', lo: 100, hi: 16000, log: true },
+    reverb: { key: 'rev', lo: 0, hi: 0.8 },
+    crush: { key: 'crush', lo: 0, hi: 0.8 },
+    volume: { key: 'amp', lo: 0, hi: 1.5 },
+    delay: { key: 'delay', lo: 0, hi: 0.7 },
+    wobble: { key: 'wobble', lo: 0, hi: 1 },
+  };
+  // a maestro grid's section letters
+  static SECTIONS = { s: 'sparse', d: 'drift', b: 'build', t: 'tension', u: 'surge', p: 'peak', r: 'dread', x: 'suspense', l: 'release', c: 'collapse' };
+
+  // A curve cell's value (0-9) in its setting's range.
+  static curveValue(curve, digit) {
+    const t = Math.max(0, Math.min(9, digit)) / 9;
+    return curve.log ? curve.lo * Math.pow(curve.hi / curve.lo, t) : curve.lo + (curve.hi - curve.lo) * t;
+  }
 
   // A number from a name: the seed when the code gives none.
   static seedOf(text) {
@@ -108,8 +126,15 @@ export class Grid {
           if (!h.letter && h.degree != null && !tom) throw new Error(`${where}: um grau sem som (falta a opção tom)`);
         }
       }));
-      if (!starts.length) throw new Error(`${where}: falta um @ (onde começa o cursor)`);
+      // no @: one cursor starts at the top left, going the way its cell points (or right)
+      if (!starts.length) { const c0 = cells[0][0]; starts.push({ x: 0, y: 0, dir: c0.dir && c0.dir !== '?' ? c0.dir : '>' }); }
       if (starts.length > Grid.MAX_CURSORS) throw new Error(`${where}: ${starts.length} cursores (máximo ${Grid.MAX_CURSORS})`);
+    } else if (type === 'efeitos') {
+      const names = opts.linhas || [];
+      if (names.length !== cells.length) throw new Error(`${where}: diz o que cada linha mexe, com linhas: [...] (${cells.length} linhas, ${names.length} nomes)`);
+      for (const n of names) if (!Grid.CURVES[n] && n !== 'pads') throw new Error(`${where}: linha '${n}' (filtro, reverb, crush, volume, delay, wobble ou pads)`);
+    } else if (cells.length > 2) {
+      throw new Error(`${where}: o maestro tem 1 ou 2 linhas (acordes, secções)`);
     }
     const o = Object.assign({ tipo: type, passo: type === 'maestro' ? 4 : 0.25, ciclo: type === 'maestro' ? 1 : 16, oitava: 1, graus: 'acorde', fixo: false, acorde: 0, dur: 1, vol: 1 }, opts, { tom });
     o.passo = Math.max(1 / 16, +o.passo || 0.25);
@@ -121,9 +146,14 @@ export class Grid {
 
   static at(g, c) { return g.rows[c.y][c.x]; }
 
+  // Off the right edge the cursor goes on at the start of the next row (it reads like text:
+  // a 4×4 grid is 16 steps); off the left edge, the end of the row above; up and down wrap
+  // around the column.
   static move(g, c) {
     const [dx, dy] = Grid.MOVES[c.dir] || Grid.MOVES['>'];
-    return { x: (c.x + dx + g.w) % g.w, y: (c.y + dy + g.h) % g.h, dir: c.dir };
+    let x = c.x + dx, y = c.y + dy;
+    if (x >= g.w) { x = 0; y++; } else if (x < 0) { x = g.w - 1; y--; }
+    return { x, y: (y + g.h) % g.h, dir: c.dir };
   }
 
   // A fresh state: the cursors on their @, step 0.
