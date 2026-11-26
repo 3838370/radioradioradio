@@ -27,6 +27,7 @@ export class Input {
       const b = this.app.fullCode.hit(mx, my);
       if (b && b.type === 'copy') this.app.copyFullCode();
       if (b && b.type === 'paste') this.app.pasteFullCode();
+      if (b && b.type === 'edit') this.app.openFullCodeEditor();
       if (this.app.fullCode.contains(mx, my)) return;
     }
     if (this.app.view === 'seq') {

@@ -650,12 +650,13 @@ export class App {
 
   // ───── views: cards → full code → sequencer → grid → cards ─────
 
-  static VIEWS = ['cards', 'code', 'seq', 'grid'];
+  static VIEWS = ['cards', 'grid', 'code', 'seq'];
   static VIEW_NAMES = { cards: 'CARTÕES', code: 'CÓDIGO COMPLETO', seq: 'SEQUENCIADOR', grid: 'GRELHA' };
 
   nextView() {
     if (this.editor.isOpen) this.editor.commit();
     if (this.editor.isOpen) return; // its code has an error: stay until it's fixed or closed
+    if (this.fullEditor) this.fullEditor.close(); // the full-code editor belongs to its view
     const V = App.VIEWS;
     this.view = V[(V.indexOf(this.view) + 1) % V.length];
   }
@@ -766,6 +767,33 @@ export class App {
   }
 
   // [COLAR]: a program copied from the full code goes back into the radio.
+  // [EDITAR] in the full code: the whole program in an editor over the stage. Ctrl+Enter
+  // runs it (as [COLAR]: every layer from its section, locked); Esc closes without change.
+  openFullCodeEditor() {
+    if (this.fullEditor || !this.composer) return;
+    const p = this.p;
+    const top = Hud.HEIGHT + 10;
+    const box = p.createDiv().addClass('editor').parent(this.stage);
+    box.position(12, top);
+    box.size(p.width - 24, p.height - top - 104 - 8 - 34);
+    const ta = p.createElement('textarea', '').parent(box);
+    ta.elt.value = this.fullCodeText();
+    ta.elt.spellcheck = false;
+    const status = p.createDiv('código completo · Ctrl+Enter corre o programa (fica bloqueado) · Esc fecha sem mudar').addClass('editor-status').parent(box);
+    const close = () => { box.remove(); this.fullEditor = null; };
+    const run = () => {
+      const ok = this.loadProgram(ta.elt.value);
+      if (ok && !this.programErrors.length) { close(); return; }
+      status.html('erro: ' + (this.programErrors[0] || 'não percebi o programa')).addClass('err');
+    };
+    ta.elt.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+    });
+    this.fullEditor = { box, close };
+    ta.elt.focus();
+  }
+
   pasteFullCode() {
     if (!navigator.clipboard || !navigator.clipboard.readText) { this.logger.add('este browser não deixa ler a área de transferência', 'err'); return; }
     navigator.clipboard.readText().then((text) => this.loadProgram(text), () => this.logger.add('não consegui ler a área de transferência (o browser pediu autorização?)', 'err'));
@@ -775,6 +803,13 @@ export class App {
   // exactly as written (its inst lines included), locked; roles not in the program leave. The
   // radio is locked (BLOQUEAR) so it doesn't change the track.
   loadProgram(text) {
+    this.programErrors = []; // (the full-code editor shows them)
+    const logErr = this.logger.add.bind(this.logger);
+    this.logger.add = (msg, kind) => { if (kind === 'err') this.programErrors.push(msg); return logErr(msg, kind); };
+    try { return this.loadProgramText(text); } finally { this.logger.add = logErr; }
+  }
+
+  loadProgramText(text) {
     if (!this.composer) { this.logger.add('carrega em SINTONIZAR antes de colar', 'err'); return false; }
     const prog = FullCodeView.parse(text || '');
     if (!prog.sections.length) { this.logger.add('não encontrei secções "// ── PAPEL · nome" no texto colado', 'err'); return false; }
@@ -869,7 +904,8 @@ export class App {
     const stageH = p.height - top - bottomH - 8;
     const layers = [...this.composer.layers.values()];
     if (this.view === 'cards') {
-      this.grid.draw(p, 12, top, p.width - 24, stageH, now);
+      // (above the strip with the view button and +, so the last card scrolls fully into sight)
+      this.grid.draw(p, 12, top, p.width - 24, stageH - 34, now);
     } else {
       const m = this.grid.metrics(p, p.width - 24);
       if (this.view === 'code') {

@@ -79,7 +79,7 @@ export class FullCodeView {
     const by = y + m.pad + m.ts;
     let bx = x + w - m.pad;
     // [COLAR] loads a whole program (copied from here) back into the radio; [COPIAR] copies it
-    for (const [type, label, lit] of [['paste', pasted ? '[COLADO]' : '[COLAR]', pasted], ['copy', copied ? '[COPIADO]' : '[COPIAR]', copied]]) {
+    for (const [type, label, lit] of [['paste', pasted ? '[COLADO]' : '[COLAR]', pasted], ['copy', copied ? '[COPIADO]' : '[COPIAR]', copied], ['edit', '[EDITAR]', false]]) {
       const bw = p.textWidth(label);
       bx -= bw;
       p.fill(lit ? T.bright : T.dim);
