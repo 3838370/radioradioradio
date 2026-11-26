@@ -63,15 +63,27 @@ export class GridView {
     const d = this.derived.get(layer.id);
     if (d && d.bar === bar) return d.view;
     const sounds = this.freezer ? this.freezer.soundsOf(layer.played || [], beat - 16, beat) : {};
-    const key = Object.entries(sounds).sort().join('|');
+    const [w, h] = this.sizeOf(layer.id);
+    const key = `${w}x${h}|` + Object.entries(sounds).map(([l, s]) => l + (s.som || `${s.s}:${s.n}`)).sort().join('|');
     if (d && d.key === key) { d.bar = bar; return d.view; }
     const letters = Object.keys(sounds);
     let seed = 7;
     for (const c of layer.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
-    const rows = letters.length ? new GridGen(new Rng(seed)).make(letters, layer.role, this.genre) : ['. . . .', '. . . .', '. . . .', '. . . .'];
+    const rows = letters.length ? new GridGen(new Rng(seed)).make(letters, layer.role, this.genre, w, h) : Array.from({ length: h }, () => new Array(w).fill('.').join(' '));
     const view = { name: null, rows: rows.map((r) => r.split(' ')), own: false, legend: GridView.legendOf({ sounds }), empty: !letters.length, sounds, preview: true };
     this.derived.set(layer.id, { bar, key, view });
     return view;
+  }
+
+  // The grid sizes a box goes through, clicking its size in the footer.
+  static SIZES = [[2, 2], [3, 3], [4, 4], [6, 4], [8, 4], [8, 8]];
+
+  sizeOf(layerId) { return (this.sizes && this.sizes.get(layerId)) || [4, 4]; }
+
+  // The next size after [w, h].
+  static nextSize(w, h) {
+    const k = GridView.SIZES.findIndex(([a, b]) => a === w && b === h);
+    return GridView.SIZES[(k + 1) % GridView.SIZES.length];
   }
 
   // "K + S/H" from a grid's sounds
@@ -225,12 +237,22 @@ export class GridView {
     p.textSize(m.small - 1);
     p.text(!v.own ? 'AINDA EM CÓDIGO · PRÉVIA' : layer.locked ? 'BLOQUEADA: NÃO MUTA' : `MUTA: A CADA ${every} C`, b.x + m.pad, fy + 8);
     const act = layer.frozenFrom ? ['unfreeze', '[↺ original]'] : !v.own && !v.empty ? ['freeze', '[pôr em grelha]'] : null;
+    let ax = b.x + b.w - m.pad;
     if (act) {
       const aw = p.textWidth(act[1]);
+      ax -= aw;
       p.fill(T.text);
-      p.text(act[1], b.x + b.w - m.pad - aw, fy + 8);
-      this.hits.push({ type: act[0], layerId: layer.id, x: b.x + b.w - m.pad - aw - 3, y: fy - 4, w: aw + 6, h: 16 });
+      p.text(act[1], ax, fy + 8);
+      this.hits.push({ type: act[0], layerId: layer.id, x: ax - 3, y: fy - 4, w: aw + 6, h: 16 });
+      ax -= 12;
     }
+    // the grid's size: click for the next one (2×2 … 8×8)
+    const size = `[${v.own ? `${v.g.w}×${v.g.h}` : this.sizeOf(layer.id).join('×')}]`;
+    const sw = p.textWidth(size);
+    ax -= sw;
+    p.fill(T.bright);
+    p.text(size, ax, fy + 8);
+    this.hits.push({ type: 'size', layerId: layer.id, x: ax - 3, y: fy - 4, w: sw + 6, h: 16 });
     const bwid = b.w - 2 * m.pad;
     p.fill(T.faint);
     p.rect(b.x + m.pad, fy + 14, bwid, 6);

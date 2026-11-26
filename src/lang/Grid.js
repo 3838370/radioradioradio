@@ -108,8 +108,10 @@ export class Grid {
     const kinds = {}; // letter -> { som, vol }
     for (const [k, v] of Object.entries(sounds || {})) {
       if (!/^[a-uw-z]$/.test(k)) throw new Error(`${where}: a letra '${k}' não serve (a-z, sem v)`);
-      kinds[k] = typeof v === 'string' ? { som: v, vol: 1 } : { som: v && v.som, vol: v && v.vol != null ? +v.vol : 1 };
-      if (!kinds[k].som) throw new Error(`${where}: o som de '${k}' está vazio`);
+      // 'name', or { som, vol, amp, dur, oitava, opts } (an instrument and how it was played),
+      // or { s: 'folder', n, amp, rate } (a sample, played as s() plays it)
+      kinds[k] = typeof v === 'string' ? { som: v, vol: 1 } : Object.assign({}, v, { vol: v && v.vol != null ? +v.vol : 1 });
+      if (!kinds[k].som && !kinds[k].s) throw new Error(`${where}: o som de '${k}' está vazio`);
     }
     const tom = opts.tom || Object.keys(kinds)[0] || null;
     const cells = texts.map((r, y) => {

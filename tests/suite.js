@@ -579,6 +579,32 @@
     assert(!bad.ok && /brilho/.test(bad.error), bad.error);
   });
 
+  runner.test('A layer put in a grid sounds as before: level, length, octave, cutoff, sample rate', () => {
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
+    const harmony = new RA.Harmony();
+    const run = (code) => {
+      const clock = new RA.Clock(120);
+      const coder = new RA.LiveCoder({ scheduler: { clock, at() {} }, audio: { bus: () => null, createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+      coder.attach(new RA.LanguageApi({ coder, audio: null, harmony, clock, energy: () => 0.5, instruments: lib }));
+      const layer = new RA.Layer({ id: 'S', role: 'bass', pattern: { id: 's', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, 8);
+      return layer.played;
+    };
+    const before = run("loop('b', (i) => { synth('acid_303', harmony_note = 45, { dur: 0.5, amp: 0.21, cutoff: 600 }); sleep(1); s('drumtraks', { n: 6, amp: 0.7, rate: 1.5 }); sleep(1) })".replace('harmony_note = 45', '45'));
+    const f = new RA.GridFreeze({ harmony, instruments: lib, sampleCount: () => 16 });
+    const sounds = f.soundsOf(before, 0, 8);
+    const a = Object.values(sounds).find((s) => s.som === 'acid_303');
+    const p = Object.values(sounds).find((s) => s.s === 'drumtraks');
+    equal([a.amp, a.dur, a.opts.cutoff, a.oitava], [0.21, 0.5, 600, 0], 'the instrument: level, length, cutoff, octave');
+    equal([p.n, p.amp, p.rate], [6, 0.7, 1.5], 'the sample: n, level, rate');
+    const after = run(RA.GridFreeze.gridCode(['> ' + Object.keys(sounds).join(' . ')], sounds));
+    const note = after.find((e) => e.kind === 'synth'), hit = after.find((e) => e.kind === 's');
+    equal([note.amp, note.opts.cutoff, Math.floor((note.notes[0] - harmony.key) / 12)], [0.21, 600, 0], 'the grid plays it the same');
+    equal([hit.key, hit.amp, hit.rate], ['drumtraks:6', 0.7, 1.5]);
+  });
+
   runner.test('Freeze into a grid: what a layer played comes back the same from the grid', () => {
     const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
     const harmony = new RA.Harmony();

@@ -185,7 +185,26 @@ export class LanguageApi {
           if (!snd) continue;
           const acc = hit.accent ? 1.3 : 1;
           let notes, opts;
-          if (this.isDrum(snd.som)) {
+          if (snd.s) {
+            // a sample, played as the pattern played it (its n, level, rate)
+            const n = h.cell.ratchet;
+            for (let r = 0; r < n; r++) {
+              it.cursor = at + (r * o.passo) / n;
+              this.env.s(snd.s, { n: snd.n || 0, amp: (snd.amp != null ? snd.amp : 0.8) * o.vol * acc, rate: snd.rate });
+            }
+            continue;
+          }
+          if (snd.amp != null || snd.dur != null || snd.oitava != null || snd.opts) {
+            // a sound with the way it was played (a grid made from a layer): its level, length,
+            // octave and options, as before
+            const drum = this.isDrum(snd.som);
+            const arp = hit.degree == null && !o.acorde && !drum ? [0, 2, 4, 7][(state.arp = (state.arp || 0) + 1) % 4] : 0;
+            const step = drum ? 0 : this.gridStep(g, hit.degree || 1, bar, beat - bar * 4) + arp;
+            notes = drum ? [60] : [this.harmony.degree(step, (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave)];
+            if (!drum && o.acorde) for (let k = 1; k < (o.acorde >= 4 ? 4 : 3); k++) notes.push(this.harmony.degree(step + 2 * k, (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave));
+            opts = Object.assign({}, snd.opts || {}, { amp: (snd.amp != null ? snd.amp : drum ? 0.4 : 0.3) * o.vol * acc });
+            if (!drum) opts.dur = (snd.dur != null ? snd.dur : o.dur * o.passo) + h.hold * o.passo;
+          } else if (this.isDrum(snd.som)) {
             notes = [60];
             opts = { amp: 0.4 * o.vol * snd.vol * acc };
           } else {
@@ -309,7 +328,7 @@ export class LanguageApi {
         const g = Grid.parse(name, rows, sounds, opts);
         if (self.instruments && self.instruments.names().length) {
           for (const s of Object.values(g.sounds)) {
-            if (!self.instruments.has(s.som)) throw new Error(`grid('${name}'): o som '${s.som}' não existe no painel INSTRUMENTOS`);
+            if (s.som && !self.instruments.has(s.som)) throw new Error(`grid('${name}'): o som '${s.som}' não existe no painel INSTRUMENTOS`);
           }
         }
         (coder.compiling.grids = coder.compiling.grids || {})[name] = g;
@@ -342,7 +361,7 @@ export class LanguageApi {
         if (!it) return;
         const id = it.layer.id;
         const key = `${name}:${opts.n || 0}`;
-        const meta = { kind: 's', key, name, n: opts.n || 0, amp: opts.amp, silent: self.silenced(it.layer, key) };
+        const meta = { kind: 's', key, name, n: opts.n || 0, amp: opts.amp, rate: opts.rate, silent: self.silenced(it.layer, key) };
         coder.emit((t, spb) => audio.playSample(id, name, timed(Object.assign({}, opts), spb, ['cut', 'attack', 'release']), t + Math.max(0, opts.nudge || 0) * spb), meta);
       },
 
@@ -351,7 +370,10 @@ export class LanguageApi {
         if (!it) return;
         const id = it.layer.id;
         const list = (Array.isArray(notes) ? notes : [notes]).map((n) => T.note(n));
-        const meta = { kind: 'synth', key: preset, notes: list, dur: opts.dur, amp: opts.amp, silent: self.silenced(it.layer, preset) };
+        // (the note's own sound options too, so a grid made from what played sounds the same)
+        const sound = {};
+        for (const k of ['cutoff', 'res', 'attack', 'release', 'vel']) if (typeof opts[k] === 'number') sound[k] = opts[k];
+        const meta = { kind: 'synth', key: preset, notes: list, dur: opts.dur, amp: opts.amp, opts: sound, silent: self.silenced(it.layer, preset) };
         // nudge: play late by this many beats (feel, rubato); strum: spread a chord's notes
         coder.emit((t, spb) => {
           const o = timed(Object.assign({}, opts), spb, ['dur', 'attack', 'release']);

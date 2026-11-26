@@ -202,6 +202,25 @@ export class CodeTools {
     return out;
   }
 
+  // The code with grid `name` resized to w × h cells: cut, or grown with rests.
+  static resizeGrid(code, name, w, h) {
+    const rows = CodeTools.gridRows(code, name);
+    const cells = CodeTools.gridCells(code, name);
+    if (!rows || !cells) return code;
+    const out = [];
+    for (let y = 0; y < h; y++) {
+      const r = (cells[y] || []).slice(0, w);
+      while (r.length < w) r.push('.');
+      out.push(r);
+    }
+    const widths = Array.from({ length: w }, (_, x) => Math.max(1, ...out.map((r) => r[x].length)));
+    const text = out.map((r) => {
+      const line = widths.map((wd, x) => r[x].padEnd(wd)).join(' ').replace(/\s+$/, '');
+      return line.includes("'") ? `"${line}"` : `'${line}'`;
+    }).join(',\n  ');
+    return code.slice(0, rows[0].start) + text + code.slice(rows[rows.length - 1].end);
+  }
+
   // The code with one cell of grid `name` changed (x, y from 0; a cell past the edge
   // grows the row with rests).
   static setGridCell(code, name, x, y, token) {

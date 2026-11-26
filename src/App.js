@@ -512,6 +512,21 @@ export class App {
     if (layer) this.logger.add(`compasso ${this.composer.bar + 1}: + ${PatternBank.roleLabel(role)} (por ti): ${pat.id}`);
   }
 
+  // The size of a box's grid, to the next one (2×2 … 8×8): a layer in code gets a new
+  // preview at that size; a grid() is cut, or grown with rests (heard from its next turn).
+  cycleGridSize(id) {
+    const layer = this.composer.deck.find(id);
+    if (!layer) return;
+    const gv = this.gridView;
+    if (!gv.sizes) gv.sizes = new Map();
+    const own = Object.entries(layer.grids || {}).find(([, g]) => g.opts.tipo === 'instrumento');
+    const [w, h] = own ? [own[1].w, own[1].h] : gv.sizeOf(id);
+    const [nw, nh] = GridView.nextSize(w, h);
+    gv.sizes.set(id, [nw, nh]);
+    gv.derived.delete(id);
+    if (own) this.setLayerCode(layer, CodeTools.resizeGrid(layer.code, own[0], nw, nh), `grelha ${nw}×${nh}`);
+  }
+
   // A layer's code changed by the radio itself (not the listener: it stays unlocked).
   setLayerCode(layer, code, desc) {
     const probe = this.coder.probe(code, 2);
@@ -569,12 +584,13 @@ export class App {
     if (!g || !cell || !cell.hits || !cell.hits.length) return null;
     const h = cell.hits[0];
     const snd = g.sounds[h.letter || g.opts.tom];
-    return snd ? snd.som : null;
+    if (!snd) return null;
+    return snd.som || this.instruments.replacing(`${snd.s}:${snd.n || 0}`) || null; // a sample: its sound in code
   }
 
-  // Whether a sound (an instrument name) is played by one of the layer's grids.
+  // Whether a sound (an instrument name, or 'folder:n') is played by one of the layer's grids.
   isGridSound(layer, key) {
-    return Object.values(layer.grids || {}).some((g) => Object.values(g.sounds).some((s) => s.som === key));
+    return Object.values(layer.grids || {}).some((g) => Object.values(g.sounds).some((s) => s.som === key || `${s.s}:${s.n || 0}` === key));
   }
 
   // A card clicked: the INSTRUMENTOS panel opens at the sound of that line of its code.

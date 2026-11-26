@@ -20,7 +20,7 @@ export class GridGen {
 
   // letters: the sound letters there are (k s h p a c); genre: 'ae' gets more ?
   // -> rows ['> K S H', ...]
-  make(letters, role, genre = null, size = 4) {
+  make(letters, role, genre = null, w = 4, h = w) {
     const R = GridGen.ROLES[role] || GridGen.ROLES.lead;
     const weights = Object.entries(R.letters).filter(([l]) => letters.includes(l));
     if (!weights.length) for (const l of letters) weights.push([l, 1]);
@@ -33,9 +33,9 @@ export class GridGen {
     let best = null;
     for (let tries = 0; tries < 40; tries++) {
       const cells = [];
-      for (let y = 0; y < size; y++) {
+      for (let y = 0; y < h; y++) {
         const row = [];
-        for (let x = 0; x < size; x++) {
+        for (let x = 0; x < w; x++) {
           const r = this.rng.float(0, 1);
           if (r < 0.1) row.push(this.rng.pick(['>', '<', '^', 'v']));
           else if (r < 0.1 + chance) row.push('?');

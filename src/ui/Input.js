@@ -108,6 +108,7 @@ export class Input {
     if (b.type === 'layer-solo') return deck.toggleSolo(b.layerId);
     if (b.type === 'layer-mute') return deck.toggleMute(b.layerId);
     if (b.type === 'layer-lock') return deck.toggleLock(b.layerId);
+    if (b.type === 'size') return this.app.cycleGridSize(b.layerId);
     if (b.type === 'freeze') return this.app.freezeLayer(b.layerId);
     if (b.type === 'unfreeze') return this.app.unfreezeLayer(b.layerId);
     if (b.type !== 'ruler' || !gv.sel) return;

@@ -128,15 +128,49 @@ export class GridFreeze {
     return notes && notes.length >= 3 ? 'c' : 'a';
   }
 
-  // The sounds a layer played between two beats, one per letter: { k: name, s: ..., a: ... }
+  // The sounds a layer played between two beats, one per letter, with the way it played
+  // them, so a grid made from them sounds as before:
+  //   a sample      { s: folder, n, amp, rate }            (played with s(), as it was)
+  //   an instrument { som, amp, dur, oitava, opts }        (level, length, octave, cutoff…)
   soundsOf(events, from, to) {
-    const out = {};
+    const by = {};
     for (const e of events) {
       if (e.silent || e.beat < from || e.beat >= to) continue;
-      const inst = this.instrumentOf(e);
-      if (!inst) continue;
-      const cls = this.classOf(inst, e.notes);
-      if (!out[cls]) out[cls] = inst;
+      let cls, id;
+      if (e.kind === 's') {
+        const inst = this.instrumentOf(e);
+        cls = inst ? this.classOf(inst, null) : 'p';
+        id = `s:${e.name}:${e.n || 0}`;
+      } else {
+        if (!this.lib.has(e.key)) continue;
+        cls = this.classOf(e.key, e.notes);
+        id = e.key;
+      }
+      if (!by[cls]) by[cls] = { id, evs: [] };
+      if (by[cls].id === id) by[cls].evs.push(e);
+    }
+    const med = (xs) => { const a = xs.filter((x) => typeof x === 'number').sort((p, q) => p - q); return a.length ? Math.round(a[a.length >> 1] * 1000) / 1000 : null; };
+    const out = {};
+    for (const [cls, { id, evs }] of Object.entries(by)) {
+      if (id.startsWith('s:')) {
+        const e = evs[evs.length - 1];
+        const spec = { s: e.name, n: e.n || 0 };
+        const amp = med(evs.map((x) => x.amp));
+        if (amp != null) spec.amp = amp;
+        const rate = med(evs.map((x) => x.rate));
+        if (rate != null && rate !== 1) spec.rate = rate;
+        out[cls] = spec;
+      } else {
+        const spec = { som: id };
+        const amp = med(evs.map((x) => x.amp)), dur = med(evs.map((x) => x.dur));
+        if (amp != null) spec.amp = amp;
+        if (dur != null) spec.dur = dur;
+        const note = med(evs.map((x) => (x.notes || [])[0]));
+        if (note != null && !this.isDrum(id)) spec.oitava = Math.floor((note - this.h.key) / 12);
+        const last = evs[evs.length - 1].opts;
+        if (last && Object.keys(last).length) spec.opts = last;
+        out[cls] = spec;
+      }
     }
     return out;
   }
@@ -147,7 +181,7 @@ export class GridFreeze {
     const opts = ['passo: 1/4'];
     if (tom) opts.push(`tom: '${tom}'`);
     if (sounds.c && !sounds.a) opts.push('acorde: 3');
-    const list = Object.entries(sounds).map(([l, s]) => `${l}: '${s}'`).join(', ');
+    const list = Object.entries(sounds).map(([l, s]) => `${l}: ${typeof s === 'string' ? `'${s}'` : CodeTools.toCode(s)}`).join(', ');
     return (fxLine ? fxLine + '\n' : '') + `grid('${name}', [\n${rows.map((r) => `  '${r}',`).join('\n')}\n], { ${list} }, { ${opts.join(', ')} })`;
   }
 
