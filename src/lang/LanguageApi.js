@@ -194,16 +194,34 @@ export class LanguageApi {
             }
             continue;
           }
-          if (snd.amp != null || snd.dur != null || snd.oitava != null || snd.opts) {
-            // a sound with the way it was played (a grid made from a layer): its level, length,
-            // octave and options, as before
+          if (snd.seq || snd.amp != null || snd.dur != null || snd.oitava != null || snd.opts) {
+            // a sound with the way it was played (a grid made from a layer): its notes in
+            // order (seq: degree over the chord, octave, level), its level, length, options
             const drum = this.isDrum(snd.som);
-            const arp = hit.degree == null && !o.acorde && !drum ? [0, 2, 4, 7][(state.arp = (state.arp || 0) + 1) % 4] : 0;
-            const step = drum ? 0 : this.gridStep(g, hit.degree || 1, bar, beat - bar * 4) + arp;
-            notes = drum ? [60] : [this.harmony.degree(step, (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave)];
-            if (!drum && o.acorde) for (let k = 1; k < (o.acorde >= 4 ? 4 : 3); k++) notes.push(this.harmony.degree(step + 2 * k, (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave));
-            opts = Object.assign({}, snd.opts || {}, { amp: (snd.amp != null ? snd.amp : drum ? 0.4 : 0.3) * o.vol * acc });
-            if (!drum) opts.dur = (snd.dur != null ? snd.dur : o.dur * o.passo) + h.hold * o.passo;
+            let amp = snd.amp != null ? snd.amp : drum ? 0.4 : 0.3;
+            let noteLen = snd.dur; // each note's own length when the sequence has it
+            if (drum) notes = [60];
+            else {
+              let step, octave;
+              if (snd.seq && snd.seq.length && hit.degree == null) {
+                const at2 = state.seqAt || (state.seqAt = {});
+                const k = at2[hit.letter] = ((at2[hit.letter] == null ? -1 : at2[hit.letter]) + 1) % snd.seq.length;
+                const [d, oc, a, len] = snd.seq[k];
+                step = this.harmony.degreeAt(bar) + d;
+                octave = oc + hit.octave;
+                if (a != null) amp = a;
+                if (len != null) noteLen = len;
+              } else {
+                step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4);
+                octave = (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave;
+              }
+              notes = [this.harmony.degree(step, octave)];
+              const size = snd.acorde || (o.acorde >= 4 ? 4 : o.acorde ? 3 : 1);
+              for (let k = 1; k < size; k++) notes.push(this.harmony.degree(step + 2 * k, octave));
+            }
+            opts = Object.assign({}, snd.opts || {}, { amp: amp * o.vol * acc });
+            // the length it had (none given: the instrument's own), longer when held (~)
+            if (!drum && (noteLen != null || h.hold)) opts.dur = (noteLen != null ? noteLen : o.passo) + h.hold * o.passo;
           } else if (this.isDrum(snd.som)) {
             notes = [60];
             opts = { amp: 0.4 * o.vol * snd.vol * acc };

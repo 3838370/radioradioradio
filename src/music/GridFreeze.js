@@ -132,8 +132,15 @@ export class GridFreeze {
   // them, so a grid made from them sounds as before:
   //   a sample      { s: folder, n, amp, rate }            (played with s(), as it was)
   //   an instrument { som, amp, dur, oitava, opts }        (level, length, octave, cutoff…)
-  soundsOf(events, from, to) {
-    const by = {};
+  soundsOf(events, from, to) { return this.profileOf(events, from, to).sounds; }
+
+  // What a layer played between two beats: { sounds (one letter per sound: its family's
+  // letter, or the next free one; none is left out), counts (hits per letter), steps }.
+  // A note sound also keeps its notes in order (seq: [degree over the chord - 1, octave,
+  // amp]), so a grid plays the same notes, only on its own rhythm.
+  profileOf(events, from, to) {
+    const by = {}, letterOf = {}, used = new Set(['v']);
+    const spare = 'bdefgijlmnoqrtuwxyz'.split('');
     for (const e of events) {
       if (e.silent || e.beat < from || e.beat >= to) continue;
       let cls, id;
@@ -146,9 +153,24 @@ export class GridFreeze {
         cls = this.classOf(e.key, e.notes);
         id = e.key;
       }
-      if (!by[cls]) by[cls] = { id, evs: [] };
-      if (by[cls].id === id) by[cls].evs.push(e);
+      if (!letterOf[id]) {
+        const l = !used.has(cls) ? cls : spare.find((c) => !used.has(c));
+        if (!l) continue;
+        used.add(l);
+        letterOf[id] = l;
+        by[l] = { id, evs: [] };
+      }
+      by[letterOf[id]].evs.push(e);
     }
+    const counts = {}, onsets = new Set();
+    for (const [l, { evs }] of Object.entries(by)) {
+      counts[l] = evs.length;
+      for (const e of evs) onsets.add(Math.round((e.beat - from) * 4));
+    }
+    return { sounds: this.specs(by), counts, onsets: onsets.size, steps: Math.round((to - from) * 4) };
+  }
+
+  specs(by) {
     const med = (xs) => { const a = xs.filter((x) => typeof x === 'number').sort((p, q) => p - q); return a.length ? Math.round(a[a.length >> 1] * 1000) / 1000 : null; };
     const out = {};
     for (const [cls, { id, evs }] of Object.entries(by)) {
@@ -165,10 +187,20 @@ export class GridFreeze {
         const amp = med(evs.map((x) => x.amp)), dur = med(evs.map((x) => x.dur));
         if (amp != null) spec.amp = amp;
         if (dur != null) spec.dur = dur;
-        const note = med(evs.map((x) => (x.notes || [])[0]));
-        if (note != null && !this.isDrum(id)) spec.oitava = Math.floor((note - this.h.key) / 12);
-        const last = evs[evs.length - 1].opts;
-        if (last && Object.keys(last).length) spec.opts = last;
+        if (!this.isDrum(id)) {
+          // its notes in order, as degrees over the chord of their bar (and octave, level)
+          spec.seq = evs.filter((x) => (x.notes || []).length).slice(-16).map((x) => {
+            const r = this.degreeOf(x.notes[0], Math.floor(x.beat / 4 + 1e-6));
+            const round = (v) => (v != null ? Math.round(v * 1000) / 1000 : null);
+            return x.dur != null ? [r.degree - 1, r.octave, round(x.amp), round(x.dur)] : [r.degree - 1, r.octave, round(x.amp)];
+          });
+          if (!spec.seq.length) delete spec.seq;
+          const size = med(evs.map((x) => (x.notes || []).length));
+          if (size >= 3) spec.acorde = Math.min(4, size); // chords stay chords
+        }
+        // each note option at its middle value (a filter that wanders keeps where it sits)
+        const keys = new Set(evs.flatMap((x) => Object.keys(x.opts || {})));
+        if (keys.size) spec.opts = Object.fromEntries([...keys].map((k) => [k, med(evs.map((x) => (x.opts || {})[k]))]));
         out[cls] = spec;
       }
     }
@@ -180,7 +212,6 @@ export class GridFreeze {
     const tom = sounds.c ? 'c' : sounds.a ? 'a' : null;
     const opts = ['passo: 1/4'];
     if (tom) opts.push(`tom: '${tom}'`);
-    if (sounds.c && !sounds.a) opts.push('acorde: 3');
     const list = Object.entries(sounds).map(([l, s]) => `${l}: ${typeof s === 'string' ? `'${s}'` : CodeTools.toCode(s)}`).join(', ');
     return (fxLine ? fxLine + '\n' : '') + `grid('${name}', [\n${rows.map((r) => `  '${r}',`).join('\n')}\n], { ${list} }, { ${opts.join(', ')} })`;
   }

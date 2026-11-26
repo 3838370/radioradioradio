@@ -597,11 +597,11 @@
     const sounds = f.soundsOf(before, 0, 8);
     const a = Object.values(sounds).find((s) => s.som === 'acid_303');
     const p = Object.values(sounds).find((s) => s.s === 'drumtraks');
-    equal([a.amp, a.dur, a.opts.cutoff, a.oitava], [0.21, 0.5, 600, 0], 'the instrument: level, length, cutoff, octave');
+    equal([a.amp, a.dur, a.opts.cutoff, a.seq.length], [0.21, 0.5, 600, 4], 'the instrument: level, length, cutoff, its notes in order');
     equal([p.n, p.amp, p.rate], [6, 0.7, 1.5], 'the sample: n, level, rate');
     const after = run(RA.GridFreeze.gridCode(['> ' + Object.keys(sounds).join(' . ')], sounds));
     const note = after.find((e) => e.kind === 'synth'), hit = after.find((e) => e.kind === 's');
-    equal([note.amp, note.opts.cutoff, Math.floor((note.notes[0] - harmony.key) / 12)], [0.21, 600, 0], 'the grid plays it the same');
+    equal([note.amp, note.opts.cutoff, note.notes[0]], [0.21, 600, 45], 'the grid plays it the same (the same note)');
     equal([hit.key, hit.amp, hit.rate], ['drumtraks:6', 0.7, 1.5]);
   });
 

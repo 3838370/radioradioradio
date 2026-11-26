@@ -20,8 +20,10 @@ export class GridGen {
 
   // letters: the sound letters there are (k s h p a c); genre: 'ae' gets more ?
   // -> rows ['> K S H', ...]
-  make(letters, role, genre = null, w = 4, h = w) {
-    const R = GridGen.ROLES[role] || GridGen.ROLES.lead;
+  // target (optional): { density, weights: { letter: hits } } from what the layer played, so
+  // the grid keeps its density and how much each sound plays
+  make(letters, role, genre = null, w = 4, h = w, target = null) {
+    const R = target ? { density: Math.max(0.05, Math.min(0.85, target.density)), letters: target.weights } : GridGen.ROLES[role] || GridGen.ROLES.lead;
     const weights = Object.entries(R.letters).filter(([l]) => letters.includes(l));
     if (!weights.length) for (const l of letters) weights.push([l, 1]);
     const chance = genre === 'ae' ? 0.1 : 0.04;
@@ -31,7 +33,7 @@ export class GridGen {
       return weights[0][0];
     };
     let best = null;
-    for (let tries = 0; tries < 40; tries++) {
+    for (let tries = 0; tries < 120; tries++) {
       const cells = [];
       for (let y = 0; y < h; y++) {
         const row = [];
@@ -46,7 +48,7 @@ export class GridGen {
       }
       cells[0][0] = '>';
       const rows = cells.map((r) => r.join(' '));
-      const score = this.score(rows, letters, R.density);
+      const score = this.score(rows, letters, R.density, R.letters);
       if (!best || score > best.score) best = { rows, score };
     }
     return best.rows;
@@ -72,15 +74,26 @@ export class GridGen {
 
   // Walks a program two bars: how close its density is to the role's, how many cells it
   // visits (a path, not a 1-cell loop), how many different sounds it plays.
-  score(rows, letters, density) {
+  // Walks a program 4 bars: every sound must play (one left out costs a lot), as often as
+  // the role / the layer did (density), in about the same proportions (weights), along a
+  // path of more than a few cells.
+  score(rows, letters, density, weights = null) {
     const sounds = {};
     for (const l of letters) sounds[l] = l;
     let g;
     try { g = Grid.parse('gen', rows, sounds, { semente: 1 }); } catch (e) { return -99; }
-    const { hits, path } = Grid.walk(g, Grid.init(g), 32);
-    const played = new Set(hits.map((h) => h.k)).size / 32;
+    const { hits, path } = Grid.walk(g, Grid.init(g), 64);
+    const played = new Set(hits.map((h) => h.k)).size / 64;
     const cells = new Set(path.map((p) => p[0].join(','))).size;
-    const kinds = new Set(hits.flatMap((h) => h.cell.hits.map((x) => x.letter))).size;
-    return -Math.abs(played - density) * 4 + Math.min(cells, 8) * 0.3 + kinds * 0.4;
+    const count = {};
+    for (const h of hits) for (const x of h.cell.hits) count[x.letter] = (count[x.letter] || 0) + 1;
+    const missing = letters.filter((l) => !count[l]).length;
+    let mix = 0;
+    if (weights) {
+      const tw = letters.reduce((s, l) => s + (weights[l] || 0), 0) || 1;
+      const tc = letters.reduce((s, l) => s + (count[l] || 0), 0) || 1;
+      for (const l of letters) mix += Math.abs((weights[l] || 0) / tw - (count[l] || 0) / tc);
+    }
+    return -missing * 5 - Math.abs(played - density) * 10 - mix * 3 + Math.min(cells, 8) * 0.15;
   }
 };
