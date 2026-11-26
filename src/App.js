@@ -44,6 +44,7 @@ import { Spectrum } from './ui/Spectrum.js';
 import { Theme } from './ui/Theme.js';
 import { XYPad } from './ui/XYPad.js';
 import { LevelMeter } from './ui/LevelMeter.js';
+import { GridView } from './ui/GridView.js';
 
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
@@ -87,6 +88,7 @@ export class App {
     this.view = 'cards'; // cards | code | seq
     this.fullCode = new FullCodeView(this.grid.highlighter);
     this.seq = new SequencerView();
+    this.gridView = new GridView(); // the GRELHA view
     this.viewButton = null;
     this.log = new LogView(this.logger);
     this.xy = new XYPad((v) => { if (this.fx) this.fx.setXY(v); });
@@ -474,10 +476,10 @@ export class App {
   }
 
 
-  // ───── views: cards → full code → sequencer → cards ─────
+  // ───── views: cards → full code → sequencer → grid → cards ─────
 
-  static VIEWS = ['cards', 'code', 'seq'];
-  static VIEW_NAMES = { cards: 'CARTÕES', code: 'CÓDIGO COMPLETO', seq: 'SEQUENCIADOR' };
+  static VIEWS = ['cards', 'code', 'seq', 'grid'];
+  static VIEW_NAMES = { cards: 'CARTÕES', code: 'CÓDIGO COMPLETO', seq: 'SEQUENCIADOR', grid: 'GRELHA' };
 
   nextView() {
     if (this.editor.isOpen) this.editor.commit();
@@ -701,6 +703,8 @@ export class App {
       if (this.view === 'code') {
         const flashes = layers.map((l) => (this.grid.cards.get(l.id) || {}).flashAt || 0);
         this.fullCode.draw(p, 12, top, p.width - 24, stageH - 34, m, this.fullCodeText(), flashes, now);
+      } else if (this.view === 'grid') {
+        this.gridView.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now);
       } else {
         this.seq.draw(p, 12, top, p.width - 24, stageH - 34, m, layers, this.clock.beatAt(this.audio.ac.currentTime), now);
       }

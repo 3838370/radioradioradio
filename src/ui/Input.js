@@ -68,10 +68,11 @@ export class Input {
 
   wheel(p, event) {
     if (this.app.state !== 'playing' || !event) return;
-    if (this.app.view === 'cards') { // the cards scroll when they don't all fit
+    if (this.app.view === 'cards' || this.app.view === 'grid') { // cards and grids scroll when they don't all fit
       // (only over the canvas: the code editor and the panels scroll themselves)
-      if (event.target !== p.canvas || !this.app.grid.contains(p.mouseX, p.mouseY)) return;
-      this.app.grid.wheel(event.delta);
+      const v = this.app.view === 'cards' ? this.app.grid : this.app.gridView;
+      if (event.target !== p.canvas || !v.contains(p.mouseX, p.mouseY)) return;
+      v.wheel(event.delta);
       return false;
     }
     const v = this.app.view === 'code' ? this.app.fullCode : this.app.seq;
