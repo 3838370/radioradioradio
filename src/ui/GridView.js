@@ -66,20 +66,31 @@ export class GridView {
     const bar = Math.floor(beat / 4);
     const d = this.derived.get(layer.id);
     if (d && d.bar === bar) return d.view;
-    const prof = this.freezer ? this.freezer.profileOf(layer.played || [], beat - 16, beat) : { sounds: {}, counts: {}, steps: 64 };
+    // (the last 4 bars, or since it came in: a layer that has played one bar isn't half as dense)
+    const from = Math.min(beat - 1, Math.max(beat - 16, (layer.enteredBar || 0) * 4));
+    const prof = this.freezer ? this.freezer.profileOf(layer.played || [], from, beat) : { sounds: {}, counts: {}, steps: 64 };
     const sounds = prof.sounds;
     // how often it played (hits per step, with chords and kicks counted once a step) and how
     // much each sound: the grid keeps both
-    const target = { density: (prof.onsets || 0) / Math.max(1, prof.steps), weights: prof.counts };
+    // A slow tonal layer (a drone, a pad: a sound a bar or less) gets longer steps (1, 2 or 4
+    // beats a cell), or a 4×4 of sixteenths would play it far more often than it did; drums
+    // and percussion keep their sixteenths.
+    const onsets = prof.onsets || 0;
+    const perBar = onsets * 16 / Math.max(1, prof.steps);
+    const slow = onsets > 0 && perBar <= 1 && !['drums', 'perc'].includes(layer.role);
+    const passo = slow ? (perBar >= 0.5 ? 1 : perBar >= 0.25 ? 2 : 4) : 0.25;
+    // and each sound as often as it played (hits a grid step)
+    const rates = Object.fromEntries(Object.entries(prof.counts).map(([l, n]) => [l, n * 16 / Math.max(1, prof.steps) * passo / 4]));
+    const target = { density: perBar * passo / 4, weights: prof.counts, rates };
     const [w, h] = this.sizeOf(layer.id);
     // (made again when its sounds, the size or how dense it plays change)
-    const key = `${w}x${h}|${Math.round(target.density * 10)}|` + Object.entries(sounds).map(([l, s]) => l + (s.som || `${s.s}:${s.n}`)).sort().join('|');
+    const key = `${w}x${h}|${passo}|${Math.round(target.density * 10)}|` + Object.entries(sounds).map(([l, s]) => l + (s.som || `${s.s}:${s.n}`)).sort().join('|');
     if (d && d.key === key) { d.bar = bar; return d.view; }
     const letters = Object.keys(sounds);
     let seed = 7;
     for (const c of layer.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
     const rows = letters.length ? new GridGen(new Rng(seed)).make(letters, layer.role, this.genre, w, h, target) : Array.from({ length: h }, () => new Array(w).fill('.').join(' '));
-    const view = { name: null, rows: rows.map((r) => r.split(' ')), own: false, legend: GridView.legendOf({ sounds }), empty: !letters.length, sounds, preview: true };
+    const view = { name: null, rows: rows.map((r) => r.split(' ')), own: false, legend: GridView.legendOf({ sounds }), empty: !letters.length, sounds, passo, preview: true };
     this.derived.set(layer.id, { bar, key, view });
     return view;
   }

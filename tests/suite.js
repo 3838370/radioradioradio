@@ -452,6 +452,39 @@
 
   // ───── grid() ─────
 
+  runner.test('GridGen: a stuck grid is seen, changes never trap it, a build-up swap keeps the sounds', () => {
+    const gen = new RA.GridGen(new RA.Rng(4));
+    // > then < face each other: the cursor bounces between them and nothing plays
+    equal(gen.health(['> < K .', '. . . .', 'S . . .', '. . . .'], ['k', 's']).ok, false);
+    const good = ['> K . S', '. . . .', 'v . . .', '. . . .'];
+    assert(gen.health(good, ['k', 's']).ok, 'a healthy grid');
+    // a live cursor in a row of dots (the column turned away) is stuck too
+    equal(gen.health(['> K S .', '. . . .'], ['k', 's'], [{ x: 0, y: 1, dir: '>' }]).ok, false);
+    for (let k = 0; k < 60; k++) {
+      const rows = gen.make(['k', 's', 'h'], 'drums', 'acid');
+      const mu = gen.safe(rows, ['k', 's', 'h'], () => gen.mutate(rows, ['k', 's', 'h']));
+      if (mu) assert(gen.health(mu.rows, ['k', 's', 'h']).ok, 'a change stays healthy: ' + mu.rows.join('|'));
+      const sw = gen.safe(rows, ['k', 's', 'h'], () => gen.swap(rows));
+      if (sw) {
+        const count = (rs) => rs.join(' ').split(/\s+/).sort().join('');
+        equal(count(sw.rows), count(rows));
+        assert(gen.health(sw.rows, ['k', 's', 'h']).ok, 'a swap stays healthy');
+      }
+    }
+    // a grid stuck from the start: any healthy change unsticks it
+    const stuck = ['> < K .', '. . . .', 'S . . .', '. . . .'];
+    // a grid stuck from the start: change after change (one a bar), it plays all again
+    let rs = stuck;
+    for (let k = 0; k < 8 && !gen.health(rs, ['k', 's']).ok; k++) {
+      const fix = gen.safe(rs, ['k', 's'], () => gen.mutate(rs, ['k', 's']));
+      if (fix) rs = fix.rows;
+    }
+    assert(gen.health(rs, ['k', 's']).ok, 'unstuck: ' + rs.join('|'));
+    // a slow layer's grid: longer steps, a turn still a bar
+    assert(/passo: 4, ciclo: 1/.test(RA.GridFreeze.gridCode(['> A . .'], { a: 'sub' }, '', 'g', 4)), 'slow passo');
+    assert(/passo: 1\/4 *[,}]/.test(RA.GridFreeze.gridCode(['> A . .'], { a: 'sub' })), 'default passo');
+  });
+
   runner.test('Grid: cells, cursors and paths (arrows, #, =, ?, wrap)', () => {
     const G = RA.Grid;
     const c = G.cell("@>K*%", 'x');

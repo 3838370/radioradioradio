@@ -208,9 +208,10 @@ export class GridFreeze {
   }
 
   // The code of a grid() with these rows and sounds (the GRELHA view's "pôr em grelha").
-  static gridCode(rows, sounds, fxLine = '', name = 'grelha') {
+  // passo: beats a cell (1/4 a sixteenth; a slow layer's longer); a turn of the loop stays a bar.
+  static gridCode(rows, sounds, fxLine = '', name = 'grelha', passo = 0.25) {
     const tom = sounds.c ? 'c' : sounds.a ? 'a' : null;
-    const opts = ['passo: 1/4'];
+    const opts = [passo === 0.25 ? 'passo: 1/4' : passo === 0.5 ? 'passo: 1/2, ciclo: 8' : `passo: ${passo}, ciclo: ${Math.max(1, 4 / passo)}`];
     if (tom) opts.push(`tom: '${tom}'`);
     const list = Object.entries(sounds).map(([l, s]) => `${l}: ${typeof s === 'string' ? `'${s}'` : CodeTools.toCode(s)}`).join(', ');
     return (fxLine ? fxLine + '\n' : '') + `grid('${name}', [\n${rows.map((r) => `  '${r}',`).join('\n')}\n], { ${list} }, { ${opts.join(', ')} })`;

@@ -454,7 +454,7 @@ export class App {
     if (!this.gridView.freezer) this.gridView.freezer = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
     const v = this.gridView.shown(layer, beat);
     if (v.own || v.empty) { this.logger.add(`pôr em grelha: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
-    const r = { code: GridFreeze.gridCode(v.rows.map((row) => row.join(' ')), v.sounds, GridFreeze.fxLine(layer.code)) };
+    const r = { code: GridFreeze.gridCode(v.rows.map((row) => row.join(' ')), v.sounds, GridFreeze.fxLine(layer.code), 'grelha', v.passo) };
     const before = layer.code;
     const res = deck.liveEdit(id, CodeTools.withInstruments(r.code, this.instruments), { desc: 'congelada em grelha', final: true });
     if (!res.ok) { this.logger.add(`congelar: ${res.error}`, 'err'); return; }
@@ -543,28 +543,55 @@ export class App {
     const v = this.gridView.shown(layer, this.clock.beatAt(this.audio.ac.currentTime));
     if (v.own || v.empty) return false;
     const before = layer.code;
-    const code = CodeTools.withInstruments(GridFreeze.gridCode(v.rows.map((r) => r.join(' ')), v.sounds, GridFreeze.fxLine(layer.code)), this.instruments);
+    const code = CodeTools.withInstruments(GridFreeze.gridCode(v.rows.map((r) => r.join(' ')), v.sounds, GridFreeze.fxLine(layer.code), 'grelha', v.passo), this.instruments);
     if (!this.setLayerCode(layer, code, 'em grelha')) return false;
     layer.frozenFrom = before;
     return true;
   }
 
   // GRELHA mode, once a bar: the layers still in code become grids (as soon as they've
-  // played a bar), and the grids keep changing, one cell at a time at the start of a phrase
-  // (more often with more "variação"); locked layers and BLOQUEAR are left alone.
+  // played a bar), and the grids keep changing (locked layers and BLOQUEAR are left alone):
+  //   - a grid stuck in a silent loop (an arrow facing another, a row of dots) is unstuck now;
+  //   - in a build-up (subida, tensão, ímpeto) two cells swap places most bars: the same
+  //     sounds, as often, in a new order, so it grows restless;
+  //   - otherwise one cell changes at the start of a phrase (more often with more "variação").
+  // Every change is tried first: it must keep every sound playing at about the same density
+  // and not trap the cursors where they are now.
+  static GRID_BUILD = ['build', 'tension', 'surge'];
+
   gridTick(bar) {
     if (this.settings.get('freeze')) return;
+    const variation = this.settings.get('variation');
+    const build = App.GRID_BUILD.includes(this.arc.section);
     for (const layer of this.composer.layers.values()) {
       if (layer.locked || layer.editing) continue;
       const names = Object.keys(layer.grids || {});
       if (!names.length) { if (bar - (layer.enteredBar || 0) >= 1) this.toGrid(layer); continue; }
-      if (bar % 4 !== 0 || !this.rng.chance(0.3 + 0.7 * this.settings.get('variation'))) continue;
-      const g = layer.grids[names[0]];
+      const name = names[0], g = layer.grids[name];
       if (g.opts.tipo !== 'instrumento') continue;
-      const cells = CodeTools.gridCells(layer.code, names[0]);
+      const cells = CodeTools.gridCells(layer.code, name);
       if (!cells) continue;
-      const mu = new GridGen(this.rng).mutate(cells.map((r) => r.join(' ')), Object.keys(g.sounds));
-      this.setLayerCode(layer, CodeTools.setGridCell(layer.code, names[0], mu.x, mu.y, mu.to), `grelha muda (${mu.x + 1},${mu.y + 1}): ${mu.from} → ${mu.to}`);
+      const rows = cells.map((r) => r.join(' '));
+      const letters = Object.keys(g.sounds);
+      const live = layer.vars && layer.vars.get('grid:' + name);
+      const cursors = live && live.cursors;
+      const gen = new GridGen(this.rng);
+      let mu = null, desc = '';
+      if (!gen.health(rows, letters, cursors).ok) {
+        mu = gen.safe(rows, letters, () => gen.mutate(rows, letters), cursors);
+        desc = 'grelha encravada, solta';
+      } else if (build && this.rng.chance(0.5 + 0.4 * variation)) {
+        mu = gen.safe(rows, letters, () => gen.swap(rows), cursors);
+        desc = 'subida: troca';
+      } else if (bar % 4 === 0 && this.rng.chance(0.3 + 0.7 * variation)) {
+        mu = gen.safe(rows, letters, () => gen.mutate(rows, letters), cursors);
+        desc = 'grelha muda';
+      }
+      if (!mu) continue;
+      let code = CodeTools.setGridCell(layer.code, name, mu.x, mu.y, mu.to);
+      if (mu.x2 != null) code = CodeTools.setGridCell(code, name, mu.x2, mu.y2, mu.from);
+      const where = mu.x2 != null ? `(${mu.x + 1},${mu.y + 1}) ↔ (${mu.x2 + 1},${mu.y2 + 1})` : `(${mu.x + 1},${mu.y + 1}): ${mu.from} → ${mu.to}`;
+      this.setLayerCode(layer, code, `${desc} ${where}`);
     }
   }
 
