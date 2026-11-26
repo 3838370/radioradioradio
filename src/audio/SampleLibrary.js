@@ -36,7 +36,7 @@ export class SampleLibrary {
       delete json._base;
       this.index = json;
     } catch (e) {
-      this.logger.add('sample index unavailable, using fallback list', 'err');
+      this.logger.add('índice de samples indisponível: uso a lista de reserva', 'err');
       this.index = Object.assign({}, SampleLibrary.FALLBACK);
     }
     if (local) this.index.my = local;
@@ -99,7 +99,7 @@ export class SampleLibrary {
     const promise = new Promise((resolve) => {
       this.loader(url,
         (sf) => { this.buffers.set(p, sf.buffer); this.pending.delete(p); this.loaded++; resolve(sf.buffer); },
-        () => { this.buffers.set(p, null); this.pending.delete(p); this.failed++; this.logger.add('sample failed: ' + p, 'err'); resolve(null); });
+        () => { this.buffers.set(p, null); this.pending.delete(p); this.failed++; this.logger.add('sample falhou: ' + p, 'err'); resolve(null); });
     });
     this.pending.set(p, promise);
     return promise;
@@ -111,9 +111,11 @@ export class SampleLibrary {
     return p ? this.request(p) : Promise.resolve(null);
   }
 
-  // list: [[name, n], ...]
+  // list: [[name, n], ...]. A sample that plays as code (hasCode, set by the App: it has a
+  // sound in instrumentos/ that replaces it) is not loaded.
   preload(list) {
     for (const [name, n] of list) {
+      if (this.hasCode && this.hasCode(name, n)) continue;
       const p = this.path(name, n);
       if (p) this.request(p);
     }

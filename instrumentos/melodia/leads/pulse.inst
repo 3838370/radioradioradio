@@ -1,0 +1,24 @@
+// nome: pulse
+// família: lead
+{
+  "osc": [
+    {
+      "type": "square",
+      "level": 0.5
+    },
+    {
+      "type": "sawtooth",
+      "detune": 5,
+      "level": 0.4
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.25,
+  "dur": 0.05,
+  "cutoff": 900,
+  "res": 6,
+  "fenv": 3,
+  "fdecay": 0.15,
+  "gain": 0.22,
+  "drift": 3
+}

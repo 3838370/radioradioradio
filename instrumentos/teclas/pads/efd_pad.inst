@@ -1,0 +1,31 @@
+// nome: efd_pad
+// família: pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -5,
+      "level": 0.4
+    },
+    {
+      "type": "sawtooth",
+      "detune": 5,
+      "level": 0.4
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 1,
+  "release": 2.5,
+  "cutoff": 1200,
+  "res": 0.5,
+  "flfo": {
+    "rate": 0.08,
+    "depth": 400
+  },
+  "gain": 0.11,
+  "drift": 6
+}

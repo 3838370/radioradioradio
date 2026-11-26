@@ -1,0 +1,61 @@
+// nome: cowbell cb · 0
+// família: cowbell
+// substitui: cb:0
+// origem: Dirt-Samples cb/rytm-cb.wav · refeito em código (distância 6.71)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.34,
+          "level": 0.661,
+          "decay": 0.236
+        },
+        {
+          "type": "sine",
+          "ratio": 1.57,
+          "level": 0.0437,
+          "decay": 0.0539
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.415,
+      "decay": 0.255,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1210.0,
+      "res": 1.35,
+      "pitch": {
+        "from": 3.53,
+        "time": 0.00667
+      },
+      "drive": 0.0267,
+      "gain": 1.68,
+      "transpose": 19.23
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00134,
+      "dur": 0.415,
+      "decay": 0.0596,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 418.0,
+      "res": 1.32,
+      "fenv": 1.93,
+      "fdecay": 0.0414,
+      "gain": 0.03986,
+      "transpose": 19.23
+    }
+  ]
+}

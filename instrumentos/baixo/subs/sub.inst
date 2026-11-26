@@ -1,0 +1,20 @@
+// nome: sub
+// família: sub
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "triangle",
+      "octave": 1,
+      "level": 0.12
+    }
+  ],
+  "attack": 0.01,
+  "release": 0.25,
+  "cutoff": 900,
+  "res": 0.5,
+  "gain": 0.62,
+  "drift": 2
+}

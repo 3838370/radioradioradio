@@ -1,0 +1,33 @@
+// nome: strings
+// família: pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -12,
+      "level": 0.4
+    },
+    {
+      "type": "sawtooth",
+      "detune": 11,
+      "level": 0.4
+    },
+    {
+      "type": "sawtooth",
+      "detune": 3,
+      "octave": 1,
+      "level": 0.15
+    }
+  ],
+  "attack": 2,
+  "release": 4,
+  "cutoff": 1400,
+  "res": 0.3,
+  "gain": 0.1,
+  "vibrato": {
+    "rate": 5,
+    "depth": 7,
+    "delay": 1
+  },
+  "drift": 8
+}

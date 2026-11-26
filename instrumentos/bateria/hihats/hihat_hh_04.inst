@@ -1,0 +1,61 @@
+// nome: hihat hh · 4
+// família: hihats
+// substitui: hh:4
+// origem: Dirt-Samples hh/004_hh3hit3.wav · refeito em código (distância 13.67)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 2.51,
+          "level": 0.99,
+          "decay": 0.506
+        },
+        {
+          "type": "square",
+          "ratio": 1.23,
+          "level": 0.931,
+          "decay": 2.0
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 0.406,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 194.0,
+      "res": 0.312,
+      "pitch": {
+        "from": 3.41,
+        "time": 0.0135
+      },
+      "drive": 0.145,
+      "gain": 0.2471,
+      "transpose": -2.93
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00105,
+      "dur": 1.5,
+      "decay": 1.7,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 365.0,
+      "res": 0.897,
+      "fenv": 1.53,
+      "fdecay": 0.0222,
+      "gain": 0.2433,
+      "transpose": -2.93
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+// nome: bombo jungle · 5
+// família: bombos
+// substitui: jungle:5
+// origem: Dirt-Samples jungle/jungle4kick1.wav · refeito em código (distância 11.31)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.27,
+          "level": 0.893,
+          "decay": 0.134
+        },
+        {
+          "type": "sine",
+          "ratio": 1.78,
+          "level": 0.11,
+          "decay": 0.1
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.285,
+      "decay": 0.144,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 2580.0,
+      "res": 1.71,
+      "pitch": {
+        "from": 1.46,
+        "time": 0.0214
+      },
+      "drive": 0.0867,
+      "gain": 1.155,
+      "transpose": -19.5
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 0.285,
+      "decay": 0.328,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1380.0,
+      "res": 0.679,
+      "fenv": 1.79,
+      "fdecay": 0.0428,
+      "gain": 0.1138,
+      "transpose": -19.5
+    }
+  ]
+}

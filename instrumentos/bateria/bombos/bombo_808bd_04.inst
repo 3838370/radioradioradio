@@ -1,0 +1,52 @@
+// nome: bombo 808bd · 4
+// família: bombos
+// substitui: 808bd:4
+// origem: Dirt-Samples 808bd/BD0075.WAV · refeito em código (distância 2.18)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.12,
+          "decay": 0.201
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.0335,
+          "decay": 0.201
+        },
+        {
+          "type": "sine",
+          "ratio": 7.35,
+          "level": 0.884,
+          "decay": 0.00298
+        },
+        {
+          "type": "noise",
+          "level": 0.0336,
+          "decay": 0.00403
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.44,
+      "decay": 0.812,
+      "sustain": 0.00107,
+      "release": 0.0561,
+      "cutoff": 9030.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 9.27,
+        "time": 0.136
+      },
+      "drive": 0.0,
+      "gain": 1.723,
+      "transpose": -28.78
+    }
+  ]
+}

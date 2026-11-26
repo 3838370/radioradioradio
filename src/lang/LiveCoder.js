@@ -93,7 +93,7 @@ export class LiveCoder {
     }
     let len = it.cursor;
     if (len <= 0) {
-      this.logger.add(`${layer.id}/${loop.name}: loop did not sleep`, 'err');
+      this.logger.add(`${layer.id}/${loop.name}: o loop não fez sleep`, 'err');
       len = 4;
     }
     loop.i++;
@@ -106,12 +106,12 @@ export class LiveCoder {
   }
 
   rollback(layer, err) {
-    this.logger.add(`error in ${layer.id}: ${err.message}, rolling back`, 'err');
+    this.logger.add(`erro em ${layer.id}: ${err.message}, volto ao código anterior`, 'err');
     const good = layer.prevGood;
     if (good && good !== layer.code) {
       this.load(layer, good);
       layer.prevGood = null;
-      this.emitter.emit('layer:change', { layer, desc: 'rolled back' });
+      this.emitter.emit('layer:change', { layer, desc: 'código anterior' });
     } else {
       layer.stop();
     }

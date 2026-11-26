@@ -1,0 +1,23 @@
+// nome: pluck
+// família: pluck
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "square",
+      "detune": 7,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.002,
+  "release": 0.4,
+  "dur": 0,
+  "cutoff": 2200,
+  "res": 1,
+  "fenv": 2,
+  "fdecay": 0.2,
+  "gain": 0.33,
+  "drift": 4
+}

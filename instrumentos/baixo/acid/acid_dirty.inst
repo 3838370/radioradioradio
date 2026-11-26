@@ -1,0 +1,17 @@
+// nome: acid_dirty
+// família: acid
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.06,
+  "cutoff": 300,
+  "res": 16,
+  "fenv": 7,
+  "fdecay": 0.16,
+  "drive": 0.6,
+  "gain": 0.2
+}

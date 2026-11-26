@@ -4,11 +4,14 @@ import { MathUtil } from '../core/MathUtil.js';
 //   oscillators (+unison, FM, vibrato, drift, pitch envelope) -> drive -> filter (+envelope,
 //   LFO) -> tremolo -> amp envelope -> pan -> destination
 //
+// Every field below is described (label, range, what happens when it's missing) in
+// SoundFields.js; the INSTRUMENTOS panel is built from there.
 // Preset fields (all optional except osc, gain):
 //   osc: [{ type: sine|triangle|sawtooth|square|noise, octave, detune, level, fm, unison }]
 //     fm: { ratio, index, decay }       unison: { voices, spread (cents) }
 //   attack, dur, release (s), gain, drift (cents)
 //   cutoff, res, ftype (lowpass|bandpass|highpass), fenv (start multiplier), fdecay (s)
+//   hpf (Hz)                            an extra 12 dB/oct high-pass after the filter
 //   flfo: { rate, depth (cents) }       filter wobble
 //   trem: { rate, depth (0..1) }        amplitude wobble
 //   vibrato: { rate, depth (cents), delay }
@@ -93,18 +96,27 @@ export class SynthVoice {
     cutoff = clamp(cutoff, 40, 18000);
     if (P.fenv) {
       filt.frequency.setValueAtTime(clamp(cutoff * P.fenv, 40, 18000), time);
-      filt.frequency.setTargetAtTime(cutoff, time + 0.002, P.fdecay / 3);
+      filt.frequency.setTargetAtTime(cutoff, time + 0.002, (P.fdecay || 0.2) / 3);
     } else {
       filt.frequency.value = cutoff;
     }
     if (P.flfo) this.lfo(P.flfo.rate, P.flfo.depth, time, end).connect(filt.detune);
 
     let post = filt;
+    // hpf: an extra high-pass after the filter (12 dB/oct), for steep, bright noise (hats)
+    if (P.hpf) {
+      const hp = this.node(ac.createBiquadFilter());
+      hp.type = 'highpass';
+      hp.frequency.value = clamp(+P.hpf, 20, 18000);
+      hp.Q.value = 0.7;
+      filt.connect(hp);
+      post = hp;
+    }
     if (P.trem) {
       const trem = this.node(ac.createGain());
       trem.gain.value = 1 - P.trem.depth / 2;
       this.lfo(P.trem.rate, P.trem.depth / 2, time, end).connect(trem.gain);
-      filt.connect(trem);
+      post.connect(trem);
       post = trem;
     }
     const pan = this.node(ac.createStereoPanner());

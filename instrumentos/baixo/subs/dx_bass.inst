@@ -1,0 +1,24 @@
+// nome: dx_bass
+// família: sub
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1,
+        "index": 2,
+        "decay": 0.15
+      }
+    },
+    {
+      "type": "sine",
+      "level": 0.6
+    }
+  ],
+  "attack": 0.004,
+  "release": 0.2,
+  "cutoff": 1200,
+  "res": 0.6,
+  "gain": 0.45,
+  "drift": 2
+}

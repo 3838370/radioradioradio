@@ -1,0 +1,122 @@
+// nome: palmas hand · 14
+// família: claps
+// substitui: hand:14
+// origem: Dirt-Samples hand/hand7-mono.wav · refeito em código (distância 8.63)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.14,
+          "level": 0.463,
+          "decay": 0.115
+        },
+        {
+          "type": "sine",
+          "ratio": 2.43,
+          "level": 0.999,
+          "decay": 0.353
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.485,
+      "decay": 0.139,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 4230.0,
+      "res": 1.73,
+      "pitch": {
+        "from": 0.6,
+        "time": 0.0118
+      },
+      "drive": 0.217,
+      "gain": 0.599,
+      "transpose": -26.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00175,
+      "dur": 0.485,
+      "decay": 0.00756,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1860.0,
+      "res": 0.334,
+      "fenv": 1.81,
+      "fdecay": 0.00414,
+      "gain": 0.1456,
+      "at": 0.0,
+      "transpose": -26.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00175,
+      "dur": 0.485,
+      "decay": 0.00756,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1860.0,
+      "res": 0.334,
+      "fenv": 1.81,
+      "fdecay": 0.00414,
+      "gain": 0.1456,
+      "at": 0.0093,
+      "transpose": -26.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00175,
+      "dur": 0.485,
+      "decay": 0.00756,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1860.0,
+      "res": 0.334,
+      "fenv": 1.81,
+      "fdecay": 0.00414,
+      "gain": 0.1456,
+      "at": 0.0185,
+      "transpose": -26.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00175,
+      "dur": 0.485,
+      "decay": 0.603,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1860.0,
+      "res": 0.334,
+      "fenv": 1.81,
+      "fdecay": 0.00414,
+      "gain": 0.1456,
+      "at": 0.0278,
+      "transpose": -26.28
+    }
+  ]
+}

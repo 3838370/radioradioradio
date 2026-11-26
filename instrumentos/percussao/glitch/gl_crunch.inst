@@ -1,0 +1,29 @@
+// nome: gl_crunch
+// família: gl_crunch
+{
+  "osc": [
+    {
+      "type": "noise",
+      "level": 0.8
+    },
+    {
+      "type": "square",
+      "level": 0.4
+    }
+  ],
+  "attack": 0.001,
+  "release": 0.05,
+  "ftype": "highpass",
+  "cutoff": 2500,
+  "res": 2,
+  "trem": {
+    "rate": 47,
+    "depth": 1
+  },
+  "flfo": {
+    "rate": 9,
+    "depth": 1200
+  },
+  "drive": 0.8,
+  "gain": 0.35
+}

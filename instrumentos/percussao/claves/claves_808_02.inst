@@ -1,0 +1,24 @@
+// nome: claves 808 · 2
+// família: claves
+// substitui: 808:2
+// origem: Dirt-Samples 808/CL.WAV · refeito em código (distância 5.12)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.06,
+      "decay": 0.0198,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 1.846,
+      "transpose": 38.5
+    }
+  ]
+}

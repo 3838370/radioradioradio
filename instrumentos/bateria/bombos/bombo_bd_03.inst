@@ -1,0 +1,52 @@
+// nome: bombo bd · 3
+// família: bombos
+// substitui: bd:3
+// origem: Dirt-Samples bd/BT0A0DA.wav · refeito em código (distância 7.39)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0437,
+          "decay": 0.143
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.297,
+          "decay": 0.143
+        },
+        {
+          "type": "sine",
+          "ratio": 4.35,
+          "level": 0.0617,
+          "decay": 0.00568
+        },
+        {
+          "type": "noise",
+          "level": 0.464,
+          "decay": 0.0147
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.469,
+      "decay": 0.291,
+      "sustain": 0.00238,
+      "release": 0.0767,
+      "cutoff": 2140.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 6.88,
+        "time": 0.0636
+      },
+      "drive": 0.0435,
+      "gain": 2.02,
+      "transpose": -28.88
+    }
+  ]
+}

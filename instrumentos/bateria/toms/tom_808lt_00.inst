@@ -1,0 +1,52 @@
+// nome: tom 808lt · 0
+// família: toms
+// substitui: 808lt:0
+// origem: Dirt-Samples 808lt/LT00.WAV · refeito em código (distância 6.06)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0366,
+          "decay": 0.736
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00792,
+          "decay": 0.736
+        },
+        {
+          "type": "sine",
+          "ratio": 4.02,
+          "level": 0.0383,
+          "decay": 0.0052
+        },
+        {
+          "type": "noise",
+          "level": 0.564,
+          "decay": 0.00203
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.479,
+      "decay": 0.253,
+      "sustain": 0.0023,
+      "release": 0.00845,
+      "cutoff": 1690.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 0.577,
+        "time": 0.209
+      },
+      "drive": 0.0706,
+      "gain": 1.18,
+      "transpose": -20.31
+    }
+  ]
+}

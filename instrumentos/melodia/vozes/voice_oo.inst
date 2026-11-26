@@ -1,0 +1,25 @@
+// nome: voice_oo
+// família: voice
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "triangle",
+      "level": 0.6
+    }
+  ],
+  "attack": 0.1,
+  "release": 0.6,
+  "ftype": "bandpass",
+  "cutoff": 380,
+  "res": 5,
+  "vibrato": {
+    "rate": 4.5,
+    "depth": 14,
+    "delay": 0.3
+  },
+  "drift": 25,
+  "gain": 0.4
+}

@@ -1,7 +1,9 @@
+import { Harmony } from '../music/Harmony.js';
 import { Settings } from '../core/Settings.js';
 import { Genres } from '../music/Genres.js';
 
-// ParamsBar: the PARAMS row under the top bar, opened by [PARAMS ▾]. Everything in it is
+// ParamsBar: the PARAMS, in their own tab of the side panel (they take the panel's place,
+// opened by [parâmetros] in the top bar). Everything in it is
 // generated from Settings.SCHEMA (the `ui: 'params'` entries) and Settings.GENRE_SCHEMA, so a
 // new parameter only needs a line there. Two blocks:
 //   general   one group per `group` (variation, feel, harmony, transitions): sliders and
@@ -10,14 +12,14 @@ import { Genres } from '../music/Genres.js';
 //             max layers, tape wow, and its modes and bars per chord as chips to tick
 // EXPORT / IMPORT write and read the PARAMS as .json; RESET puts them all back.
 export class ParamsBar {
-  static GROUPS = { variation: 'variation', feel: 'feel', harmony: 'harmony', transitions: 'transitions' };
+  static GROUPS = { variation: 'variação', feel: 'sensação', harmony: 'harmonia', transitions: 'transições' };
 
-  // opts: { playing: () => genre name, onResize, onExport, onImport(file) }
+  // opts: { playing: () => genre name, onExport, onImport(file) }
   constructor(p, settings, parent, opts) {
     this.p = p;
     this.settings = settings;
     this.opts = opts;
-    this.root = p.createDiv().addClass('params').parent(parent).style('display', 'none');
+    this.root = p.createDiv().addClass('params').parent(parent);
     this.open = false;
     this.genre = null;     // the genre being tuned
     this.pinned = false;   // the listener picked it (else it follows the one playing)
@@ -28,12 +30,10 @@ export class ParamsBar {
     });
   }
 
-  toggle() {
-    this.open = !this.open;
-    if (this.open) this.render();
-    this.root.style('display', this.open ? 'flex' : 'none');
-    if (this.opts.onResize) this.opts.onResize();
-    return this.open;
+  // Its tab shown or not: built fresh when it shows.
+  setOpen(open) {
+    if (open && !this.open) { this.open = true; this.render(); }
+    this.open = open;
   }
 
   // Called every frame: follow the genre playing unless one was picked.
@@ -60,7 +60,7 @@ export class ParamsBar {
       }
     }
     // the genre block
-    const g = this.group('genre');
+    const g = this.group('género');
     const sel = p.createSelect().parent(g);
     for (const name of Genres.LIST) sel.option(Genres.label(name).toUpperCase(), name);
     sel.selected(this.genre);
@@ -75,11 +75,11 @@ export class ParamsBar {
     }
     // files and reset
     const a = this.group('');
-    p.createButton('export').addClass('btn small').parent(a).mousePressed(() => this.opts.onExport());
+    p.createButton('exportar').addClass('btn small').parent(a).mousePressed(() => this.opts.onExport());
     const file = p.createFileInput((f) => this.opts.onImport(f.file), false).parent(a).hide();
-    p.createButton('import').addClass('btn small').parent(a).mousePressed(() => file.elt.click());
-    p.createButton('reset all').addClass('btn small').parent(a).mousePressed(() => {
-      if (confirm('Put every parameter back to its default?')) { settings.resetParams(); this.render(); }
+    p.createButton('importar').addClass('btn small').parent(a).mousePressed(() => file.elt.click());
+    p.createButton('repor tudo').addClass('btn small').parent(a).mousePressed(() => {
+      if (confirm('Repor todos os parâmetros nos valores de origem?')) { settings.resetParams(); this.render(); }
     });
   }
 
@@ -91,7 +91,7 @@ export class ParamsBar {
 
   // ↺ after a value that differs from its default.
   resetButton(parent, isDefault, reset) {
-    const b = this.p.createSpan('↺').addClass('reset').parent(parent).attribute('title', 'back to default');
+    const b = this.p.createSpan('↺').addClass('reset').parent(parent).attribute('title', 'repor o valor de origem');
     b.mousePressed(() => { reset(); this.render(); });
     if (isDefault()) b.hide();
     return b;
@@ -126,7 +126,7 @@ export class ParamsBar {
     p.createSpan(s.label).addClass('plabel').parent(box);
     const on = new Set(get());
     for (const o of s.options) {
-      const chip = p.createButton(String(o).slice(0, 4)).addClass('chip' + (on.has(o) ? ' active' : '')).parent(box).attribute('title', String(o));
+      const chip = p.createButton(String(Harmony.MODE_LABELS[o] || o).slice(0, 4)).addClass('chip' + (on.has(o) ? ' active' : '')).parent(box).attribute('title', String(o));
       chip.mousePressed(() => {
         const next = new Set(get());
         if (next.has(o)) { if (next.size === 1) return; next.delete(o); } else next.add(o);

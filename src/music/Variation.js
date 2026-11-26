@@ -1,4 +1,3 @@
-import { SynthPresets } from '../audio/SynthPresets.js';
 import { MathUtil } from '../core/MathUtil.js';
 import { Families } from './Families.js';
 import { Genres } from './Genres.js';
@@ -17,7 +16,7 @@ export class Variation {
   };
 
   // ctx: { rng, synthExists(name), sampleCount(folder) }
-  constructor({ rng, synthExists = (n) => !!SynthPresets[n], sampleCount = () => 1 }) {
+  constructor({ rng, synthExists = (n) => !!Families.synthFamily(n), sampleCount = () => 1 }) {
     this.rng = rng;
     this.synthExists = synthExists;
     this.sampleCount = sampleCount;

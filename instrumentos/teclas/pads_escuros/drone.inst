@@ -1,0 +1,32 @@
+// nome: drone
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -4,
+      "level": 0.4
+    },
+    {
+      "type": "sawtooth",
+      "detune": 5,
+      "level": 0.4
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.8
+    }
+  ],
+  "attack": 3,
+  "release": 4,
+  "cutoff": 600,
+  "res": 0.5,
+  "gain": 0.13,
+  "vibrato": {
+    "rate": 0.2,
+    "depth": 9,
+    "delay": 0
+  },
+  "drift": 6
+}

@@ -1,0 +1,24 @@
+// nome: string_machine
+// família: pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "unison": {
+        "voices": 4,
+        "spread": 18
+      }
+    }
+  ],
+  "attack": 1.5,
+  "release": 3,
+  "cutoff": 2200,
+  "res": 0.2,
+  "vibrato": {
+    "rate": 5.5,
+    "depth": 6,
+    "delay": 0.6
+  },
+  "gain": 0.09,
+  "drift": 6
+}

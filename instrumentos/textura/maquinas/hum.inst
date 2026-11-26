@@ -1,0 +1,23 @@
+// nome: hum
+// família: machine
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "square",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 1,
+  "release": 1.5,
+  "cutoff": 400,
+  "res": 1,
+  "trem": {
+    "rate": 0.3,
+    "depth": 0.3
+  },
+  "gain": 0.08
+}

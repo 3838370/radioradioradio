@@ -1,0 +1,31 @@
+// nome: keys
+// família: keys
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1,
+        "index": 1.1,
+        "decay": 0.35
+      }
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.1
+    }
+  ],
+  "attack": 0.004,
+  "release": 1.1,
+  "dur": 0.4,
+  "cutoff": 3600,
+  "res": 0.5,
+  "gain": 0.3,
+  "vibrato": {
+    "rate": 4.8,
+    "depth": 3,
+    "delay": 0.3
+  },
+  "drift": 5
+}

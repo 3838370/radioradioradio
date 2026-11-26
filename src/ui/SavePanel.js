@@ -41,10 +41,12 @@ export class SavePanel {
       this.p.createButton('.rad').addClass('btn small').parent(row).mousePressed(() => app.exportPattern(pat));
     }
 
-    const custom = Object.keys(app.instruments.serialize());
-    this.section(`instrumentos teus / alterados (${custom.length})`);
-    for (const name of custom) {
-      this.item(name, app.instruments.isBuiltin(name) ? 'repor' : 'apagar', () => { app.instruments.reset(name); this.render(); });
+    // sounds changed but not yet written to their files (GUARDAR is in INSTRUMENTOS)
+    const dirty = app.instruments.dirtyNames();
+    this.section(`sons por guardar (${dirty.length})`);
+    for (const name of dirty) {
+      const row = this.item(name, 'abrir', () => app.openInstrument(name));
+      this.p.createButton('desfazer').addClass('btn small').parent(row).mousePressed(() => { app.instruments.discard(name); this.render(); });
     }
 
     const sounds = app.samples.files('my');

@@ -49,6 +49,11 @@ export class Arc {
   };
 
   static TENSE = ['tension', 'surge', 'peak', 'dread', 'suspense'];
+
+  // what each section is called on screen
+  static LABELS = { sparse: 'esparso', drift: 'deriva', build: 'subida', tension: 'tensão', surge: 'ímpeto', peak: 'pico', dread: 'pavor', suspense: 'suspense', release: 'alívio', collapse: 'colapso' };
+
+  static label(name) { return Arc.LABELS[name] || name; }
   static KEYS = ['level', 'tempo', 'delay', 'feedback', 'wow', 'space', 'boost'];
 
   constructor(rng, { scale = 1 } = {}) {

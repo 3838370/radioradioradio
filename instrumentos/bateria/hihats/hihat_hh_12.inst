@@ -1,0 +1,61 @@
+// nome: hihat hh · 12
+// família: hihats
+// substitui: hh:12
+// origem: Dirt-Samples hh/012_hh3snare2.wav · refeito em código (distância 10.29)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.29,
+          "level": 0.00654,
+          "decay": 0.123
+        },
+        {
+          "type": "square",
+          "ratio": 1.85,
+          "level": 0.0865,
+          "decay": 0.162
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.54,
+      "decay": 0.128,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 162.0,
+      "res": 1.84,
+      "pitch": {
+        "from": 7.18,
+        "time": 0.0125
+      },
+      "drive": 0.193,
+      "gain": 0.7642,
+      "transpose": -3.78
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00106,
+      "dur": 0.54,
+      "decay": 0.302,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 201.0,
+      "res": 0.562,
+      "fenv": 1.89,
+      "fdecay": 0.0289,
+      "gain": 1.771,
+      "transpose": -3.78
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+// nome: tb303_square
+// família: acid
+{
+  "osc": [
+    {
+      "type": "square"
+    }
+  ],
+  "attack": 0.002,
+  "release": 0.05,
+  "cutoff": 320,
+  "res": 14,
+  "fenv": 5,
+  "fdecay": 0.16,
+  "drive": 0.3,
+  "gain": 0.2,
+  "drift": 2
+}

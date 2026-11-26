@@ -1,0 +1,28 @@
+// nome: brass
+// família: stab
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.6
+    },
+    {
+      "type": "square",
+      "octave": -1,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.6,
+  "release": 2,
+  "cutoff": 900,
+  "res": 0.6,
+  "fenv": 1.6,
+  "fdecay": 0.8,
+  "gain": 0.14,
+  "vibrato": {
+    "rate": 4,
+    "depth": 4,
+    "delay": 0.6
+  },
+  "drift": 6
+}

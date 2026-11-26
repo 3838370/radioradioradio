@@ -1,0 +1,52 @@
+// nome: industrial industrial · 12
+// família: metal
+// substitui: industrial:12
+// origem: Dirt-Samples industrial/012_13.wav · refeito em código (distância 4.5)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.076,
+          "decay": 0.0106
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00488,
+          "decay": 0.0106
+        },
+        {
+          "type": "sine",
+          "ratio": 3.65,
+          "level": 0.841,
+          "decay": 0.0114
+        },
+        {
+          "type": "noise",
+          "level": 0.792,
+          "decay": 0.0116
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.138,
+      "decay": 0.0701,
+      "sustain": 0.00112,
+      "release": 0.028,
+      "cutoff": 10700.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 39.4,
+        "time": 0.0284
+      },
+      "drive": 0.0,
+      "gain": 1.981,
+      "transpose": -39.14
+    }
+  ]
+}

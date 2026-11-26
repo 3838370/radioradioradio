@@ -1,0 +1,52 @@
+// nome: tabla tabla · 1
+// família: tabla
+// substitui: tabla:1
+// origem: Dirt-Samples tabla/001_bass_flick2.wav · refeito em código (distância 8.54)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.447,
+          "decay": 0.811
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.266,
+          "decay": 0.811
+        },
+        {
+          "type": "sine",
+          "ratio": 5.12,
+          "level": 0.24,
+          "decay": 0.00321
+        },
+        {
+          "type": "noise",
+          "level": 0.0692,
+          "decay": 0.00565
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 1.25,
+      "sustain": 0.00244,
+      "release": 0.141,
+      "cutoff": 1350.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 7.52,
+        "time": 0.0665
+      },
+      "drive": 0.0174,
+      "gain": 1.127,
+      "transpose": -21.72
+    }
+  ]
+}

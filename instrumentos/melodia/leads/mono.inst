@@ -1,0 +1,27 @@
+// nome: mono
+// família: lead
+{
+  "osc": [
+    {
+      "type": "square",
+      "level": 0.3
+    },
+    {
+      "type": "triangle",
+      "level": 0.8
+    }
+  ],
+  "attack": 0.012,
+  "release": 0.3,
+  "cutoff": 1700,
+  "res": 1,
+  "fenv": 1.6,
+  "fdecay": 0.25,
+  "gain": 0.28,
+  "vibrato": {
+    "rate": 5.4,
+    "depth": 9,
+    "delay": 0.25
+  },
+  "drift": 6
+}

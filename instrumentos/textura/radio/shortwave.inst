@@ -1,0 +1,27 @@
+// nome: shortwave
+// família: radio
+{
+  "osc": [
+    {
+      "type": "square"
+    },
+    {
+      "type": "noise",
+      "level": 0.3
+    }
+  ],
+  "attack": 0.05,
+  "release": 0.4,
+  "ftype": "bandpass",
+  "cutoff": 2200,
+  "res": 5,
+  "trem": {
+    "rate": 9,
+    "depth": 0.7
+  },
+  "flfo": {
+    "rate": 0.5,
+    "depth": 1500
+  },
+  "gain": 0.3
+}

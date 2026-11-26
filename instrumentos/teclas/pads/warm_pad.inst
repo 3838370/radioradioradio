@@ -1,0 +1,31 @@
+// nome: warm_pad
+// família: boc_pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -9,
+      "level": 0.45
+    },
+    {
+      "type": "sawtooth",
+      "detune": 9,
+      "level": 0.45
+    },
+    {
+      "type": "triangle",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 1.2,
+  "release": 3,
+  "cutoff": 900,
+  "res": 0.4,
+  "flfo": {
+    "rate": 0.12,
+    "depth": 300
+  },
+  "gain": 0.12,
+  "drift": 8
+}

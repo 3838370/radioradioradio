@@ -4,7 +4,9 @@ import { FxRack } from './audio/FxRack.js';
 import { InstrumentLibrary } from './audio/InstrumentLibrary.js';
 import { SampleLibrary } from './audio/SampleLibrary.js';
 import { Scheduler } from './audio/Scheduler.js';
-import { SynthPresets } from './audio/SynthPresets.js';
+import { InstrumentLoader } from './audio/InstrumentLoader.js';
+import { MathUtil } from './core/MathUtil.js';
+import { Theory } from './lang/Theory.js';
 import { SynthVoice } from './audio/SynthVoice.js';
 import { Emitter } from './core/Emitter.js';
 import { Logger } from './core/Logger.js';
@@ -60,8 +62,13 @@ export class App {
     this.settings = new Settings(Settings.migrate(saved.settings));
     this.emitter = new Emitter();
     this.logger = new Logger();
-    this.instruments = new InstrumentLibrary(SynthPresets);
+    // every sound from its own file (instrumentos/<papel>/<grupo>/<nome>.inst), plus the
+    // changes not yet saved to the files (kept in the browser, shown as "por guardar")
+    this.instruments = new InstrumentLibrary();
     this.instruments.load(saved.instruments);
+    this.soundsLoaded = [0, 0];
+    this.instrumentsReady = InstrumentLoader.load({ logger: this.logger, onProgress: (n, total) => { this.soundsLoaded = [n, total]; } })
+      .then((list) => this.instruments.addAll(list));
     // your saved patterns now (the bank moves older genre names to today's: fog → dub, deep →
     // saw/boc...); the bank's own .rad files load in the background (see PatternLoader)
     this.bank = new PatternBank([]);
@@ -130,25 +137,40 @@ export class App {
   setup(p) {
     this.p = p;
     this.samples = new SampleLibrary((url, ok, err) => p.loadSound(url, ok, err), this.logger);
+    // a sample with a sound rebuilt in code plays as code: its file is never loaded
+    this.samples.hasCode = (name, n) => {
+      const k = MathUtil.mod(Math.floor(n) || 0, Math.max(1, this.samples.count(name)));
+      return !!this.instruments.replacing(`${name}:${k}`);
+    };
     this.indexReady = this.samples.loadIndex().then(() => this.samplePanel && this.samplePanel.refreshFolders());
 
     // Build the control strip first so the stage's remaining height is known.
     this.panel = new ControlPanel(p, this.settings, p.select('#top'));
-    // the PARAMS row under it (closed at first), opened by its button
-    this.paramsBar = new ParamsBar(p, this.settings, p.select('#top'), {
+    // The space on the right, shared by the panel and the PARAMS (a panel of their own, not
+    // one of its tabs: each shows without the other). [parâmetros] opens the PARAMS, [≈] painel
+    // the last of the panel's tabs; pressing the one showing closes it.
+    this.lastPane = 'layer';
+    this.drawer = new Drawer(p, p.select('#drawer'), [
+      { id: 'params', label: 'Parâmetros', alone: true },
+      { id: 'layer', label: 'Camada' }, { id: 'instruments', label: 'Instrumentos' },
+      { id: 'samples', label: 'Samples' }, { id: 'save', label: 'Guardar' },
+    ], () => this.resize(p), () => {
+      const d = this.drawer;
+      if (d.current !== 'params') this.lastPane = d.current;
+      this.paramsBar.setOpen(d.isOpen && d.current === 'params');
+      paramsButton.html(d.isOpen && d.current === 'params' ? '[parâmetros ×]' : '[parâmetros]');
+      panelButton.html(d.isOpen && d.current !== 'params' ? '[≈] painel ×' : '[≈] painel');
+    });
+    this.paramsBar = new ParamsBar(p, this.settings, this.drawer.pane('params'), {
       playing: () => this.drift.dominant(),
-      onResize: () => this.resize(p),
       onExport: () => this.store.download('radio-params.json', this.settings.paramsSnapshot()),
       onImport: async (file) => {
         try { this.settings.loadParams(await this.store.readJson(file)); this.paramsBar.render(); } catch (e) { alert('Não consegui importar: ' + e.message); }
       },
     });
-    const paramsButton = this.panel.addButton('[params ▾]', () => paramsButton.html(this.paramsBar.toggle() ? '[params ▴]' : '[params ▾]'));
-    this.panel.addButton('[≈] painel', () => this.drawer.toggle());
-    this.drawer = new Drawer(p, p.select('#drawer'), [
-      { id: 'layer', label: 'Camada' }, { id: 'instruments', label: 'Instrumentos' },
-      { id: 'samples', label: 'Samples' }, { id: 'save', label: 'Guardar' },
-    ], () => this.resize(p));
+    this.drawer.current = 'layer'; // the panel opens on Camada, not on the params
+    const paramsButton = this.panel.addButton('[parâmetros]', () => this.drawer.toggleTab('params'));
+    const panelButton = this.panel.addButton('[≈] painel', () => this.drawer.toggleTab(this.lastPane));
     this.fxBar = new FxBar(p, p.select('#fxbar'), this.settings);
     this.stage = p.select('#stage');
     const { width, height } = this.stage.elt.getBoundingClientRect();
@@ -170,19 +192,21 @@ export class App {
     this.restoreLocalSamples(p);
     this.listenForDrops(p);
 
-    this.startButton = p.createButton('[ ▶ TUNE IN ]').addClass('start').parent(this.stage);
+    this.startButton = p.createButton('[ ▶ SINTONIZAR ]').addClass('start').parent(this.stage);
     this.startButton.mousePressed(() => this.tuneIn(p));
   }
 
   wireEvents(p) {
     const { emitter } = this;
-    emitter.on('layer:add', () => this.layerPanel.refresh());
+    emitter.on('layer:add', ({ layer }) => { this.layerPanel.refresh(); this.syncCodedLines(layer); });
+    // a new version of a layer's code: its drums in code come back into it
+    emitter.on('layer:change', ({ layer, coded }) => { if (!coded) this.syncCodedLines(layer); });
     emitter.on('layer:remove', ({ layer }) => {
       if (this.editor.layer === layer) this.editor.close();
       this.layerPanel.refresh();
     });
     emitter.on('layer:change', ({ layer, desc, quiet }) => {
-      if (this.editor.layer === layer && desc === 'rolled back') this.editor.setStatus('runtime error: rolled back to the previous code (see log)', 'err');
+      if (this.editor.layer === layer && desc === 'rolled back') this.editor.setStatus('erro ao correr: voltou ao código anterior (ver o registo)', 'err');
       if (!quiet) this.layerPanel.onLayerChange(layer);
     });
     emitter.on('pattern:user', ({ pattern }) => {
@@ -190,7 +214,20 @@ export class App {
       this.save();
       this.savePanel.render();
     });
-    this.instruments.on('change', ({ name }) => { this.save(); this.savePanel.render(); this.syncInstrument(name); });
+    this.instrumentsStamp = 0; // changes when any sound changes (the full code's sound lines follow)
+    // (the "por guardar" list is rebuilt only when which sounds are unsaved changes, not on
+    // every move of a slider)
+    this.instruments.on('change', ({ name }) => {
+      this.instrumentsStamp++;
+      this.save();
+      const dirty = this.instruments.dirtyNames().join('|');
+      if (dirty !== this.dirtyShown) { this.dirtyShown = dirty; this.savePanel.render(); }
+      this.syncInstrument(name);
+      this.instrumentPanel.onLibraryChange(name);
+    });
+    this.instruments.on('loaded', () => { this.instrumentPanel.reload(); this.savePanel.render(); });
+    // (the files may have come in before these listeners were set)
+    this.instrumentsReady.then(() => { this.instrumentPanel.reload(); this.savePanel.render(); });
     this.settings.on('change', ({ name, value }) => {
       if (name === 'volume' && this.state === 'playing') p.outputVolume(this.muted ? 0 : value, 0.1);
       this.applyParam(name);
@@ -212,6 +249,7 @@ export class App {
 
     await this.indexReady;
     await this.patternsReady;
+    await this.instrumentsReady;
     this.clock = new Clock(this.drift.tempo());
     this.scheduler = new Scheduler(ac, this.clock, this.logger);
     this.audio = new AudioEngine(ac, this.samples, this.instruments);
@@ -222,6 +260,7 @@ export class App {
     this.coder.attach(new LanguageApi({
       coder: this.coder, audio: this.audio, harmony: this.harmony, clock: this.clock, fx: this.fx, rng: this.rng,
       instruments: this.instruments, settings: this.settings,
+      onSetup: (cfg) => this.applySetup(cfg),
       energy: () => this.composer.energy,
       section: () => this.composer.arc.section,
       genres: () => this.drift.weights(),
@@ -294,7 +333,7 @@ export class App {
         const p = PatternLoader.parse(await file.text(), file.name);
         const id = p.id.startsWith('user_') ? p.id : 'user_' + p.id;
         this.bank.upsert(Object.assign(p, { id, user: true, edited: true }));
-        this.logger.add(`pattern imported: ${id}`, 'event');
+        this.logger.add(`padrão importado: ${id}`, 'event');
       } catch (e) {
         alert('Não consegui importar ' + file.name + ': ' + e.message);
       }
@@ -361,7 +400,8 @@ export class App {
       const code = CodeTools.updateInstrument(layer.code, name, spec);
       if (code === layer.code) continue;
       layer.code = code;
-      this.emitter.emit('layer:change', { layer, desc: null, instant: true, quiet: true });
+      // (coded: only inst lines changed; nothing else to bring back into the code)
+      this.emitter.emit('layer:change', { layer, desc: null, instant: true, quiet: true, coded: true });
     }
   }
 
@@ -375,6 +415,42 @@ export class App {
   openInstrument(name) {
     this.drawer.show('instruments');
     this.instrumentPanel.select_(name);
+  }
+
+  // A card clicked: the INSTRUMENTOS panel opens at the sound of that line of its code.
+  openSoundOf(layer, line) {
+    const name = layer && this.soundIn(layer, line);
+    if (name) this.openInstrument(name);
+  }
+
+  // The sound a line of a layer's code plays (an inst line, synth('x' / P.x), a sample with a
+  // sound rebuilt in code: s('folder', { n }), s(P.kit...), hits('folder:n')), or else the
+  // layer's first sound. null if it plays none the panel has.
+  soundIn(layer, line = '') {
+    const lib = this.instruments;
+    const params = CodeTools.paramsOf(layer.code);
+    const coded = (folder, n) => {
+      if (!folder) return null;
+      const k = MathUtil.mod(Math.floor(n) || 0, Math.max(1, this.samples.count(folder)));
+      const exact = lib.replacing(`${folder}:${k}`);
+      if (exact) return exact;
+      const any = this.codedSounds(layer).find((s) => s.key.startsWith(folder + ':'));
+      return any ? any.name : null;
+    };
+    let m = /^inst\('(\w+)'/.exec(line) || /synth\('(\w+)'/.exec(line);
+    if (m && lib.has(m[1])) return m[1];
+    m = /synth\(P\.(\w+)/.exec(line);
+    if (m && lib.has(params[m[1]])) return params[m[1]];
+    m = /\bs\((?:'(\w+)'|P\.(\w+))\s*(?:,\s*\{[^}]*?\bn:\s*(\d+))?/.exec(line);
+    if (m) { const name = coded(m[1] || params[m[2]], m[3] ? +m[3] : 0); if (name) return name; }
+    m = /hits\('(\w+):(\d+)'/.exec(line);
+    if (m) { const name = coded(m[1], +m[2]); if (name) return name; }
+    m = /^params\(/.test(line) ? Object.values(params).find((v) => lib.has(v)) : null;
+    if (m) return m;
+    const synths = CodeTools.synthsUsed(layer.code, lib.names()).filter((n) => lib.has(n));
+    const drums = this.codedSounds(layer).map((s) => s.name);
+    const first = layer.role === 'drums' || layer.role === 'perc' ? drums.concat(synths) : synths.concat(drums);
+    return first[0] || null;
   }
 
   openSamples(folder) {
@@ -399,7 +475,7 @@ export class App {
   // ───── views: cards → full code → sequencer → cards ─────
 
   static VIEWS = ['cards', 'code', 'seq'];
-  static VIEW_NAMES = { cards: 'CARDS', code: 'FULL CODE', seq: 'SEQUENCER' };
+  static VIEW_NAMES = { cards: 'CARTÕES', code: 'CÓDIGO COMPLETO', seq: 'SEQUENCIADOR' };
 
   nextView() {
     if (this.editor.isOpen) this.editor.commit();
@@ -448,19 +524,129 @@ export class App {
     return this.stepsCache.list;
   }
 
+  // The full code: the tempo and harmony (setup), then each layer with every sound it plays,
+  // the drums rebuilt in code included, so pasting it back plays the same track.
   fullCodeText() {
+    const h = this.harmony;
+    const setup = `setup({ bpm: ${Math.round(this.clock.bpm)}, key: '${Theory.name(h.key)}', mode: '${h.mode}', progression: [${h.prog.map((d) => d + 1).join(', ')}], chordBars: ${h.barsPerChord} })`;
     return FullCodeView.text([...this.composer.layers.values()], {
       genre: Genres.label(this.drift.dominant()).toUpperCase(),
-      section: this.arc.section.toUpperCase(),
+      section: Arc.label(this.arc.section).toUpperCase(),
       bpm: Math.round(this.clock.bpm),
-      key: this.harmony.keyName(),
+      key: h.keyName(),
+      setup,
+      sounds: (layer) => this.codedSoundLines(layer),
     });
+  }
+
+  // inst(...) lines for the samples a layer plays that have a sound rebuilt in code (with
+  // "substitui": it plays instead of the file). Lines the layer's code already has are left
+  // out (syncCodedLines puts them in it).
+  codedSoundLines(layer) {
+    const lines = this.codedSounds(layer).map(({ name, key }) => CodeTools.instLine(name, this.instruments.get(name), { substitui: key }));
+    return lines.filter((l) => !layer.code.includes(l.slice(0, l.indexOf(',') + 1)));
+  }
+
+  // The sounds rebuilt in code that a layer's samples play: [{ name, key: 'folder:n' }].
+  codedSounds(layer) {
+    this.soundLines = this.soundLines || new Map();
+    const plain = CodeTools.withoutCoded(layer.code);
+    const hit = this.soundLines.get(layer.id);
+    // which samples it plays depends on the code; which have a sound, on the sounds there are
+    // (an edit to a sound changes neither: no probing while a slider moves)
+    const stamp = plain + '|' + this.instruments.names().length;
+    if (hit && hit.stamp === stamp) return hit.sounds;
+    const keys = new Set();
+    for (let k = 0; k < 3; k++) {  // a few runs: some patterns pick their samples at random
+      const probe = this.coder.probe(plain, 16);
+      for (const [name, n] of probe.samples || []) keys.add(`${name}:${MathUtil.mod(Math.floor(n) || 0, Math.max(1, this.samples.count(name)))}`);
+    }
+    const sounds = [];
+    for (const key of [...keys].sort()) {
+      const name = this.instruments.replacing(key);
+      if (name) sounds.push({ name, key });
+    }
+    this.soundLines.set(layer.id, { stamp, sounds });
+    return sounds;
+  }
+
+  // A layer's code carries the drums it plays as rebuilt in code (their inst lines, with the
+  // sample each replaces), so what plays is all in the card and the panel's edits show there
+  // as they're made.
+  syncCodedLines(layer) {
+    if (!layer || !this.composer) return;
+    const plain = CodeTools.withoutCoded(layer.code);
+    const lines = this.codedSounds(layer).map(({ name, key }) => CodeTools.instLine(name, this.instruments.get(name), { substitui: key }));
+    const code = lines.length ? lines.join('\n') + '\n' + plain : plain;
+    if (code === layer.code) return;
+    layer.code = code;
+    this.emitter.emit('layer:change', { layer, desc: null, instant: true, quiet: true, coded: true });
   }
 
   copyFullCode() {
     navigator.clipboard.writeText(this.fullCodeText()).then(
-      () => { this.fullCode.copiedAt = performance.now(); this.logger.add('full code copied'); },
-      () => this.logger.add('could not copy the code', 'err'));
+      () => { this.fullCode.copiedAt = performance.now(); this.logger.add('código completo copiado'); },
+      () => this.logger.add('não consegui copiar o código', 'err'));
+  }
+
+  // [COLAR]: a program copied from the full code goes back into the radio.
+  pasteFullCode() {
+    if (!navigator.clipboard || !navigator.clipboard.readText) { this.logger.add('este browser não deixa ler a área de transferência', 'err'); return; }
+    navigator.clipboard.readText().then((text) => this.loadProgram(text), () => this.logger.add('não consegui ler a área de transferência (o browser pediu autorização?)', 'err'));
+  }
+
+  // A whole program: setup() sets tempo and harmony; each section becomes that role's layer,
+  // exactly as written (its inst lines included), locked; roles not in the program leave. The
+  // radio is locked (BLOQUEAR) so it doesn't change the track.
+  loadProgram(text) {
+    if (!this.composer) { this.logger.add('carrega em SINTONIZAR antes de colar', 'err'); return false; }
+    const prog = FullCodeView.parse(text || '');
+    if (!prog.sections.length) { this.logger.add('não encontrei secções "// ── PAPEL · nome" no texto colado', 'err'); return false; }
+    if (prog.setup) {
+      try { this.applySetup(new Function(`return (${prog.setup})`)()); } catch (e) { this.logger.add('setup inválido: ' + e.message, 'err'); }
+    }
+    const roleOf = {};
+    for (const r of PatternBank.ROLES) roleOf[PatternBank.roleLabel(r).toUpperCase()] = r;
+    const deck = this.composer.deck;
+    const bar = this.composer.bar + 1;
+    const roles = new Set();
+    this.settings.set('freeze', true);
+    for (const s of prog.sections) {
+      const role = roleOf[s.label] || (PatternBank.ROLES.includes(s.label.toLowerCase()) ? s.label.toLowerCase() : null);
+      if (!role) { this.logger.add(`papel desconhecido no texto colado: ${s.label}`, 'err'); continue; }
+      roles.add(role);
+      const layer = deck.get(role);
+      if (layer) {
+        const r = deck.liveEdit(layer.id, s.code, { desc: 'colado', final: true, restart: true });
+        if (!r.ok) this.logger.add(`${s.label}: ${r.error}`, 'err');
+      } else {
+        const id = 'user_' + s.id.replace(/^user_/, '');
+        const fresh = deck.enter(role, { id, role, code: s.code, genres: {}, energy: [0, 1], user: true, edited: true }, bar, { asIs: true });
+        if (fresh) fresh.locked = true;
+      }
+    }
+    for (const layer of [...deck.values()]) if (!roles.has(layer.role)) deck.exit(layer, bar);
+    this.settings.set('densityAuto', false);
+    this.settings.set('density', Math.max(1, roles.size));
+    this.fullCode.pastedAt = performance.now();
+    this.logger.add(`programa colado: ${roles.size} camadas, bloqueado (BLOQUEAR)`, 'event');
+    return true;
+  }
+
+  // setup({ bpm, key, mode, progression, chordBars }) from a program: tempo and key on
+  // manual, the progression asked of the harmony (it starts on the next 4-bar boundary).
+  applySetup(cfg) {
+    const S = this.settings;
+    if (cfg.bpm) { S.set('bpm', Math.round(+cfg.bpm)); S.set('bpmAuto', false); }
+    if (cfg.key != null) {
+      const pc = typeof cfg.key === 'number' ? cfg.key : Theory.NAMES.indexOf(String(cfg.key).toUpperCase());
+      if (pc >= 0) S.set('key', pc);
+    }
+    if (cfg.mode) S.set('mode', cfg.mode);
+    const change = {};
+    if (Array.isArray(cfg.progression) && cfg.progression.length) change.prog = cfg.progression.map((d) => Math.max(0, Math.round(d) - 1));
+    if (cfg.chordBars) change.bars = Math.max(1, Math.round(cfg.chordBars));
+    if (Object.keys(change).length) this.harmony.request(change);
   }
 
 
@@ -471,7 +657,7 @@ export class App {
   toggleGenre(g) {
     const on = new Set(this.drift.allowed);
     if (on.has(g)) {
-      if (on.size === 1) { this.logger.add('at least one genre has to stay on'); return; }
+      if (on.size === 1) { this.logger.add('tem de ficar pelo menos um género ligado'); return; }
       on.delete(g);
     } else {
       on.add(g);
@@ -602,17 +788,18 @@ export class App {
     p.textAlign(p.CENTER);
     p.textSize(T.size.small);
     p.fill(T.text);
-    p.text('ENDLESS JS CODED AMBIENT RADIO', cx, cy - 28);
+    p.text('RÁDIO INFINITA ESCRITA EM CÓDIGO', cx, cy - 28);
     p.fill(T.dim);
     p.text(Genres.LIST.map((g) => Genres.label(g).toUpperCase()).join(' · '), cx, cy - 12);
+    // the status line sits under the tune-in button (.start in styles.css: cy+14 to about cy+51)
     if (this.state === 'loading') {
       const s = this.samples;
       const blink = (performance.now() >> 9) % 2 ? '_' : ' ';
       p.fill(T.text);
-      p.text((s && s.index ? `LOADING SAMPLES ${s.loaded} / ${s.loaded + s.pendingCount}` : 'CONNECTING') + blink, cx, cy + 56);
-    } else if (this.patternsLoaded[0] < this.patternsLoaded[1]) {
+      p.text((s && s.index ? `A CARREGAR SAMPLES ${s.loaded} / ${s.loaded + s.pendingCount}` : 'A LIGAR') + blink, cx, cy + 76);
+    } else if (this.patternsLoaded[0] < this.patternsLoaded[1] || this.soundsLoaded[0] < this.soundsLoaded[1] || !this.soundsLoaded[1]) {
       p.fill(T.dim);
-      p.text(`LOADING PATTERNS ${this.patternsLoaded[0]} / ${this.patternsLoaded[1]}`, cx, cy + 56);
+      p.text(`A CARREGAR PADRÕES ${this.patternsLoaded[0]} / ${this.patternsLoaded[1]} · SONS ${this.soundsLoaded[0]} / ${this.soundsLoaded[1]}`, cx, cy + 76);
     }
     p.textAlign(p.LEFT);
   }

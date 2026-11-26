@@ -1,0 +1,23 @@
+// nome: dub_stab_m7
+// família: organ
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "level": 0.6
+    },
+    {
+      "type": "sawtooth",
+      "level": 0.4
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.08,
+  "release": 0.5,
+  "cutoff": 1200,
+  "res": 2,
+  "fenv": 3,
+  "fdecay": 0.08,
+  "gain": 0.22,
+  "drift": 3
+}

@@ -1,0 +1,61 @@
+// nome: hihat hh27 · 12
+// família: hihats
+// substitui: hh27:12
+// origem: Dirt-Samples hh27/012_hh27snare2.wav · refeito em código (distância 10.85)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.05,
+          "level": 0.157,
+          "decay": 0.101
+        },
+        {
+          "type": "square",
+          "ratio": 1.88,
+          "level": 1.0,
+          "decay": 0.349
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.73,
+      "decay": 0.0849,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 178.0,
+      "res": 2.49,
+      "pitch": {
+        "from": 1.73,
+        "time": 0.0205
+      },
+      "drive": 0.216,
+      "gain": 0.9937,
+      "transpose": -8.37
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00182,
+      "dur": 0.73,
+      "decay": 0.693,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 920.0,
+      "res": 0.808,
+      "fenv": 3.88,
+      "fdecay": 0.199,
+      "gain": 0.267,
+      "transpose": -8.37
+    }
+  ]
+}

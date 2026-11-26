@@ -1,0 +1,15 @@
+// nome: gl_hiss
+// família: gl_hiss
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 0.001,
+  "release": 0.03,
+  "ftype": "bandpass",
+  "cutoff": 8600,
+  "res": 7,
+  "gain": 0.6
+}

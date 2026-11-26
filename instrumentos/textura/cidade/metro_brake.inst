@@ -1,0 +1,28 @@
+// nome: metro_brake
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "sine",
+      "detune": 30,
+      "level": 0.7
+    }
+  ],
+  "attack": 0.3,
+  "release": 0.8,
+  "ftype": "bandpass",
+  "cutoff": 3000,
+  "res": 3,
+  "vibrato": {
+    "rate": 9,
+    "depth": 18,
+    "delay": 0
+  },
+  "pitch": {
+    "from": -2,
+    "time": 1
+  },
+  "gain": 0.08
+}

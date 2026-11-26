@@ -1,0 +1,61 @@
+// nome: hihat hh27 · 7
+// família: hihats
+// substitui: hh27:7
+// origem: Dirt-Samples hh27/007_hh27opendhh.wav · refeito em código (distância 11.77)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.24,
+          "level": 0.0622,
+          "decay": 0.347
+        },
+        {
+          "type": "square",
+          "ratio": 1.2,
+          "level": 0.16,
+          "decay": 0.227
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.74,
+      "decay": 0.0947,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 16600.0,
+      "res": 1.97,
+      "pitch": {
+        "from": 11.0,
+        "time": 0.00581
+      },
+      "drive": 0.333,
+      "gain": 0.08702,
+      "transpose": 49.58
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00171,
+      "dur": 0.74,
+      "decay": 0.431,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 7300.0,
+      "res": 2.79,
+      "fenv": 1.41,
+      "fdecay": 0.021,
+      "gain": 0.5338,
+      "transpose": 49.58
+    }
+  ]
+}

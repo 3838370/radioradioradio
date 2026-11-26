@@ -16,12 +16,12 @@ served over http(s), not opened as a file.
 To try it locally, from this folder:
 
 ```bash
-python -m http.server 8000
+python serve.py
 ```
 
-then open http://localhost:8000. (On Windows, Python may serve `.js` files with the wrong
-type and the browser then refuses the modules; any server that sends `text/javascript`
-works.)
+then open http://localhost:8765. `serve.py` (Python 3, nothing to install) turns the
+browser cache off, serves `.js` as JavaScript (Python's own `http.server` may not, on
+Windows), and lets the Instrumentos panel save sounds to their files.
 
 ## Playing it
 
@@ -62,7 +62,8 @@ Nothing repeats for long:
   IDM ones like 12, 20, 28), key and mode, volume. Each **auto** lets the radio decide and
   shows what it chose; moving a control takes over (until you tick auto again), and the
   radio reads what you're doing: many layers and a slow tempo is dread, fast is surge.
-- **[PARAMS]:** a second row with everything the radio decides by itself: how often it swaps
+- **[parâmetros]:** opens in the side panel's place (its first tab; [≈] painel goes back to
+  the other tabs, and pressing the one open closes it), with everything the radio decides by itself: how often it swaps
   patterns, versions, timbres, drops and collages; timing, dynamics and detune; how often it
   modulates and whether keys wait for calm; how long each genre lasts, fades, tempo glides
   and section lengths. And per genre: tempo, energy, max layers, tape wow, modes and bars per
@@ -72,16 +73,42 @@ Nothing repeats for long:
 - **Views** (⇄ bottom right, or **V**): code cards, the full code (live; **[COPY]**), and a
   step sequencer. Everything you do in any view is written into the same code.
 - **Code cards:** drag a number up/down to change it; click to edit (click outside to run).
+  In the corner: **[≈]** sound panel, **[S]** solo (only the layers on solo are heard; several
+  can be on), **[M]** mute, **[L]** lock, **[↻]** another pattern. The sequencer has [S] [M] [L] too.
 - **Bottom:** effect pads (keys 1-8, Shift latches), delay, an EQ, the spectrum and an XY pad.
 - **Keys:** N change something now, T next genre, S next section, R refresh, M mute, V view.
 
-Settings, parameters, your edited patterns and instruments are kept in your browser
-(localStorage). Your patterns can be exported one by one as `.rad` files (the Guardar tab).
+- **Sounds (≈ → Instrumentos):** pick the instrument (bateria, percussão, baixo, teclas,
+  melodia, textura), the group (bombos, tarolas…) and the sound; every value the sound
+  engine reads is a control, and its code shows below. **guardar** writes it to the sound's
+  own file (`instrumentos/…/<name>.inst`) through the local server; **guardar como** makes
+  a new one. The drums and percussion are rebuilt in code and always play as code (their
+  sample files aren't loaded); each card shows the code of the drums it plays, and an edit in
+  the panel is heard at once in what is playing. Clicking a card opens its code and the panel
+  at the sound of that line. **▶ original / A/B** in the panel play the old sample, to compare.
+  Breaks, voices and field sounds still play their samples.
+- **Full code:** **[COPIAR]** copies the whole track (tempo and harmony in `setup(...)`, every
+  sound it plays, every layer's code); **[COLAR]** loads such a program back, locked.
+
+Settings, parameters and your edited patterns are kept in your browser (localStorage), and
+so are changes to sounds until you save them to their files. Your patterns can be exported
+one by one as `.rad` files (the Guardar tab).
+
+To edit and save sounds, run the local server (it can write the sound files):
+
+```bash
+python serve.py
+```
+
+(online, on a static host, sounds can be tuned and heard but not saved.)
 
 ## How it's made
 
 - `patterns/<genre>/<id>.rad`: the bank, one file per pattern (a short header and the code as
   it shows on its card), listed in `patterns/index.txt`.
+- `instrumentos/<instrument>/<group>/<name>.inst`: every sound, one file each (a short header
+  and the recipe the synth plays), listed in `instrumentos/index.txt`. The drums rebuilt in
+  code say which sample they replace (`// substitui: 808bd:5`).
 - `src/music/Genres.js`: everything that makes each genre itself, in one table.
 - `src/core/Settings.js`: every knob and parameter, described once (the PARAMS row is built
   from it).

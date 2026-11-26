@@ -1,0 +1,61 @@
+// nome: industrial industrial · 4
+// família: metal
+// substitui: industrial:4
+// origem: Dirt-Samples industrial/004_05.wav · refeito em código (distância 8.5)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.8,
+          "level": 0.0624,
+          "decay": 0.411
+        },
+        {
+          "type": "sine",
+          "ratio": 1.62,
+          "level": 0.894,
+          "decay": 1.21
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.2,
+      "decay": 0.203,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 6580.0,
+      "res": 1.76,
+      "pitch": {
+        "from": 23.2,
+        "time": 0.0518
+      },
+      "drive": 0.383,
+      "gain": 0.4522,
+      "transpose": -22.18
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00132,
+      "dur": 0.2,
+      "decay": 0.198,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1270.0,
+      "res": 0.854,
+      "fenv": 2.05,
+      "fdecay": 0.165,
+      "gain": 0.3191,
+      "transpose": -22.18
+    }
+  ]
+}

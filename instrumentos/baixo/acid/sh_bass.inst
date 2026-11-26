@@ -1,0 +1,22 @@
+// nome: sh_bass
+// família: acid_bass
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "square",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.12,
+  "cutoff": 600,
+  "res": 6,
+  "fenv": 4,
+  "fdecay": 0.15,
+  "gain": 0.3,
+  "drift": 2
+}

@@ -1,0 +1,34 @@
+// nome: boc_choir
+// família: boc_pad
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "detune": -10
+    },
+    {
+      "type": "triangle",
+      "detune": 10
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.25
+    }
+  ],
+  "attack": 2,
+  "release": 3,
+  "cutoff": 1400,
+  "res": 0.5,
+  "flfo": {
+    "rate": 0.2,
+    "depth": 300
+  },
+  "vibrato": {
+    "rate": 0.3,
+    "depth": 16,
+    "delay": 0
+  },
+  "gain": 0.13,
+  "drift": 12
+}

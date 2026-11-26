@@ -1,0 +1,61 @@
+// nome: perc dr · 15
+// família: outros
+// substitui: dr:15
+// origem: Dirt-Samples dr/015_024.WAV · refeito em código (distância 10.12)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.25,
+          "level": 0.72,
+          "decay": 0.155
+        },
+        {
+          "type": "sine",
+          "ratio": 1.45,
+          "level": 0.368,
+          "decay": 0.398
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.6,
+      "decay": 0.612,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 2840.0,
+      "res": 0.772,
+      "pitch": {
+        "from": 0.938,
+        "time": 0.0167
+      },
+      "drive": 0.0,
+      "gain": 1.007,
+      "transpose": -11.88
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00143,
+      "dur": 0.6,
+      "decay": 0.255,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 204.0,
+      "res": 1.47,
+      "fenv": 2.12,
+      "fdecay": 0.021,
+      "gain": 8.574,
+      "transpose": -11.88
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+// nome: prato hh27 · 10
+// família: pratos
+// substitui: hh27:10
+// origem: Dirt-Samples hh27/010_hh27ride.wav · refeito em código (distância 13.73)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.13,
+          "level": 0.281,
+          "decay": 1.26
+        },
+        {
+          "type": "square",
+          "ratio": 1.48,
+          "level": 0.261,
+          "decay": 0.194
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.27,
+      "decay": 0.895,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 7150.0,
+      "res": 2.85,
+      "pitch": {
+        "from": 16.4,
+        "time": 0.022
+      },
+      "drive": 0.0,
+      "gain": 0.1047,
+      "transpose": 50.8
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00169,
+      "dur": 1.27,
+      "decay": 0.609,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2080.0,
+      "res": 0.377,
+      "fenv": 2.21,
+      "fdecay": 0.0553,
+      "gain": 0.09687,
+      "transpose": 50.8
+    }
+  ]
+}

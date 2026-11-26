@@ -1,0 +1,61 @@
+// nome: perc dr · 2
+// família: outros
+// substitui: dr:2
+// origem: Dirt-Samples dr/002_004.WAV · refeito em código (distância 7.83)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.18,
+          "level": 0.402,
+          "decay": 0.315
+        },
+        {
+          "type": "sine",
+          "ratio": 1.83,
+          "level": 0.437,
+          "decay": 0.396
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.31,
+      "decay": 0.124,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 633.0,
+      "res": 0.858,
+      "pitch": {
+        "from": 4.7,
+        "time": 0.0394
+      },
+      "drive": 0.133,
+      "gain": 0.005551,
+      "transpose": -24.86
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00174,
+      "dur": 0.31,
+      "decay": 0.3,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 9110.0,
+      "res": 3.1,
+      "fenv": 1.26,
+      "fdecay": 0.0262,
+      "gain": 2.652,
+      "transpose": -24.86
+    }
+  ]
+}

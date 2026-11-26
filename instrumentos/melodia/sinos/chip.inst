@@ -1,0 +1,19 @@
+// nome: chip
+// família: bell
+{
+  "osc": [
+    {
+      "type": "square"
+    }
+  ],
+  "attack": 0.001,
+  "release": 0.08,
+  "cutoff": 8000,
+  "res": 0.5,
+  "vibrato": {
+    "rate": 7,
+    "depth": 15,
+    "delay": 0.1
+  },
+  "gain": 0.14
+}

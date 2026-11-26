@@ -1,0 +1,30 @@
+// nome: dub_chord
+// família: stab
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -6,
+      "level": 0.5
+    },
+    {
+      "type": "sawtooth",
+      "detune": 6,
+      "level": 0.5
+    },
+    {
+      "type": "square",
+      "octave": -1,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.003,
+  "dur": 0.1,
+  "release": 0.35,
+  "cutoff": 700,
+  "res": 4,
+  "fenv": 4,
+  "fdecay": 0.12,
+  "gain": 0.2,
+  "drift": 4
+}

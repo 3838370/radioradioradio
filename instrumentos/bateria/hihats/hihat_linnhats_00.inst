@@ -1,0 +1,61 @@
+// nome: hihat linnhats · 0
+// família: hihats
+// substitui: linnhats:0
+// origem: Dirt-Samples linnhats/1.wav · refeito em código (distância 8.62)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 3.12,
+          "level": 1.0,
+          "decay": 0.0511
+        },
+        {
+          "type": "square",
+          "ratio": 2.81,
+          "level": 0.408,
+          "decay": 0.00381
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.12,
+      "decay": 0.0828,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 10100.0,
+      "res": 1.02,
+      "pitch": {
+        "from": 3.6,
+        "time": 0.0231
+      },
+      "drive": 0.132,
+      "gain": 1.952,
+      "transpose": 50.6
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00124,
+      "dur": 0.12,
+      "decay": 0.0534,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 534.0,
+      "res": 0.3,
+      "fenv": 0.546,
+      "fdecay": 0.0967,
+      "gain": 2.351,
+      "transpose": 50.6
+    }
+  ]
+}

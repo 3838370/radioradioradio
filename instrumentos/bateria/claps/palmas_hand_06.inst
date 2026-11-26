@@ -1,0 +1,61 @@
+// nome: palmas hand · 6
+// família: claps
+// substitui: hand:6
+// origem: Dirt-Samples hand/hand17.wav · refeito em código (distância 7.73)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "triangle"
+        },
+        {
+          "type": "triangle",
+          "ratio": 3.05,
+          "level": 0.302,
+          "decay": 0.0129
+        },
+        {
+          "type": "triangle",
+          "ratio": 9.61,
+          "level": 0.279,
+          "decay": 0.309
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.24,
+      "decay": 0.0927,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 2130.0,
+      "res": 2.52,
+      "pitch": {
+        "from": 17.8,
+        "time": 0.003
+      },
+      "drive": 0.346,
+      "gain": 0.12,
+      "transpose": -22.83
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00101,
+      "dur": 0.24,
+      "decay": 0.133,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "highpass",
+      "cutoff": 5440.0,
+      "res": 2.11,
+      "fenv": 1.02,
+      "fdecay": 0.0249,
+      "gain": 0.1722,
+      "transpose": -22.83
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+// nome: cosmic_sweep
+// família: drone
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sawtooth",
+      "level": 0.3
+    }
+  ],
+  "attack": 3,
+  "release": 4,
+  "ftype": "bandpass",
+  "cutoff": 1200,
+  "res": 6,
+  "flfo": {
+    "rate": 0.07,
+    "depth": 2400
+  },
+  "gain": 0.1
+}

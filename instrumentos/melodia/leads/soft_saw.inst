@@ -1,0 +1,22 @@
+// nome: soft_saw
+// família: boc_lead
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.6
+    },
+    {
+      "type": "triangle",
+      "level": 0.5
+    }
+  ],
+  "attack": 0.05,
+  "release": 0.8,
+  "cutoff": 1500,
+  "res": 0.8,
+  "fenv": 1.5,
+  "fdecay": 0.5,
+  "gain": 0.2,
+  "drift": 5
+}

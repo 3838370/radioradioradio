@@ -1,4 +1,3 @@
-import { SynthPresets } from '../audio/SynthPresets.js';
 import { Families } from '../music/Families.js';
 
 // CodeTools: small, safe text edits on pattern code used by the editing UI.
@@ -78,9 +77,10 @@ export class CodeTools {
 
   // Instruments a layer plays: synth('name', ...), the instruments in its params line, and
   // names chosen in code on synth lines, e.g. synth(vary('v', ['bell', 'glass'], 8), ...).
-  // `known` (instrument names) filters the quoted words; without it, the built-in presets.
+  // `known` (sound names, the library's) filters the quoted words; without it, the names
+  // the Families know.
   static synthsUsed(code, known = null) {
-    const set = new Set(known || Object.keys(SynthPresets));
+    const set = new Set(known || Object.values(Families.SYNTHS).flat());
     const names = [...code.matchAll(/synth\('(\w+)'/g)].map((m) => m[1]);
     for (const v of Object.values(CodeTools.paramsOf(code))) if (set.has(v)) names.push(v);
     if (known) {
@@ -109,9 +109,17 @@ export class CodeTools {
     return String(v);
   }
 
-  static instLine(name, spec) { return `inst('${name}', ${CodeTools.toCode(spec)})`; }
+  // meta: { substitui: '808bd:5' } for a sample rebuilt in code
+  static instLine(name, spec, meta = null) {
+    return `inst('${name}', ${CodeTools.toCode(spec)}${meta && meta.substitui ? `, { substitui: '${meta.substitui}' }` : ''})`;
+  }
 
   static isInstLine(line) { return /^inst\('/.test(line); }
+
+  // an inst line of a sample rebuilt in code (it says which sample it plays instead of)
+  static isCodedLine(line) { return CodeTools.isInstLine(line) && /, \{ substitui: '[^']+' \}\)\s*$/.test(line); }
+
+  static withoutCoded(code) { return code.split('\n').filter((l) => !CodeTools.isCodedLine(l)).join('\n'); }
 
   // Leading inst(...) lines, the params line, the top-level fx line and the mute line are
   // the head; the rest is the body.
@@ -133,9 +141,14 @@ export class CodeTools {
     return lines.length ? lines.join('\n') + '\n' + plain : plain;
   }
 
-  // Replaces the inst line for `name` (if present) with the library's current definition.
+  // Replaces the inst line for `name` (if present) with the library's current definition
+  // (keeping what sample it replaces, when it says so).
   static updateInstrument(code, name, spec) {
-    return code.split('\n').map((l) => (l.startsWith(`inst('${name}',`) ? CodeTools.instLine(name, spec) : l)).join('\n');
+    return code.split('\n').map((l) => {
+      if (!l.startsWith(`inst('${name}',`)) return l;
+      const m = /, \{ substitui: '([^']+)' \}\)\s*$/.exec(l);
+      return CodeTools.instLine(name, spec, m ? { substitui: m[1] } : null);
+    }).join('\n');
   }
 
   // Sample folders a layer plays: s('folder', ...) and the folders in its params line.

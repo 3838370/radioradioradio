@@ -1,0 +1,25 @@
+// nome: gl_thump
+// família: gl_thump
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "noise",
+      "level": 0.25,
+      "decay": 0.01
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.03,
+  "release": 0.12,
+  "cutoff": 1800,
+  "res": 1,
+  "pitch": {
+    "from": 24,
+    "time": 0.04
+  },
+  "drive": 0.6,
+  "gain": 0.7
+}

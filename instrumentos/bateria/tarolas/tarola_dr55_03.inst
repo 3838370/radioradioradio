@@ -1,0 +1,61 @@
+// nome: tarola dr55 · 3
+// família: tarolas
+// substitui: dr55:3
+// origem: Dirt-Samples dr55/003_DR55 snare.wav · refeito em código (distância 7.4)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "triangle"
+        },
+        {
+          "type": "triangle",
+          "ratio": 1.87,
+          "level": 0.773,
+          "decay": 0.102
+        },
+        {
+          "type": "triangle",
+          "ratio": 2.62,
+          "level": 0.0805,
+          "decay": 0.0064
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.135,
+      "decay": 0.0435,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 8380.0,
+      "res": 0.3,
+      "pitch": {
+        "from": 0.158,
+        "time": 0.0154
+      },
+      "drive": 0.17,
+      "gain": 1.721,
+      "transpose": 3.97
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00171,
+      "dur": 0.135,
+      "decay": 0.0898,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "highpass",
+      "cutoff": 4250.0,
+      "res": 0.781,
+      "fenv": 1.82,
+      "fdecay": 0.0249,
+      "gain": 0.6354,
+      "transpose": 3.97
+    }
+  ]
+}

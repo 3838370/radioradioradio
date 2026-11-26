@@ -1,0 +1,23 @@
+// nome: stab
+// família: stab
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "square",
+      "detune": -6,
+      "level": 0.5
+    }
+  ],
+  "attack": 0.003,
+  "dur": 0,
+  "release": 0.18,
+  "cutoff": 1400,
+  "res": 2,
+  "fenv": 1.5,
+  "fdecay": 0.08,
+  "drive": 0.15,
+  "gain": 0.15
+}

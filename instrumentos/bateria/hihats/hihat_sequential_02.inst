@@ -1,0 +1,61 @@
+// nome: hihat sequential · 2
+// família: hihats
+// substitui: sequential:2
+// origem: Dirt-Samples sequential/002_Tom Hat Closed.wav · refeito em código (distância 12.19)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.42,
+          "level": 0.062,
+          "decay": 0.272
+        },
+        {
+          "type": "square",
+          "ratio": 5.17,
+          "level": 0.0294,
+          "decay": 0.0619
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.11,
+      "decay": 0.153,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 584.0,
+      "res": 0.976,
+      "pitch": {
+        "from": 2.65,
+        "time": 0.0257
+      },
+      "drive": 0.426,
+      "gain": 0.1591,
+      "transpose": 50.08
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.0023,
+      "dur": 0.11,
+      "decay": 0.0781,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1870.0,
+      "res": 0.3,
+      "fenv": 0.317,
+      "fdecay": 0.0948,
+      "gain": 5.279,
+      "transpose": 50.08
+    }
+  ]
+}

@@ -60,14 +60,14 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 (The previous IDM bank, BoC / SAW / Autechre / drill, is archived in `Temp\patterns-idm-v2`.)
 
 ## Running it
-- Start a local server from this folder. The helper scripts (kept outside the repository, in the
-  project's `Scripts` folder) include `serve.py`, which turns browser caching off so code changes
-  always show up on reload and serves `.js` as JavaScript:
+- Start the local server in this folder, `serve.py`: it turns browser caching off so code
+  changes always show up on reload, serves `.js` as JavaScript, and lets the Instrumentos panel
+  save sounds to their files:
   ```bash
-  python Scripts/serve.py
+  python serve.py
   ```
   Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files (use Ctrl+Shift+R), and on Windows it may serve `.js` as plain text, which the browser refuses for modules.
-- `test.html` on the same server runs the checks. `python Scripts/testar.py` runs them in a headless Chrome; `python Scripts/testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.
+- `test.html` on the same server runs the checks. (Outside the repository, the project's helper `Scripts/testar.py` runs them in a headless Chrome; `python Scripts/testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.)
 - **URL flags:** `?fast=1` (each genre lasts about 1 minute and the pace is divided by 8), `?seed=123` (repeatable choices).
 - **Controls:**
   - **Pace:** how often something changes (every 4–64 bars).
@@ -112,9 +112,9 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 - **Drag numbers:** drag any number in a card's code up or down to hear it change at once. Big numbers (filters) move exponentially; small ones step.
 - **Sound panel (≈):** four tabs.
   - **Camada:** volume, filter, resonance, reverb, delay, wobble and crush for one layer. The sliders rewrite its `fx({...})` line, and there are links to the instruments and samples it uses.
-  - **Instrumentos:** design synths (oscillators, envelope, filter, FM, vibrato, drift). Edits are heard on the next note. **Guardar como** creates a new instrument for `synth('name', ...)`, and **repor** restores a built-in.
+  - **Instrumentos:** every sound, organised as its files are: pick the instrument (bateria, percussão, baixo, teclas, melodia, textura), then a sound in its groups (bombos, tarolas, hihats…). Every field the sound engine reads is a control (built from `SoundFields`); sounds made of parts (the drums rebuilt in code) edit one part at a time, with **▶ original** and **▶ A/B** against the sample they rebuild. Edits are heard at once, show in the sound's code and are marked "por guardar" until **guardar** writes them to the sound's file (through the local server `serve.py`; online they can't be saved). **guardar como** makes a new file in the same folder, **desfazer** goes back to the file, **apagar** deletes it.
   - **Samples:** browse the Dirt-Samples folders and your own sounds. Shape them with pitch/rate, start, length, reverse and granular, then listen and insert the code.
-  - **Guardar:** your saved patterns, instruments and sounds, plus .json export/import.
+  - **Guardar:** your saved patterns and sounds, the sounds with changes not yet saved to their files, plus .json export/import.
 - **XY pad** (bottom right): X is the master filter, Y the space (reverb/delay). Double-click resets.
 - **Your own sounds:** drag .wav / .mp3 / .ogg files onto the window. They become `s('my', { n })`.
 - **Saving:** every edit is saved in this browser. Edited layers become `user_…` patterns that the composer also picks.
@@ -124,7 +124,7 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
   - **Esc** closes without running, and **Tab** indents.  - Code with an error is refused and the old code keeps playing.
   - An edited layer is locked and marked `[edited]`. Unlock it (L) to let the composer mutate it again, using your code as its new starting point.
 - **The card shows everything that makes the sound:**
-  - one `inst('name', {...})` line for each instrument the layer plays (edit it there and the instrument changes, in the Instrumentos tab too)
+  - one `inst('name', {...})` line for each sound the layer plays (edit it there and the sound changes, in the Instrumentos tab too, "por guardar")
   - a full `fx({...})` line, which the automation rewrites as it moves and the Camada sliders also write to
   - a highlighted comment for the effect pads active right now, e.g. `// + REVERB WASH (rev +0.45)`
   - The composer only mutates the code below these lines.
@@ -147,7 +147,9 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
   - AudioEngine, Bus and TapeFx (the master and per-layer chains; TapeFx's wow is scaled per genre)
   - Reverb: an algorithmic Freeverb-style reverb. It replaced p5.Reverb, whose long convolution caused crackling.
   - FxRack: the 8 effect pads and the master delay
-  - SynthVoice (its random drift and notes' detune scaled by PARAMS detune), SampleVoice and SynthPresets
+  - SynthVoice (its random drift and notes' detune scaled by PARAMS detune) and SampleVoice; SoundFields describes every field of a sound's recipe (the Instrumentos panel is built from it, and a test keeps it equal to what SynthVoice reads)
+  - InstrumentLoader (reads `instrumentos/**/*.inst`, one file per sound; saves through the local server) and InstrumentLibrary (the sounds by name, changes "por guardar", which sound replaces which sample)
+  - A sample with a sound that says `// substitui: folder:n` always plays that sound instead (AudioEngine.codedFor, with the sample's rate/cut/attack via codedNote and SoundFields.atRate); its file is never loaded. Samples without one (breaks, voices, field sounds) play their file. Each card carries the inst lines of the drums it plays.
 - `src/lang`: the language itself. LiveCoder compiles, hot-swaps and rolls back code (and captures `fx()`, `params()` and `mute()`), LanguageApi is what code can call, plus CodeTools (the head lines: inst, params, fx, mute, hits), Layer, Loop, Iteration, Ring and Theory.
 - `src/music`:
   - Genres: everything that makes each genre itself, in one table: tempo, intensity, where it tends to go, the sections it prefers and its layer cap, modes, progressions, chord length (`chordBars`), tape wow, role order, collage pool, and its **palette** (instruments per family) and **kits** (sample folders per family). The PARAMS row lays the listener's values over it.
@@ -245,7 +247,8 @@ loop('name', (i) => {
   - **Tension (dread, suspense):** `dread_sub`, `dread_pad`, `low_brass`, `riser_slow` (climbs two octaves over 8 s), `tension_string` (tremolo), `metal_scrape`
   - **Collage (FSOL):** `radio_tune`, `tape_warble`, `formant_voice`, `shortwave`
 - `fx({ lpf, res, rev, delay, amp, wobble, crush })`: the layer's filter, reverb send (0..0.7), delay send (0..0.6), level, tape wobble (0..0.9, pitch drift) and bit-crush (0..0.6). At the top level it sets the layer. Inside a loop it changes it at that moment.
-- `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or overrides an instrument (same fields as the presets). The radio writes these lines itself, so patterns don't need them.
+- `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or changes a sound (the fields of `SoundFields`; `{ layers: [...] }` for a sound made of parts). A third argument `{ substitui: '808bd:5' }` makes it play instead of that sample (always). The radio writes these lines itself, so patterns don't need them. Every sound lives in its own file, `instrumentos/<instrument>/<group>/<name>.inst`.
+- `setup({ bpm, key, mode, progression, chordBars })`: the tempo and harmony of a whole program. The full code starts with it; pasting the full code back ([COLAR]) applies it.
 - `params({ name: value, ... })`: top level, what the radio may vary in this layer; the code reads `P.name`.
 - **Harmony.** Always use these; never write note names.
   - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 2-4 bars in saw and boc, 8-16 in acid, minimal, dub and ae).

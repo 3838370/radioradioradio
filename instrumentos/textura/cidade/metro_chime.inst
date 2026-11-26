@@ -1,0 +1,27 @@
+// nome: metro_chime
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 2,
+        "index": 0.6,
+        "decay": 0.4
+      }
+    },
+    {
+      "type": "sine",
+      "ratio": 3,
+      "level": 0.1,
+      "decay": 0.3
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.3,
+  "decay": 1.2,
+  "sustain": 0,
+  "release": 0.8,
+  "cutoff": 6000,
+  "res": 0.5,
+  "gain": 0.22
+}

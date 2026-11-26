@@ -1,0 +1,21 @@
+// nome: fm_bass
+// família: fm_bass
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1,
+        "index": 4,
+        "decay": 0.12
+      }
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.1,
+  "release": 0.2,
+  "cutoff": 1500,
+  "res": 0.7,
+  "drive": 0.3,
+  "gain": 0.4
+}

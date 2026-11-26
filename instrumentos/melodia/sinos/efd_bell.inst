@@ -1,0 +1,29 @@
+// nome: efd_bell
+// família: bell
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 3.01,
+        "index": 1.4,
+        "decay": 1.5
+      }
+    },
+    {
+      "type": "sine",
+      "ratio": 5.4,
+      "level": 0.12,
+      "decay": 0.8
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0,
+  "decay": 3,
+  "sustain": 0,
+  "release": 2.5,
+  "cutoff": 8000,
+  "res": 0.4,
+  "gain": 0.22,
+  "drift": 2
+}

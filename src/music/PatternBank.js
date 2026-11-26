@@ -4,6 +4,10 @@ import { Genres } from './Genres.js';
 // Pattern: { id, role, genres: { saw?, boc?, ae? ... (see Genres) }, energy: [min, max], code }
 export class PatternBank {
   static ROLES = ['drums', 'perc', 'bass', 'keys', 'lead', 'texture'];
+  // what each role is called on screen
+  static ROLE_LABELS = { drums: 'bateria', perc: 'percussão', bass: 'baixo', keys: 'teclas', lead: 'melodia', texture: 'textura' };
+
+  static roleLabel(role) { return PatternBank.ROLE_LABELS[role] || role; }
 
   // A pattern as the bank keeps it: trimmed code, and its genre weights in today's genres
   // (older patterns call them `flavours` and may use older genre names).

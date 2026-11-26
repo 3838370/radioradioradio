@@ -1,0 +1,43 @@
+// nome: prepared_piano
+// família: prepared
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "sine",
+      "ratio": 2.71,
+      "level": 0.5,
+      "decay": 0.4
+    },
+    {
+      "type": "sine",
+      "ratio": 4.13,
+      "level": 0.35,
+      "decay": 0.2
+    },
+    {
+      "type": "sine",
+      "ratio": 6.57,
+      "level": 0.2,
+      "decay": 0.1
+    },
+    {
+      "type": "noise",
+      "level": 0.15,
+      "decay": 0.01
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.3,
+  "decay": 1.8,
+  "sustain": 0,
+  "release": 0.5,
+  "cutoff": 3000,
+  "res": 0.5,
+  "veltrack": 0.6,
+  "keytrack": 0.5,
+  "gain": 0.32,
+  "drift": 4
+}

@@ -1,0 +1,26 @@
+// nome: pwm_pad
+// família: pad
+{
+  "osc": [
+    {
+      "type": "square",
+      "detune": -14,
+      "level": 0.5
+    },
+    {
+      "type": "square",
+      "detune": 14,
+      "level": 0.5
+    }
+  ],
+  "attack": 1,
+  "release": 3,
+  "cutoff": 1300,
+  "res": 0.5,
+  "flfo": {
+    "rate": 0.2,
+    "depth": 500
+  },
+  "gain": 0.1,
+  "drift": 7
+}

@@ -1,0 +1,61 @@
+// nome: palmas hand · 0
+// família: claps
+// substitui: hand:0
+// origem: Dirt-Samples hand/hand11-mono.wav · refeito em código (distância 9.82)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "triangle"
+        },
+        {
+          "type": "triangle",
+          "ratio": 1.57,
+          "level": 0.853,
+          "decay": 1.99
+        },
+        {
+          "type": "triangle",
+          "ratio": 1.49,
+          "level": 0.181,
+          "decay": 0.798
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 2.7,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 5960.0,
+      "res": 0.826,
+      "pitch": {
+        "from": 4.48,
+        "time": 0.0132
+      },
+      "drive": 0.109,
+      "gain": 0.08509,
+      "transpose": -20.74
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00374,
+      "dur": 1.5,
+      "decay": 2.53,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "highpass",
+      "cutoff": 1240.0,
+      "res": 0.708,
+      "fenv": 0.662,
+      "fdecay": 0.13,
+      "gain": 0.02886,
+      "transpose": -20.74
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+import { Arc } from './Arc.js';
+
 // Steering: what the listener does by hand. With density or tempo on manual, the arc is held
 // in the section that matches what they're doing; back on auto it carries on from there, and
 // the register they left (level, tempo) keeps leaning the next sections and genres for a
@@ -58,14 +60,14 @@ export class Steering {
     const { arc, drift, settings, logger } = this.c;
     const want = this.section();
     if (!want) {
-      if (arc.held) logger.add(`bar ${bar}: back on auto, carrying on from ${arc.section.toUpperCase()}`, 'event');
+      if (arc.held) logger.add(`compasso ${bar}: de volta ao auto, a continuar de ${Arc.label(arc.section).toUpperCase()}`, 'event');
       arc.letGo(bar);
       return;
     }
     const tempo = settings.get('bpmAuto') ? null : settings.get('bpm') / drift.tempo();
     const changed = arc.hold(want, bar, tempo);
     if (changed) {
-      logger.add(`bar ${bar}: section → ${changed.toUpperCase()} (by hand)`, 'event');
+      logger.add(`compasso ${bar}: secção → ${Arc.label(changed).toUpperCase()} (à mão)`, 'event');
       this.lean();
       drift.rethinkNext(); // the genre after this one should suit the new register
       this.c.preloadNextGenre();

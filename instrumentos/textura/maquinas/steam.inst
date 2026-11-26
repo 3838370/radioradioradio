@@ -1,0 +1,19 @@
+// nome: steam
+// família: machine
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 0.3,
+  "release": 1.2,
+  "ftype": "bandpass",
+  "cutoff": 5500,
+  "res": 0.7,
+  "flfo": {
+    "rate": 0.8,
+    "depth": 400
+  },
+  "gain": 0.35
+}

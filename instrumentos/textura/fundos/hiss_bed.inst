@@ -1,0 +1,14 @@
+// nome: hiss_bed
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 2,
+  "release": 3,
+  "ftype": "highpass",
+  "cutoff": 6000,
+  "res": 0.3,
+  "gain": 0.05
+}

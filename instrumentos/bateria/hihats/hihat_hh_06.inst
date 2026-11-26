@@ -1,0 +1,52 @@
+// nome: hihat hh · 6
+// família: hihats
+// substitui: hh:6
+// origem: Dirt-Samples hh/006_hh3kick2.wav · refeito em código (distância 8.58)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.121,
+          "decay": 0.0107
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.272,
+          "decay": 0.0107
+        },
+        {
+          "type": "sine",
+          "ratio": 6.66,
+          "level": 1.0,
+          "decay": 0.00438
+        },
+        {
+          "type": "noise",
+          "level": 0.0742,
+          "decay": 0.00726
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.081,
+      "decay": 0.451,
+      "sustain": 0.00134,
+      "release": 0.0656,
+      "cutoff": 7560.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 23.5,
+        "time": 0.11
+      },
+      "drive": 0.0899,
+      "gain": 0.5682,
+      "transpose": -32.35
+    }
+  ]
+}

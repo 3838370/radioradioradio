@@ -1,0 +1,122 @@
+// nome: clap sequential · 0
+// família: claps
+// substitui: sequential:0
+// origem: Dirt-Samples sequential/000_Tom Clap.wav · refeito em código (distância 9.48)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.13,
+          "level": 0.647,
+          "decay": 0.111
+        },
+        {
+          "type": "sine",
+          "ratio": 2.87,
+          "level": 0.0156,
+          "decay": 0.0371
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.145,
+      "decay": 0.00538,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 16200.0,
+      "res": 0.647,
+      "pitch": {
+        "from": 1.32,
+        "time": 0.0463
+      },
+      "drive": 0.0891,
+      "gain": 1.444,
+      "transpose": 29.08
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00272,
+      "dur": 0.145,
+      "decay": 0.00555,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1060.0,
+      "res": 1.33,
+      "fenv": 0.568,
+      "fdecay": 0.00395,
+      "gain": 11.97,
+      "at": 0.0,
+      "transpose": 29.08
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00272,
+      "dur": 0.145,
+      "decay": 0.00555,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1060.0,
+      "res": 1.33,
+      "fenv": 0.568,
+      "fdecay": 0.00395,
+      "gain": 11.97,
+      "at": 0.0074,
+      "transpose": 29.08
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00272,
+      "dur": 0.145,
+      "decay": 0.00555,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1060.0,
+      "res": 1.33,
+      "fenv": 0.568,
+      "fdecay": 0.00395,
+      "gain": 11.97,
+      "at": 0.0148,
+      "transpose": 29.08
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00272,
+      "dur": 0.145,
+      "decay": 0.0892,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1060.0,
+      "res": 1.33,
+      "fenv": 0.568,
+      "fdecay": 0.00395,
+      "gain": 11.97,
+      "at": 0.0222,
+      "transpose": 29.08
+    }
+  ]
+}

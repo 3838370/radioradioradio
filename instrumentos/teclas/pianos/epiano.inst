@@ -1,0 +1,31 @@
+// nome: epiano
+// família: keys
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1,
+        "index": 1.6,
+        "decay": 0.6
+      }
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.15
+    }
+  ],
+  "attack": 0.003,
+  "release": 1.6,
+  "dur": 0.5,
+  "cutoff": 3000,
+  "res": 0.5,
+  "gain": 0.3,
+  "vibrato": {
+    "rate": 5,
+    "depth": 4,
+    "delay": 0.2
+  },
+  "drift": 4
+}

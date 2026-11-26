@@ -1,0 +1,24 @@
+// nome: hat_synth
+{
+  "osc": [
+    {
+      "type": "square",
+      "fm": {
+        "ratio": 1.47,
+        "index": 6,
+        "decay": 0.05
+      }
+    },
+    {
+      "type": "noise",
+      "level": 0.15
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "release": 0.035,
+  "ftype": "bandpass",
+  "cutoff": 9000,
+  "res": 1.2,
+  "gain": 0.16
+}

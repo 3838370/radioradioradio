@@ -1,0 +1,61 @@
+// nome: vidro glasstap · 2
+// família: metal
+// substitui: glasstap:2
+// origem: Dirt-Samples glasstap/002_2.wav · refeito em código (distância 8.4)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 6.13,
+          "level": 0.282,
+          "decay": 0.147
+        },
+        {
+          "type": "sine",
+          "ratio": 6.26,
+          "level": 0.825,
+          "decay": 0.485
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.425,
+      "decay": 0.657,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2530.0,
+      "res": 4.37,
+      "pitch": {
+        "from": 0.21,
+        "time": 0.0313
+      },
+      "drive": 0.144,
+      "gain": 0.08324,
+      "transpose": 22.87
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00233,
+      "dur": 0.425,
+      "decay": 0.0898,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 324.0,
+      "res": 0.575,
+      "fenv": 1.53,
+      "fdecay": 0.0346,
+      "gain": 2.134,
+      "transpose": 22.87
+    }
+  ]
+}

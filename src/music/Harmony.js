@@ -9,6 +9,10 @@ import { Genres } from './Genres.js';
 // can be held back until a calm moment (applyPending(false)).
 export class Harmony {
   static MODES = ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'];
+  // what each mode is called on screen
+  static MODE_LABELS = { dorian: 'dórico', aeolian: 'eólio', lydian: 'lídio', mixolydian: 'mixolídio', phrygian: 'frígio', locrian: 'lócrio' };
+
+  static modeLabel(m) { return Harmony.MODE_LABELS[m] || m; }
 
   // Each genre's modes and progressions are in Genres. The composer changes progression now
   // and then within a genre (reharm()).
@@ -59,7 +63,7 @@ export class Harmony {
     return after === before ? null : after;
   }
 
-  describe() { return `${this.keyName()} · progression ${this.prog.map((d) => d + 1).join('-')}${this.barsPerChord !== 4 ? ` (${this.barsPerChord} bars each)` : ''}`; }
+  describe() { return `${this.keyName()} · progressão ${this.prog.map((d) => d + 1).join('-')}${this.barsPerChord !== 4 ? ` (${this.barsPerChord} compassos cada)` : ''}`; }
 
   // Picks a mode, progression and chord length that suit a genre (keeps the current mode if
   // it fits).
@@ -118,7 +122,7 @@ export class Harmony {
     return out;
   }
 
-  keyName() { return `${Theory.name(this.key)} ${this.mode}`; }
+  keyName() { return `${Theory.name(this.key)} ${Harmony.modeLabel(this.mode)}`; }
 
   chordName(bar) {
     const r = this.root(bar);

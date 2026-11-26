@@ -1,0 +1,26 @@
+// nome: gl_buzz_slow
+// família: gl_buzz
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.8
+    },
+    {
+      "type": "square",
+      "detune": 40,
+      "level": 0.4
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.06,
+  "ftype": "highpass",
+  "cutoff": 1100,
+  "res": 5,
+  "trem": {
+    "rate": 17,
+    "depth": 0.95
+  },
+  "drive": 0.7,
+  "gain": 0.3
+}

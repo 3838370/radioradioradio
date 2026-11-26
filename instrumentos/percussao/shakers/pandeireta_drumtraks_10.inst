@@ -1,0 +1,61 @@
+// nome: pandeireta drumtraks · 10
+// família: shakers
+// substitui: drumtraks:10
+// origem: Dirt-Samples drumtraks/010_DT Tambourine.wav · refeito em código (distância 10.88)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.56,
+          "level": 0.201,
+          "decay": 0.0442
+        },
+        {
+          "type": "sine",
+          "ratio": 2.04,
+          "level": 0.222,
+          "decay": 0.156
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.225,
+      "decay": 0.134,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 5190.0,
+      "res": 1.02,
+      "pitch": {
+        "from": 10.6,
+        "time": 0.0139
+      },
+      "drive": 0.0786,
+      "gain": 0.5638,
+      "transpose": 29.85
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00129,
+      "dur": 0.225,
+      "decay": 0.174,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2590.0,
+      "res": 1.03,
+      "fenv": 0.996,
+      "fdecay": 0.0259,
+      "gain": 3.524,
+      "transpose": 29.85
+    }
+  ]
+}

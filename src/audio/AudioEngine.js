@@ -3,7 +3,9 @@ import { Equalizer } from './Equalizer.js';
 import { Reverb } from './Reverb.js';
 import { SampleVoice } from './SampleVoice.js';
 import { SynthVoice } from './SynthVoice.js';
+import { SoundFields } from './SoundFields.js';
 import { TapeFx } from './TapeFx.js';
+import { MathUtil } from '../core/MathUtil.js';
 
 // AudioEngine: the master chain and the voice pool.
 //   layer buses -> mix (dry) -> duck -> TapeFx -> master lowpass -> EQ -> compressor -> output
@@ -102,6 +104,13 @@ export class AudioEngine {
   playSample(busId, name, opts, time) {
     const bus = this.bus(busId);
     if (!bus) return false;
+    // A sample rebuilt in code (a sound that says "substitui: folder:n") always plays as code;
+    // its file is never loaded. Only the INSTRUMENTOS panel's ▶ original / A/B ask for the
+    // file (original: true), to compare. Samples with no sound in code play their file.
+    if (!opts.original) {
+      const coded = this.codedFor(name, opts.n);
+      if (coded) return this.playCoded(bus, coded, opts, time);
+    }
     const loaded = this.samples.get(name, opts.n || 0);
     if (!loaded) { this.stats.missing++; return false; }
     if (!this.claimVoice()) return false;
@@ -116,10 +125,55 @@ export class AudioEngine {
     if (!bus) return false;
     const preset = this.instruments.get(presetName) || this.instruments.get('keys');
     if (!this.claimVoice()) return false;
-    new SynthVoice(this.ac, preset, midi, opts).start(time, bus.input, () => this.voices--);
+    this.startPreset(preset, midi, opts, time, bus.input);
     this.stats.notes++;
     return true;
   }
+
+  // A preset may be one voice or layers of voices (drums: a body, noise bands...), each
+  // layer at its own `transpose` and starting `at` seconds in. One pool voice for the whole.
+  startPreset(preset, midi, opts, time, destination) {
+    const layers = preset.layers || [preset];
+    let left = layers.length;
+    const done = () => { if (--left === 0) this.voices--; };
+    for (const l of layers) new SynthVoice(this.ac, l, midi + (l.transpose || 0), opts).start(time + (l.at || 0), destination, done);
+  }
+
+  // The sound (its recipe) that plays instead of sample folder:n, or null. A sound says
+  // which sample it rebuilds in its file ("// substitui: 808bd:5").
+  codedFor(name, n) {
+    const k = MathUtil.mod(Math.floor(n) || 0, Math.max(1, this.samples.count(name)));
+    const sound = this.instruments.replacing(`${name}:${k}`);
+    return sound ? this.instruments.get(sound) : null;
+  }
+
+  // A coded sample with the sample's options, played as the file would be:
+  //   rate     faster and higher together (SoundFields.atRate: times shorter, filters and
+  //            noise bands up, the notes up 12·log2(rate) semitones)
+  //   amp/pan  as given; the recipes carry the original's loudness (played at amp 0.5 they
+  //            peak as the file does)
+  //   cut      stops it there; attack / release: the fade in and out, as on the file
+  playCoded(bus, recipe, o, time) {
+    if (!this.claimVoice()) return false;
+    const { preset, midi, opts } = AudioEngine.codedNote(recipe, o);
+    this.startPreset(preset, midi, opts, time, bus.input);
+    this.stats.samples++;
+    return true;
+  }
+
+  // What playCoded plays: { preset, midi, opts } (also used by the sound review in Scripts).
+  static codedNote(recipe, o = {}) {
+    const rate = Math.abs(o.rate == null ? 1 : +o.rate) || 1;
+    const opts = { amp: 0.5 * (o.amp == null ? 1 : +o.amp), pan: o.pan };
+    if (o.attack) opts.attack = +o.attack;
+    if (o.cut) Object.assign(opts, { dur: Math.max(0.005, +o.cut - 0.02), release: Math.min(o.release == null ? 0.02 : +o.release, +o.cut / 2) });
+    const cache = AudioEngine.rated.get(recipe) || new Map();
+    AudioEngine.rated.set(recipe, cache);
+    if (!cache.has(rate)) cache.set(rate, SoundFields.atRate(recipe, rate));
+    return { preset: cache.get(rate), midi: 60 + 12 * Math.log2(rate), opts };
+  }
+
+  static rated = new WeakMap(); // recipe -> rate -> the recipe at that rate
 
   claimVoice() {
     if (this.voices >= this.maxVoices) { this.stats.dropped++; return false; }

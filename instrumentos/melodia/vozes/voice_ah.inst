@@ -1,0 +1,26 @@
+// nome: voice_ah
+// família: voice
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "sawtooth",
+      "detune": 7,
+      "level": 0.6
+    }
+  ],
+  "attack": 0.08,
+  "release": 0.5,
+  "ftype": "bandpass",
+  "cutoff": 800,
+  "res": 4,
+  "vibrato": {
+    "rate": 5,
+    "depth": 18,
+    "delay": 0.25
+  },
+  "drift": 25,
+  "gain": 0.3
+}

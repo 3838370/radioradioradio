@@ -1,0 +1,32 @@
+// nome: boc_pad
+// família: boc_pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -7,
+      "level": 0.45
+    },
+    {
+      "type": "sawtooth",
+      "detune": 7,
+      "level": 0.45
+    },
+    {
+      "type": "triangle",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 1.5,
+  "release": 3,
+  "cutoff": 1000,
+  "res": 0.4,
+  "vibrato": {
+    "rate": 0.35,
+    "depth": 18,
+    "delay": 0
+  },
+  "gain": 0.12,
+  "drift": 16
+}

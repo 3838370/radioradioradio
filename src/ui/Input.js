@@ -25,6 +25,7 @@ export class Input {
     if (this.app.view === 'code') {
       const b = this.app.fullCode.hit(mx, my);
       if (b && b.type === 'copy') this.app.copyFullCode();
+      if (b && b.type === 'paste') this.app.pasteFullCode();
       if (this.app.fullCode.contains(mx, my)) return;
     }
     if (this.app.view === 'seq') {
@@ -46,20 +47,33 @@ export class Input {
     const num = this.app.grid.numberAt(mx, my);
     if (num) {
       const code = num.card.layer.code;
-      this.app.drag = { type: 'scrub', layer: num.card.layer, start: num.start, len: num.len, from: code.substr(num.start, num.len), y0: my, moved: false, last: 0, code };
+      this.app.drag = { type: 'scrub', layer: num.card.layer, start: num.start, len: num.len, from: code.substr(num.start, num.len), y0: my, moved: false, last: 0, code, line: num.card.lineAt(mx, my) };
       return;
     }
     const hit = this.app.grid.hit(mx, my);
     if (!hit) return;
-    if (hit.action === 'edit') return this.app.editor.open(this.app.composer.deck.find(hit.layerId));
+    if (hit.action === 'edit') {
+      // the code opens to edit, and the INSTRUMENTOS panel at the sound of the line clicked
+      const layer = this.app.composer.deck.find(hit.layerId);
+      const card = this.app.grid.cards.get(hit.layerId);
+      this.app.openSoundOf(layer, card ? card.lineAt(mx, my) : '');
+      return this.app.editor.open(layer);
+    }
     if (hit.action === 'sound') this.app.openLayerPanel(hit.layerId);
+    if (hit.action === 'solo') this.app.composer.deck.toggleSolo(hit.layerId);
     if (hit.action === 'mute') this.app.composer.deck.toggleMute(hit.layerId);
     if (hit.action === 'lock') this.app.composer.deck.toggleLock(hit.layerId);
     if (hit.action === 'regen') this.app.composer.regenerate(hit.layerId);
   }
 
   wheel(p, event) {
-    if (this.app.state !== 'playing' || this.app.view === 'cards' || !event) return;
+    if (this.app.state !== 'playing' || !event) return;
+    if (this.app.view === 'cards') { // the cards scroll when they don't all fit
+      // (only over the canvas: the code editor and the panels scroll themselves)
+      if (event.target !== p.canvas || !this.app.grid.contains(p.mouseX, p.mouseY)) return;
+      this.app.grid.wheel(event.delta);
+      return false;
+    }
     const v = this.app.view === 'code' ? this.app.fullCode : this.app.seq;
     if (!v.contains(p.mouseX, p.mouseY)) return;
     v.wheel(this.app.view === 'code' ? event.delta : event.delta * 0.6);
@@ -71,6 +85,7 @@ export class Input {
     const layer = this.app.composer.deck.find(b.layerId);
     if (!layer) return;
     const CT = CodeTools;
+    if (b.type === 'layer-solo') return this.app.composer.deck.toggleSolo(layer.id);
     if (b.type === 'layer-mute') return this.app.composer.deck.toggleMute(layer.id);
     if (b.type === 'layer-lock') return this.app.composer.deck.toggleLock(layer.id);
     if (b.type === 'audition') return this.audition(b.row);
@@ -94,7 +109,7 @@ export class Input {
       desc = `seq ${b.key} step ${b.step + 1}`;
     }
     const res = this.app.composer.deck.liveEdit(layer.id, code, { desc, final: true });
-    if (!res.ok) this.app.logger.add(`sequencer: ${res.error}`, 'err');
+    if (!res.ok) this.app.logger.add(`sequenciador: ${res.error}`, 'err');
   }
 
   // The options a new hits() row copies from the sound's latest event.
@@ -146,7 +161,11 @@ export class Input {
     if (d && d.type === 'eq') this.app.eqCurve.release();
     if (!d || d.type !== 'scrub') return;
     if (d.moved) this.applyScrub(d, d.y0 - p.mouseY, true);
-    else this.app.editor.open(this.app.composer.deck.find(d.layer.id)); // a plain click on a number edits
+    else { // a plain click on a number edits, as a click anywhere on the card
+      const layer = this.app.composer.deck.find(d.layer.id);
+      this.app.openSoundOf(layer, d.line);
+      this.app.editor.open(layer);
+    }
   }
 
   key(p, event) {
@@ -160,7 +179,7 @@ export class Input {
       return false;
     }
     const k = p.key.toLowerCase();
-    if (k === 'n') { this.app.composer.forceMove(); this.app.logger.add('(change requested)'); }
+    if (k === 'n') { this.app.composer.forceMove(); this.app.logger.add('(mudança pedida)'); }
     if (k === 't') this.app.composer.skipGenre();
     if (k === 's') this.app.composer.skipSection();
     if (k === 'r') this.app.composer.refreshAll();

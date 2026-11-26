@@ -1,0 +1,20 @@
+// nome: dread_sub
+// família: dread
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "square",
+      "level": 0.2
+    }
+  ],
+  "attack": 0.02,
+  "release": 0.5,
+  "cutoff": 300,
+  "res": 2,
+  "drive": 0.5,
+  "gain": 0.5,
+  "drift": 2
+}

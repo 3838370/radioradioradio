@@ -1,0 +1,61 @@
+// nome: rim hc · 2
+// família: rims
+// substitui: hc:2
+// origem: Dirt-Samples hc/HHCD4.wav · refeito em código (distância 8.11)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.58,
+          "level": 0.981,
+          "decay": 0.2
+        },
+        {
+          "type": "sine",
+          "ratio": 3.45,
+          "level": 0.206,
+          "decay": 0.00377
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.13,
+      "decay": 0.0357,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 4090.0,
+      "res": 0.405,
+      "pitch": {
+        "from": 6.55,
+        "time": 0.0196
+      },
+      "drive": 0.354,
+      "gain": 0.9695,
+      "transpose": 15.32
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00116,
+      "dur": 0.13,
+      "decay": 0.0865,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 6840.0,
+      "res": 0.322,
+      "fenv": 1.11,
+      "fdecay": 0.0117,
+      "gain": 2.987,
+      "transpose": 15.32
+    }
+  ]
+}

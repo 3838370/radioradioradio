@@ -1,0 +1,26 @@
+// nome: traffic
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sawtooth",
+      "octave": -2,
+      "level": 0.15
+    }
+  ],
+  "attack": 2.5,
+  "release": 3,
+  "cutoff": 380,
+  "res": 1,
+  "flfo": {
+    "rate": 0.12,
+    "depth": 1500
+  },
+  "trem": {
+    "rate": 0.2,
+    "depth": 0.5
+  },
+  "gain": 0.9
+}

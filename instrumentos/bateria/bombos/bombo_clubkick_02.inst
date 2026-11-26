@@ -1,0 +1,52 @@
+// nome: bombo clubkick · 2
+// família: bombos
+// substitui: clubkick:2
+// origem: Dirt-Samples clubkick/3.wav · refeito em código (distância 12.71)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.499,
+          "decay": 0.261
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.0697,
+          "decay": 0.261
+        },
+        {
+          "type": "sine",
+          "ratio": 5.84,
+          "level": 0.0293,
+          "decay": 0.00475
+        },
+        {
+          "type": "noise",
+          "level": 0.496,
+          "decay": 0.0015
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.202,
+      "decay": 0.849,
+      "sustain": 0.0024,
+      "release": 0.0474,
+      "cutoff": 8320.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 39.5,
+        "time": 0.101
+      },
+      "drive": 0.182,
+      "gain": 1.653,
+      "transpose": -25.89
+    }
+  ]
+}

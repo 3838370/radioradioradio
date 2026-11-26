@@ -1,0 +1,28 @@
+// nome: fm_glass
+// família: bell
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 5.01,
+        "index": 1.8,
+        "decay": 0.4
+      }
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.003,
+  "dur": 0,
+  "decay": 1.8,
+  "sustain": 0,
+  "release": 2,
+  "cutoff": 9000,
+  "res": 0.4,
+  "gain": 0.18,
+  "drift": 3
+}

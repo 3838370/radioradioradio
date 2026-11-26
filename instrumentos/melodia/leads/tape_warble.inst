@@ -1,0 +1,25 @@
+// nome: tape_warble
+// família: boc_lead
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.3,
+  "release": 1.5,
+  "cutoff": 1600,
+  "res": 0.5,
+  "vibrato": {
+    "rate": 0.7,
+    "depth": 30,
+    "delay": 0
+  },
+  "drift": 20,
+  "gain": 0.16
+}

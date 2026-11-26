@@ -34,7 +34,8 @@ import { Phrase } from '../music/Phrase.js';
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 export class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng() }) {
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng(), onSetup = null }) {
+    this.onSetup = onSetup; // setup({ bpm, key, mode, progression, chordBars }): the App applies it
     this.settings = settings; // the feel parameters (humanTime, humanVel)
     this.genres = genres;   // () => the genre weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
@@ -150,13 +151,24 @@ export class LanguageApi {
 
       sleep(beats) { if (coder.cur) coder.cur.sleep(beats); },
 
-      // inst('name', { osc: [...], attack, release, cutoff, ... }): defines or changes a synth
-      // instrument (the same thing the Instrumentos panel edits). Top level only.
-      inst(name, spec) {
+      // inst('name', { osc: [...], attack, release, cutoff, ... }): defines or changes a sound
+      // (the same recipe the INSTRUMENTOS panel edits; { layers: [...] } for a sound made of
+      // parts). A third argument { substitui: '808bd:5' } makes it play instead of that sample
+      // (always: the sample's file is never loaded). Top level only. The change is heard at once and is "por guardar".
+      inst(name, spec, meta = null) {
         if (!coder.compiling || coder.inProbe || !self.instruments) return;
-        if (!spec || !Array.isArray(spec.osc) || !spec.osc.length) throw new Error(`inst('${name}'): needs osc: [...]`);
+        const ok = spec && (Array.isArray(spec.layers) ? spec.layers.length && spec.layers.every((l) => Array.isArray(l.osc) && l.osc.length) : Array.isArray(spec.osc) && spec.osc.length);
+        if (!ok) throw new Error(`inst('${name}'): needs osc: [...] (or layers: [...])`);
         const cur = self.instruments.get(name);
-        if (!cur || JSON.stringify(cur) !== JSON.stringify(spec)) self.instruments.set(name, spec);
+        if (!cur || JSON.stringify(cur) !== JSON.stringify(spec)) self.instruments.set(name, spec, meta);
+        else if (meta && !self.instruments.info(name)) self.instruments.set(name, spec, meta);
+      },
+
+      // setup({ bpm: 110, key: 'D#', mode: 'dorian', progression: [1, 4], chordBars: 4 }): the
+      // tempo and harmony a whole program (the full code) was written in. Top level only.
+      setup(cfg) {
+        if (!coder.compiling || coder.inProbe) return;
+        if (self.onSetup) self.onSetup(cfg || {});
       },
 
       s(name, opts = {}) {

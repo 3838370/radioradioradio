@@ -1,0 +1,19 @@
+// nome: acid_sq
+// família: acid
+{
+  "osc": [
+    {
+      "type": "square"
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.08,
+  "release": 0.1,
+  "cutoff": 380,
+  "res": 12,
+  "fenv": 8,
+  "fdecay": 0.12,
+  "veltrack": 1,
+  "drive": 0.6,
+  "gain": 0.13
+}

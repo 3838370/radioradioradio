@@ -1,0 +1,29 @@
+// nome: juno_pad
+// família: boc_pad
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "unison": {
+        "voices": 3,
+        "spread": 12
+      }
+    },
+    {
+      "type": "square",
+      "octave": -1,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.8,
+  "release": 2.5,
+  "cutoff": 1600,
+  "res": 0.5,
+  "vibrato": {
+    "rate": 0.6,
+    "depth": 8,
+    "delay": 0
+  },
+  "gain": 0.1,
+  "drift": 6
+}

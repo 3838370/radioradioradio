@@ -1,0 +1,24 @@
+// nome: metal_scrape
+// família: tension
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sine",
+      "ratio": 6.3,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.3,
+  "release": 1,
+  "ftype": "bandpass",
+  "cutoff": 2500,
+  "res": 10,
+  "flfo": {
+    "rate": 0.4,
+    "depth": 900
+  },
+  "gain": 0.12
+}

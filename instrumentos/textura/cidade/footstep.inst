@@ -1,0 +1,23 @@
+// nome: footstep
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sine",
+      "level": 0.4
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.01,
+  "release": 0.06,
+  "ftype": "bandpass",
+  "cutoff": 900,
+  "res": 1.2,
+  "pitch": {
+    "from": 5,
+    "time": 0.02
+  },
+  "gain": 0.6
+}

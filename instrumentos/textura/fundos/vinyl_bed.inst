@@ -1,0 +1,18 @@
+// nome: vinyl_bed
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 1,
+  "release": 2,
+  "ftype": "bandpass",
+  "cutoff": 3000,
+  "res": 1.5,
+  "trem": {
+    "rate": 23,
+    "depth": 0.9
+  },
+  "gain": 0.06
+}

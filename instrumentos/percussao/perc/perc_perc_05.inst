@@ -1,0 +1,52 @@
+// nome: perc perc · 5
+// família: perc
+// substitui: perc:5
+// origem: Dirt-Samples perc/005_perc5.wav · refeito em código (distância 9.09)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.229,
+          "decay": 0.0766
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.345,
+          "decay": 0.0766
+        },
+        {
+          "type": "sine",
+          "ratio": 4.29,
+          "level": 0.116,
+          "decay": 0.00542
+        },
+        {
+          "type": "noise",
+          "level": 0.8,
+          "decay": 0.0133
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.239,
+      "decay": 0.183,
+      "sustain": 0.00308,
+      "release": 0.0742,
+      "cutoff": 3190.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 23.3,
+        "time": 0.238
+      },
+      "drive": 0.0,
+      "gain": 1.904,
+      "transpose": -38.9
+    }
+  ]
+}

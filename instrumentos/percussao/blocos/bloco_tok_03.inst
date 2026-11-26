@@ -1,0 +1,52 @@
+// nome: bloco tok · 3
+// família: blocos
+// substitui: tok:3
+// origem: Dirt-Samples tok/003_3.wav · refeito em código (distância 2.92)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.00997,
+          "decay": 0.0427
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00149,
+          "decay": 0.0427
+        },
+        {
+          "type": "sine",
+          "ratio": 3.27,
+          "level": 0.281,
+          "decay": 0.00705
+        },
+        {
+          "type": "noise",
+          "level": 0.8,
+          "decay": 0.0133
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.269,
+      "decay": 0.203,
+      "sustain": 0.00986,
+      "release": 0.0276,
+      "cutoff": 695.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 1.31,
+        "time": 0.0291
+      },
+      "drive": 0.0,
+      "gain": 1.269,
+      "transpose": -28.06
+    }
+  ]
+}

@@ -56,7 +56,7 @@ export class Composer {
     const bpm = this.settings.get('bpmAuto') ? this.drift.tempo() : this.settings.get('bpm');
     this.clock.bpm = this.clock.target = bpm;
     this.settings.on('change', (e) => this.onSetting(e));
-    this.logger.add(`genre: ${Genres.label(this.genre)} · ${this.harmony.keyName()} · ${bpm} BPM`, 'event');
+    this.logger.add(`género: ${Genres.label(this.genre)} · ${this.harmony.keyName()} · ${bpm} BPM`, 'event');
     this.scheduler.at(0, () => this.onBar(0));
   }
 
@@ -73,7 +73,7 @@ export class Composer {
   applyHarmony(bar, withKey) {
     const change = this.harmony.applyPending(withKey || this.keyByHand);
     this.keyByHand = false;
-    if (change) this.logger.add(`bar ${bar}: harmony → ${change}`, 'event');
+    if (change) this.logger.add(`compasso ${bar}: harmonia → ${change}`, 'event');
   }
 
   preloadNextGenre() {
@@ -88,7 +88,7 @@ export class Composer {
     this.steering.lean();
     this.energy = MathUtil.clamp(this.drift.intensity() + this.arc.boost, 0.03, 1);
     if (section) {
-      this.logger.add(`bar ${bar}: section → ${section.toUpperCase()}`, 'event');
+      this.logger.add(`compasso ${bar}: secção → ${Arc.label(section).toUpperCase()}`, 'event');
       if (this.settings.get('densityAuto')) this.nextMove = Math.min(this.nextMove, bar + 1);
     }
     if (this.settings.get('paceAuto') && (section || bar >= this.paceUntil)) this.rollPace(bar);
@@ -156,7 +156,7 @@ export class Composer {
     this.autoPace = this.rng.weighted(options);
     this.paceUntil = bar + this.rng.int(32, 96);
     this.nextMove = Math.min(this.nextMove, bar + this.pace());
-    if (!first) this.logger.add(`bar ${bar}: pace → every ${this.autoPace} bars (${kind})`);
+    if (!first) this.logger.add(`compasso ${bar}: mudanças → a cada ${this.autoPace} compassos (${{ busy: 'agitado', middle: 'médio', calm: 'calmo' }[kind]})`);
   }
 
   // How many layers to aim for. With density on auto the arc section gives a range (sparse
@@ -226,10 +226,10 @@ export class Composer {
     for (const layer of [...this.deck.values()]) {
       if (layer.locked || layer.editing) continue;
       if (PatternBank.fits(this.bank.cycles({ code: layer.code }, meter.probe), meter.steps)) continue;
-      this.swap(layer, this.bar, `${meter.steps} steps`, start);
+      this.swap(layer, this.bar, `${meter.steps} passos`, start);
       n++;
     }
-    this.logger.add(`steps → ${meter.steps}${n ? ` (${n} layer${n > 1 ? 's' : ''} swapped)` : ''}`, 'event');
+    this.logger.add(`passos → ${meter.steps}${n ? ` (${n} camada${n > 1 ? 's' : ''} trocada${n > 1 ? 's' : ''})` : ''}`, 'event');
   }
 
   // Layers enter on 4-bar boundaries, where the chords change.
@@ -263,14 +263,14 @@ export class Composer {
     // a role the section leaves out (no drums in sparse or suspense) goes; another comes in
     const banned = this.settings.get('densityAuto') && free.find((l) => (this.arc.spec.no || []).includes(l.role));
     if (banned) {
-      this.logger.add(`bar ${bar}: − ${banned.role} (${banned.patternId}, ${this.arc.section})`);
+      this.logger.add(`compasso ${bar}: − ${PatternBank.roleLabel(banned.role)} (${banned.patternId}, ${Arc.label(this.arc.section)})`);
       this.deck.exit(banned, this.phraseStart(bar));
       return;
     }
 
     const worst = free.slice().sort((a, b) => this.bank.fit(a.pattern, w) - this.bank.fit(b.pattern, w))[0];
     const misfit = this.misfit(worst, w) ? worst : free.find((l) => this.misfit(l, w));
-    if (misfit) return this.swap(misfit, bar, 'genre');
+    if (misfit) return this.swap(misfit, bar, 'género');
 
     // Everything else is chosen by score (see candidates()).
     const options = this.candidates(bar, free, w);
@@ -319,7 +319,7 @@ export class Composer {
     const variation = this.deck.variation;
     const out = [];
     for (const l of free) {
-      out.push({ score: (0.08 + 0.3 * v) * MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variety') });
+      out.push({ score: (0.08 + 0.3 * v) * MathUtil.clamp(age(l) / 48, 0.2, 2) * I('swap') / free.length, run: () => this.swap(l, bar, 'variedade') });
       // versions and timbres only where the genre has other instruments or kits for its params;
       // tweaks only where it has numbers
       const params = CodeTools.paramsOf(l.code);
@@ -347,7 +347,7 @@ export class Composer {
     const r = this.deck.roll(layer.pattern);
     if (!r.changes.length) return;
     const params = CodeTools.paramsOf(r.code);
-    if (!this.deck.loadParams(layer, params, 'new version: ' + r.changes.slice(0, 3).join(', '), bar)) return;
+    if (!this.deck.loadParams(layer, params, 'versão nova: ' + r.changes.slice(0, 3).join(', '), bar)) return;
     layer.base = r.code;
     this.deck.memory.note(layer.patternId, r.sig, bar);
   }
@@ -376,7 +376,7 @@ export class Composer {
     const spb = this.clock.spb();
     bus.fade(0, 0.25 * spb, Math.max(this.audio.ac.currentTime, this.clock.timeOf(from)));
     this.scheduler.at(to, (t) => { if (this.deck.get(layer.role) === layer) bus.fade(1, 0.5 * spb, t); }, null);
-    this.logger.add(`bar ${bar}: ${layer.role} drops out for ${bars} bar${bars > 1 ? 's' : ''}`);
+    this.logger.add(`compasso ${bar}: ${PatternBank.roleLabel(layer.role)} cala-se ${bars} compasso${bars > 1 ? 's' : ''}`);
   }
 
   // A new progression within the genre (sometimes a key move too), from the next 4 bars.
@@ -385,7 +385,7 @@ export class Composer {
     if (this.settings.get('mode') !== 'auto') change.mode = this.settings.get('mode');
     this.harmony.request(change);
     this.lastHarmBar = bar;
-    this.logger.add(`bar ${bar}: reharmonise${change.key != null ? ' and modulate' : ''}`, 'event');
+    this.logger.add(`compasso ${bar}: nova progressão${change.key != null ? ' e modulação' : ''}`, 'event');
   }
 
   // A short collage phrase (voices, radio, field sounds) over the texture, FSOL-style.
@@ -404,7 +404,7 @@ export class Composer {
       beat += this.rng.pick([1, 2, 3, 4]);
       names.push(s);
     }
-    this.logger.add(`bar ${bar}: collage (${names.join(', ')})`);
+    this.logger.add(`compasso ${bar}: colagem (${names.join(', ')})`);
   }
 
   // Surge pushes the tempo on (+3-6%) for 4-8 bars; dread and collapse drag it back.
@@ -412,7 +412,7 @@ export class Composer {
     const up = ['surge', 'peak'].includes(this.arc.section);
     const factor = up ? this.rng.float(1.03, 1.06) : this.rng.float(0.94, 0.97);
     this.push = { factor, until: bar + this.rng.int(4, 8) };
-    this.logger.add(`bar ${bar}: tempo ${up ? 'pushes' : 'drags'} ${Math.round((factor - 1) * 100)}%`);
+    this.logger.add(`compasso ${bar}: tempo ${up ? 'acelera' : 'trava'} ${Math.round((factor - 1) * 100)}%`);
   }
 
   // The next role is drawn at random, favouring the ones the section wants first, then the
@@ -431,7 +431,7 @@ export class Composer {
       const pattern = this.pickPattern(role);
       if (!pattern) continue;
       const layer = this.deck.enter(role, pattern, this.phraseStart(bar));
-      if (layer) this.logger.add(`bar ${bar}: + ${role} (${pattern.id}${layer.changes.length ? ': ' + layer.changes.slice(0, 2).join(', ') : ''})`);
+      if (layer) this.logger.add(`compasso ${bar}: + ${PatternBank.roleLabel(role)} (${pattern.id}${layer.changes.length ? ': ' + layer.changes.slice(0, 2).join(', ') : ''})`);
       return;
     }
   }
@@ -447,7 +447,7 @@ export class Composer {
     const sec = (l) => ((spec.no || []).includes(l.role) ? -2 : (spec.first || []).includes(l.role) ? 1 : 0);
     const score = (l) => this.bank.fit(l.pattern, w) + 0.1 * (order.length - order.indexOf(l.role)) + beat(l) + sec(l);
     const layer = free.slice().sort((a, b) => score(a) - score(b))[0];
-    this.logger.add(`bar ${bar}: − ${layer.role} (${layer.patternId})`);
+    this.logger.add(`compasso ${bar}: − ${PatternBank.roleLabel(layer.role)} (${layer.patternId})`);
     this.deck.exit(layer, this.phraseStart(bar));
   }
 
@@ -455,14 +455,14 @@ export class Composer {
   swap(layer, bar, why, startBar = this.phraseStart(bar)) {
     const pattern = this.pickPattern(layer.role, [layer.patternId]);
     if (!pattern) return this.mutate(layer, bar);
-    if (this.deck.replace(layer, pattern, startBar)) this.logger.add(`bar ${bar}: ${layer.role} ${layer.patternId} → ${pattern.id} (${why})`);
+    if (this.deck.replace(layer, pattern, startBar)) this.logger.add(`compasso ${bar}: ${PatternBank.roleLabel(layer.role)} ${layer.patternId} → ${pattern.id} (${why})`);
   }
 
   // ───── the listener's requests ─────
 
   regenerate(id) {
     const layer = this.deck.find(id);
-    if (layer) this.swap(layer, this.bar, 'by you', this.phraseStart(this.bar + 1));
+    if (layer) this.swap(layer, this.bar, 'por ti', this.phraseStart(this.bar + 1));
   }
 
   forceMove() { this.nextMove = this.bar + 1; }
@@ -474,22 +474,22 @@ export class Composer {
     let n = 0;
     for (const layer of [...this.deck.values()]) {
       if (layer.locked || layer.editing) continue;
-      this.swap(layer, this.bar, 'refresh', start);
+      this.swap(layer, this.bar, 'renovar', start);
       n++;
     }
-    this.logger.add(n ? `refresh: ${n} layer${n > 1 ? 's' : ''} swapped` : 'refresh: every layer is locked', 'event');
+    this.logger.add(n ? `renovar: ${n} camada${n > 1 ? 's' : ''} trocada${n > 1 ? 's' : ''}` : 'renovar: todas as camadas estão bloqueadas', 'event');
     return n;
   }
 
   skipSection() {
     this.arc.skip(this.bar + 1);
-    this.logger.add('section skipped', 'event');
+    this.logger.add('secção saltada', 'event');
   }
 
   skipGenre() {
     this.drift.skip();
     this.preloadNextGenre();
-    this.logger.add('genre skipped forward', 'event');
+    this.logger.add('género seguinte', 'event');
   }
 
   onSetting({ name, value }) {
@@ -499,7 +499,7 @@ export class Composer {
     }
     if (name === 'densityAuto') this.nextMove = Math.min(this.nextMove, this.bar + 1);
     if (name === 'steps') {
-      if (value === 'auto') this.logger.add('steps → auto', 'event');
+      if (value === 'auto') this.logger.add('passos → auto', 'event');
       else this.followMeter();
     }
     if (['density', 'densityAuto', 'bpm', 'bpmAuto'].includes(name)) this.steering.steer();
@@ -517,7 +517,7 @@ export class Composer {
       const was = this.drift.dominant();
       this.drift.setAllowed(value);
       this.preloadNextGenre();
-      this.logger.add(`genres: ${this.drift.allowed.map((g) => Genres.label(g)).join(' · ')}`, 'event');
+      this.logger.add(`géneros: ${this.drift.allowed.map((g) => Genres.label(g)).join(' · ')}`, 'event');
       // The genre playing now was turned off: move to the new one and swap the layers.
       if (!this.drift.allowed.includes(was)) {
         this.transitions.followGenre(this.bar);

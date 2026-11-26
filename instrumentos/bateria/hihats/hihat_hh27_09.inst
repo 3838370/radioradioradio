@@ -1,0 +1,61 @@
+// nome: hihat hh27 · 9
+// família: hihats
+// substitui: hh27:9
+// origem: Dirt-Samples hh27/009_hh27perc2.wav · refeito em código (distância 4.63)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.17,
+          "level": 0.767,
+          "decay": 0.241
+        },
+        {
+          "type": "square",
+          "ratio": 2.0,
+          "level": 0.915,
+          "decay": 0.126
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.43,
+      "decay": 0.0124,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 443.0,
+      "res": 1.39,
+      "pitch": {
+        "from": 8.94,
+        "time": 0.013
+      },
+      "drive": 0.0793,
+      "gain": 1.032,
+      "transpose": 9.77
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00109,
+      "dur": 0.43,
+      "decay": 1.31,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1910.0,
+      "res": 1.19,
+      "fenv": 1.51,
+      "fdecay": 0.0216,
+      "gain": 0.02329,
+      "transpose": 9.77
+    }
+  ]
+}

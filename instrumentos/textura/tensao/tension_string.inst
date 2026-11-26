@@ -1,0 +1,23 @@
+// nome: tension_string
+// família: tension
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "unison": {
+        "voices": 3,
+        "spread": 20
+      }
+    }
+  ],
+  "attack": 0.5,
+  "release": 1.5,
+  "cutoff": 1800,
+  "res": 0.4,
+  "trem": {
+    "rate": 7,
+    "depth": 0.5
+  },
+  "gain": 0.1,
+  "drift": 6
+}

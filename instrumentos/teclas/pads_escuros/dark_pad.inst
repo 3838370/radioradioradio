@@ -1,0 +1,28 @@
+// nome: dark_pad
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "unison": {
+        "voices": 3,
+        "spread": 14
+      }
+    },
+    {
+      "type": "sawtooth",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 2.5,
+  "release": 4,
+  "cutoff": 500,
+  "res": 2,
+  "flfo": {
+    "rate": 0.08,
+    "depth": 900
+  },
+  "gain": 0.12,
+  "drift": 10
+}

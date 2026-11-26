@@ -1,0 +1,23 @@
+// nome: tom_synth
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "triangle",
+      "level": 0.3
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "release": 0.3,
+  "cutoff": 3000,
+  "res": 0.5,
+  "pitch": {
+    "from": 12,
+    "time": 0.1
+  },
+  "drive": 0.3,
+  "gain": 0.6
+}

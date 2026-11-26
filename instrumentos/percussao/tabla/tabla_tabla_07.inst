@@ -1,0 +1,61 @@
+// nome: tabla tabla · 7
+// família: tabla
+// substitui: tabla:7
+// origem: Dirt-Samples tabla/007_hi_flick1.wav · refeito em código (distância 12.31)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.59,
+          "level": 0.545,
+          "decay": 1.1
+        },
+        {
+          "type": "sine",
+          "ratio": 2.99,
+          "level": 0.172,
+          "decay": 1.64
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 0.932,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 1230.0,
+      "res": 1.87,
+      "pitch": {
+        "from": 0.857,
+        "time": 0.00358
+      },
+      "drive": 0.0018,
+      "gain": 0.6286,
+      "transpose": 4.58
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00103,
+      "dur": 1.5,
+      "decay": 0.299,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 393.0,
+      "res": 0.904,
+      "fenv": 0.752,
+      "fdecay": 0.0479,
+      "gain": 2.669,
+      "transpose": 4.58
+    }
+  ]
+}

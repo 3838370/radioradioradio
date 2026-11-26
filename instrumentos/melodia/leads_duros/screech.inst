@@ -1,0 +1,25 @@
+// nome: screech
+// família: lead_harsh
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "fm": {
+        "ratio": 2.01,
+        "index": 6,
+        "decay": 2
+      }
+    }
+  ],
+  "attack": 0.02,
+  "release": 0.3,
+  "ftype": "bandpass",
+  "cutoff": 1800,
+  "res": 8,
+  "flfo": {
+    "rate": 5,
+    "depth": 900
+  },
+  "drive": 0.6,
+  "gain": 0.14
+}

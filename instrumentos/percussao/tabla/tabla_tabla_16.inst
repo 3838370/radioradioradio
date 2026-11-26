@@ -1,0 +1,61 @@
+// nome: tabla tabla · 16
+// família: tabla
+// substitui: tabla:16
+// origem: Dirt-Samples tabla/016_hi_hit7.wav · refeito em código (distância 13.68)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.54,
+          "level": 0.267,
+          "decay": 2.0
+        },
+        {
+          "type": "sine",
+          "ratio": 2.88,
+          "level": 0.133,
+          "decay": 0.063
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 0.636,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 4970.0,
+      "res": 0.498,
+      "pitch": {
+        "from": 2.8,
+        "time": 0.0226
+      },
+      "drive": 0.0188,
+      "gain": 0.2168,
+      "transpose": 7.67
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00167,
+      "dur": 1.5,
+      "decay": 3.0,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 320.0,
+      "res": 1.29,
+      "fenv": 2.04,
+      "fdecay": 0.0353,
+      "gain": 0.07608,
+      "transpose": 7.67
+    }
+  ]
+}
