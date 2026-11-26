@@ -43,6 +43,7 @@ import { SequencerView } from './ui/SequencerView.js';
 import { Spectrum } from './ui/Spectrum.js';
 import { Theme } from './ui/Theme.js';
 import { XYPad } from './ui/XYPad.js';
+import { LevelMeter } from './ui/LevelMeter.js';
 
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
@@ -89,6 +90,7 @@ export class App {
     this.viewButton = null;
     this.log = new LogView(this.logger);
     this.xy = new XYPad((v) => { if (this.fx) this.fx.setXY(v); });
+    this.meter = new LevelMeter(); // the output level (Mixer)
     this.arc = new Arc(this.rng, { scale: this.sectionScale() });
     SynthVoice.detuneScale = this.settings.get('detune');
     this.state = 'idle'; // idle | loading | playing
@@ -742,13 +744,15 @@ export class App {
     const pad = h - 18;
     const xyX = p.width - 12 - pad;
     this.xy.draw(p, xyX, by + 9, pad, pad);
-    const split = p.width < 720 ? xyX - 12 : p.width * 0.5;
+    // the output level, just left of the XY pad
+    this.meter.draw(p, xyX - 14, by + 9, 5, pad, this.audio && this.audio.mixer ? this.audio.mixer.level() : null);
+    const split = p.width < 720 ? xyX - 26 : p.width * 0.5;
     this.log.draw(p, 12, by, split - 24, h);
     if (p.width >= 720) {
       // the EQ curve, then the spectrum bars to its right
       const eqW = Math.min(200, Math.max(110, (xyX - split) * 0.32));
       this.eqCurve.draw(p, split, by + 9, eqW, h - 18);
-      this.spectrum.draw(p, split + eqW + 14, by + 22, xyX - split - eqW - 28, h - 32);
+      this.spectrum.draw(p, split + eqW + 14, by + 22, xyX - split - eqW - 42, h - 32);
     } else {
       this.eqCurve.rect = null;
     }

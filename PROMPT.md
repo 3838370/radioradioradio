@@ -139,7 +139,7 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 - `src/audio`:
   - Clock and Scheduler (lookahead timing)
   - SampleLibrary (Dirt-Samples)
-  - AudioEngine, Bus and TapeFx (the master and per-layer chains; TapeFx's wow is scaled per genre)
+  - AudioEngine, Bus and Mixer (the per-layer chains and the clean mix: groups drums / bass / music, low cut, kick sidechain, limiter with a −1 dB ceiling, level meter; TapeMotion keeps the tape's wow, scaled per genre, and the vibrato and tape-stop pads; no hiss)
   - Reverb: an algorithmic Freeverb-style reverb. It replaced p5.Reverb, whose long convolution caused crackling.
   - FxRack: the 8 effect pads and the master delay
   - SynthVoice (its random drift and notes' detune scaled by PARAMS detune) and SampleVoice; SoundFields describes every field of a sound's recipe (the Instrumentos panel is built from it, and a test keeps it equal to what SynthVoice reads)

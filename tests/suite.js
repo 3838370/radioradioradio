@@ -917,6 +917,32 @@
     }
   });
 
+  runner.test('Mixer: no hiss, a -1 dB ceiling, groups, low cut and the kick sidechain', async () => {
+    const sr = 48000;
+    const render = async (setup, secs = 1) => {
+      const ac = new OfflineAudioContext(1, sr * secs, sr);
+      const m = new RA.Mixer(ac, ac.destination);
+      m.sum.connect(m.input); // (in the engine the FX, EQ and compressor sit between)
+      setup(ac, m);
+      return (await ac.startRendering()).getChannelData(0);
+    };
+    const tone = (ac, freq, amp, dest) => { const o = ac.createOscillator(); o.frequency.value = freq; const g = ac.createGain(); g.gain.value = amp; o.connect(g); g.connect(dest); o.start(); };
+    const peak = (d, a = 0, b = d.length) => { let p = 0; for (let k = a; k < b; k++) p = Math.max(p, Math.abs(d[k])); return p; };
+    const rms = (d, a, b) => { let s = 0; for (let k = a; k < b; k++) s += d[k] * d[k]; return Math.sqrt(s / (b - a)); };
+    equal(peak(await render(() => {})), 0, 'silence in, silence out: no hiss');
+    const loud = await render((ac, m) => tone(ac, 200, 8, m.inputFor('drums-1')));
+    assert(peak(loud) <= 0.8913, `the ceiling holds at -1 dB: ${peak(loud).toFixed(4)}`);
+    const ac0 = new OfflineAudioContext(1, 128, sr);
+    const m0 = new RA.Mixer(ac0, ac0.destination);
+    equal(['drums-3', 'perc-1', 'bass-2', 'keys-1', 'texture-4', 'preview'].map((id) => m0.groupOf(id)), ['drums', 'drums', 'bass', 'music', 'music', 'music']);
+    const low = async (id) => { const d = await render((ac, m) => tone(ac, 50, 0.3, m.inputFor(id))); return rms(d, sr * 0.5, sr); };
+    const [music, bass] = [await low('keys-1'), await low('bass-1')];
+    assert(music < bass * 0.35, `the music loses its lows: ${music.toFixed(3)} vs bass ${bass.toFixed(3)}`);
+    const sc = await render((ac, m) => { tone(ac, 440, 0.2, m.inputFor('keys-1')); m.kick(0.5); });
+    const before = rms(sc, sr * 0.4, sr * 0.48), dip = rms(sc, sr * 0.51, sr * 0.54), after = rms(sc, sr * 0.9, sr * 0.98);
+    assert(dip < before * 0.7 && after > before * 0.95, `a kick ducks the music and lets it back: ${before.toFixed(3)} ${dip.toFixed(3)} ${after.toFixed(3)}`);
+  });
+
   runner.test('Every sound renders: sound, no blow-ups, sane level', async () => {
     const levels = [];
     const random = Math.random;
