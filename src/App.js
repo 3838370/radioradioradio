@@ -421,6 +421,41 @@ export class App {
     this.instrumentPanel.select_(name);
   }
 
+  // ───── the GRELHA view's edits ─────
+
+  // Writes the selected cell's typed text into the grid() in the layer's code (as any edit:
+  // the layer is locked, heard from the grid's next turn; the card, the full code and the
+  // sequencer show it). false if the text has an error (it stays, with the error shown).
+  commitGridCell() {
+    const gv = this.gridView, s = gv.sel;
+    if (!s || s.draft == null) return true;
+    const layer = this.composer.deck.find(s.layerId);
+    if (!layer) { gv.sel = null; return true; }
+    const before = GridView.cellText(layer, s.name, s.x, s.y);
+    const code = CodeTools.setGridCell(layer.code, s.name, s.x, s.y, s.draft);
+    if (code === layer.code) { s.draft = null; return true; }
+    const res = this.composer.deck.liveEdit(layer.id, code, { desc: `grelha ${s.name} (${s.x + 1},${s.y + 1}): ${before} → ${s.draft || '.'}`, final: true });
+    if (!res.ok) { s.error = res.error; return false; }
+    s.draft = null;
+    s.error = null;
+    return true;
+  }
+
+  // The instrument a grid cell plays: its first sound letter, or the grid's tonal sound for
+  // a bare degree. null for a cell with no sound.
+  gridSound(layer, name, cell) {
+    const g = layer.grids && layer.grids[name];
+    if (!g || !cell || !cell.hits || !cell.hits.length) return null;
+    const h = cell.hits[0];
+    const snd = g.sounds[h.letter || g.opts.tom];
+    return snd ? snd.som : null;
+  }
+
+  // Whether a sound (an instrument name) is played by one of the layer's grids.
+  isGridSound(layer, key) {
+    return Object.values(layer.grids || {}).some((g) => Object.values(g.sounds).some((s) => s.som === key));
+  }
+
   // A card clicked: the INSTRUMENTOS panel opens at the sound of that line of its code.
   openSoundOf(layer, line) {
     const name = layer && this.soundIn(layer, line);
@@ -770,6 +805,7 @@ export class App {
     else if (this.xy.contains(mx, my) || this.eqCurve.contains(mx, my)) p.cursor('crosshair');
     else if (this.view === 'code' && this.fullCode.contains(mx, my)) p.cursor(this.fullCode.hit(mx, my) ? 'pointer' : 'default');
     else if (this.view === 'seq' && this.seq.contains(mx, my)) p.cursor(this.seq.hit(mx, my) ? 'pointer' : 'default');
+    else if (this.view === 'grid' && this.gridView.contains(mx, my)) p.cursor(this.gridView.hit(mx, my) || (this.gridView.cellAt(mx, my) || {}).cell ? 'pointer' : 'default');
     else if (this.view === 'cards' && this.grid.numberAt(mx, my)) p.cursor('ns-resize');
     else if (this.view === 'cards' && this.grid.hit(mx, my)) p.cursor('pointer');
     else p.cursor('default');

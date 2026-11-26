@@ -154,6 +154,64 @@ export class CodeTools {
     }).join('\n');
   }
 
+  // ───── grid() rows in the code ─────
+
+  // The row strings of grid('name', [ ... ]) in the code: [{ start, end, text }] (start/end
+  // span the whole literal, quotes included), or null if there is no such grid.
+  static gridRows(code, name) {
+    const head = new RegExp(`\\bgrid\\(\\s*(['"])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1\\s*,\\s*\\[`).exec(code);
+    if (!head) return null;
+    const rows = [];
+    let k = head.index + head[0].length;
+    while (k < code.length) {
+      const c = code[k];
+      if (c === ']') return rows;
+      if (c === "'" || c === '"') {
+        let e = k + 1, text = '';
+        while (e < code.length && code[e] !== c) { if (code[e] === '\\') { text += code[e + 1]; e += 2; } else text += code[e++]; }
+        rows.push({ start: k, end: e + 1, text });
+        k = e + 1;
+      } else k++;
+    }
+    return null;
+  }
+
+  // A grid's cells as a table of tokens: [[token]] (missing cells as '.').
+  static gridCells(code, name) {
+    const rows = CodeTools.gridRows(code, name);
+    if (!rows) return null;
+    const cells = rows.map((r) => r.text.trim().split(/\s+/).filter(Boolean));
+    const w = Math.max(1, ...cells.map((r) => r.length));
+    return cells.map((r) => { while (r.length < w) r.push('.'); return r; });
+  }
+
+  // The code with grid `name`'s rows written from a table of tokens: columns lined up, each
+  // row in single quotes (double when a token has an octave mark ').
+  static setGridCells(code, name, cells) {
+    const rows = CodeTools.gridRows(code, name);
+    if (!rows || rows.length !== cells.length) return code;
+    const w = Math.max(...cells.map((r) => r.length));
+    const widths = [];
+    for (let x = 0; x < w; x++) widths.push(Math.max(1, ...cells.map((r) => (r[x] || '.').length)));
+    const text = cells.map((r) => {
+      const line = widths.map((wd, x) => (r[x] || '.').padEnd(wd)).join(' ').replace(/\s+$/, '');
+      return line.includes("'") ? `"${line}"` : `'${line}'`;
+    });
+    let out = code;
+    for (let i = rows.length - 1; i >= 0; i--) out = out.slice(0, rows[i].start) + text[i] + out.slice(rows[i].end);
+    return out;
+  }
+
+  // The code with one cell of grid `name` changed (x, y from 0; a cell past the edge
+  // grows the row with rests).
+  static setGridCell(code, name, x, y, token) {
+    const cells = CodeTools.gridCells(code, name);
+    if (!cells || !cells[y]) return code;
+    while (cells[y].length <= x) cells[y].push('.');
+    cells[y][x] = String(token).trim() || '.';
+    return CodeTools.setGridCells(code, name, cells);
+  }
+
   // Sample folders a layer plays: s('folder', ...) and the folders in its params line.
   static samplesUsed(code) {
     const names = [...code.matchAll(/\bs\('(\w+)'/g)].map((m) => m[1]);

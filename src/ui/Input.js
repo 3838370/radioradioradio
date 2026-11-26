@@ -33,6 +33,7 @@ export class Input {
       if (b) this.seqAction(b);
       if (this.app.seq.contains(mx, my)) return;
     }
+    if (this.app.view === 'grid') return this.gridPress(mx, my);
     if (this.app.view !== 'cards') return; // the cards aren't on screen
     if (this.app.xy.contains(mx, my)) {
       this.app.drag = { type: 'xy' };
@@ -81,6 +82,58 @@ export class Input {
     return false;
   }
 
+  // ───── the GRELHA view ─────
+
+  // A click in the GRELHA view: a button ([S] [M] [L], the ruler), or a cell (selects it and
+  // opens the Instrumentos panel at its sound), or elsewhere (writes what was typed, and
+  // lets go of the cell).
+  gridPress(mx, my) {
+    const gv = this.app.gridView;
+    const b = gv.hit(mx, my);
+    if (b) return this.gridButton(b);
+    const c = gv.cellAt(mx, my);
+    if (c && c.cell) {
+      if (!this.app.commitGridCell()) return; // its text has an error: stay on it
+      gv.select(c.layer.id, c.name, c.x, c.y);
+      const sound = this.app.gridSound(c.layer, c.name, c.cell);
+      if (sound) this.app.openInstrument(sound);
+      return;
+    }
+    if (gv.contains(mx, my) && this.app.commitGridCell()) gv.sel = null;
+  }
+
+  gridButton(b) {
+    const gv = this.app.gridView, deck = this.app.composer.deck;
+    if (b.type === 'layer-solo') return deck.toggleSolo(b.layerId);
+    if (b.type === 'layer-mute') return deck.toggleMute(b.layerId);
+    if (b.type === 'layer-lock') return deck.toggleLock(b.layerId);
+    if (b.type !== 'ruler' || !gv.sel) return;
+    if (b.key === 'OK') return this.app.commitGridCell();
+    if (b.key === '×') { gv.sel = null; return; }
+    if (b.key === '⌫') return gv.backspace(deck.find(gv.sel.layerId));
+    if (b.key === '.') { gv.sel.draft = '.'; return this.app.commitGridCell(); }
+    gv.type(b.key);
+  }
+
+  // Keys while a cell is selected in the GRELHA view: they type into it (and nothing else:
+  // no pads, no shortcuts). Enter writes it, Esc lets go, Delete empties it, the arrows
+  // move to the next cell (writing first).
+  gridKey(event) {
+    const gv = this.app.gridView;
+    if (this.app.view !== 'grid' || !gv.sel) return false;
+    const layer = this.app.composer.deck.find(gv.sel.layerId);
+    const k = (event && event.key) || '';
+    const moves = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (k === 'Enter') this.app.commitGridCell();
+    else if (k === 'Escape') gv.sel = null;
+    else if (k === 'Backspace') gv.backspace(layer);
+    else if (k === 'Delete') { gv.sel.draft = '.'; this.app.commitGridCell(); }
+    else if (moves[k]) { if (this.app.commitGridCell()) gv.move(layer, ...moves[k]); }
+    else if (k.length === 1 && /[a-zA-Z0-9@<>^?#=~*%',.]/.test(k)) gv.type(k);
+    else return false;
+    return true;
+  }
+
   // A sequencer click, turned into an edit of the layer's code (which locks the layer).
   seqAction(b) {
     const layer = this.app.composer.deck.find(b.layerId);
@@ -90,6 +143,11 @@ export class Input {
     if (b.type === 'layer-mute') return this.app.composer.deck.toggleMute(layer.id);
     if (b.type === 'layer-lock') return this.app.composer.deck.toggleLock(layer.id);
     if (b.type === 'audition') return this.audition(b.row);
+    // a grid's sounds are edited in the GRELHA view (one place for them: the grid's text)
+    if ((b.type === 'cell' || b.type === 'release-row') && this.app.isGridSound(layer, b.key)) {
+      this.app.logger.add(`${b.key} toca numa grelha: edita-o na vista GRELHA (V)`);
+      return;
+    }
     let code = layer.code, desc;
     if (b.type === 'mute-row') {
       const keys = new Set(CT.muteKeys(code));
@@ -173,6 +231,7 @@ export class Input {
     if (this.app.state !== 'playing') return;
     const tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (this.gridKey(event)) return false;
     const pad = this.padForKey(p, event);
     if (pad) {
       if (event && event.repeat) return false;

@@ -515,6 +515,26 @@
     assert(!bad.ok && /não está nos sons/.test(bad.error), bad.error);
   });
 
+  runner.test('Grid cells in the code: an edit rewrites one cell, columns lined up, the rest untouched', () => {
+    const CT = RA.CodeTools;
+    const code = "fx({ rev: 0.2 })\ngrid('303', [\n  \"@>B1 . 1' .\",\n  '. a3 . .',\n], { b: 'acid_303', a: 'pluck' }, { tom: 'b' })\nloop('x', (i) => { sleep(4) })";
+    equal(CT.gridCells(code, '303'), [['@>B1', '.', "1'", '.'], ['.', 'a3', '.', '.']]);
+    equal(CT.gridCells(code, 'nope'), null);
+    const edited = CT.setGridCell(code, '303', 2, 1, 'B5,');
+    equal(CT.gridCells(edited, '303'), [['@>B1', '.', "1'", '.'], ['.', 'a3', 'B5,', '.']]);
+    assert(edited.startsWith("fx({ rev: 0.2 })\ngrid('303', [") && edited.endsWith("{ tom: 'b' })\nloop('x', (i) => { sleep(4) })"), 'the rest of the code stays');
+    // the columns line up (each column starts at the same place in every row), a row with '
+    // in double quotes
+    const rows = CT.gridRows(edited, '303').map((r) => r.text);
+    const starts = (t) => [...t.matchAll(/\S+/g)].map((m) => m.index);
+    equal(starts(rows[0]), starts(rows[1]), 'aligned: ' + JSON.stringify(rows));
+    assert(/"@>B1/.test(edited) && /'\. +a3 +B5, +\.'/.test(edited), edited);
+    // a cell past the edge grows the row; the result still parses and runs
+    const grown = CT.setGridCell(code, '303', 5, 0, 'b2');
+    equal(CT.gridCells(grown, '303')[0], ['@>B1', '.', "1'", '.', '.', 'b2']);
+    assert(makeCoder().probe(grown).ok, 'still valid');
+  });
+
   runner.test('Sequencer lines: mute() and hits() rows round-trip in the code', () => {
     const CT = RA.CodeTools;
     const base = "fx({ amp: 0.8 })\nloop('kit', (i) => {\n  s('bd', { n: 1 })\n  sleep(1)\n})";

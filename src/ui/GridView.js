@@ -16,13 +16,19 @@ export class GridView {
   static CELL_H = 18;
   static HEADER = 24;
 
+  // The ruler under a selected cell: what can be typed (the grid's own sounds are added).
+  static RULER = ['.', '@', '>', '<', '^', 'v', '?', '#', '=', '~', '1', '2', '3', '4', '5', '6', '7', "'", ',', '*', '%'];
+  static RULER_H = 58; // two rows of keys and a line for an error
+
   constructor() {
     this.scroll = 0;
     this.area = null;
     this.contentH = 0;
     this.boxes = [];       // what was drawn: [{ layer, x, y, w, h, parts: [...] }] (for clicks)
+    this.hits = [];        // buttons drawn this frame: [S] [M] [L], the ruler
     this.pictures = new Map(); // layer id -> { key, canvas }
     this.rowsCache = new Map(); // layer id -> { at, rows } (what it played, ~10 times a second)
+    this.sel = null;       // the selected cell: { layerId, name, x, y, draft (text typed, or null), error }
   }
 
   // The grids of a layer that the view draws as grids: [{ name, g }]
@@ -69,7 +75,8 @@ export class GridView {
   boxHeight(layer, rows) {
     const H = GridView.CELL_H;
     const grids = GridView.gridsOf(layer);
-    if (grids.length) return GridView.HEADER + grids.reduce((s, { g }) => s + 16 + g.h * H + 10, 0) + 4;
+    const ruler = this.sel && this.sel.layerId === layer.id ? GridView.RULER_H : 0;
+    if (grids.length) return GridView.HEADER + grids.reduce((s, { g }) => s + 16 + g.h * H + 10, 0) + 4 + ruler;
     return GridView.HEADER + Math.max(1, rows.length) * 15 + 12;
   }
 
@@ -97,6 +104,8 @@ export class GridView {
     ctx.rect(x0 - 1, y0, w + 2, h);
     ctx.clip();
     this.boxes = [];
+    this.hits = [];
+    this.m = m;
     const live = new Set();
     for (const b of place) {
       live.add(b.layer.id);
@@ -113,6 +122,7 @@ export class GridView {
     }
     ctx.restore();
     for (const id of this.pictures.keys()) if (!live.has(id)) this.pictures.delete(id);
+    if (this.sel && !live.has(this.sel.layerId)) this.sel = null; // its layer left
     if (this.contentH > h) { // where you are: a thin bar on the right edge
       const bh = Math.max(24, (h * h) / this.contentH);
       const by = y0 + (h - bh) * (this.scroll / (this.contentH - h));
@@ -221,9 +231,22 @@ export class GridView {
   }
 
   // What moves, over the picture: the cursors and the cells they just played; the playhead
-  // for layers without grids.
+  // for layers without grids; the [S] [M] [L] buttons; the selected cell and its ruler.
   overlay(p, b, y, beat, pic, alpha) {
     const T = Theme;
+    const m = this.m;
+    // [S] [M] [L] in the header's right corner
+    p.textSize(m.small);
+    let bx = b.x + b.w - m.pad;
+    for (const [type, label, on] of [['layer-lock', '[L]', b.layer.locked], ['layer-mute', '[M]', b.layer.muted], ['layer-solo', '[S]', b.layer.soloed]]) {
+      const bw = p.textWidth(label);
+      bx -= bw;
+      p.noStroke();
+      if (on) { p.fill(T.bright); p.rect(bx - 1, y + 16 - m.small - 1, bw + 2, m.small + 5); p.fill(T.bg); } else p.fill(T.dim);
+      p.text(label, bx, y + 16);
+      this.hits.push({ type, layerId: b.layer.id, x: bx - 2, y: y + 2, w: bw + 4, h: 20 });
+      bx -= 8;
+    }
     p.noFill();
     for (const part of pic.parts) {
       if (part.g) {
@@ -240,6 +263,8 @@ export class GridView {
         };
         if (at.prev) for (const pos of at.prev) cell(pos, 0.3, false);
         for (const pos of at.positions) cell(pos, 1, true);
+        const s = this.sel;
+        if (s && s.layerId === b.layer.id && s.name === part.name) this.drawSelection(p, b, y, part);
       } else if (part.rows && part.rows.length) {
         const r0 = part.rows[0];
         const head = MathUtil.mod(Math.floor((beat - SequencerView.window(b.layer, r0.loop, beat).start) * 4), r0.steps);
@@ -249,6 +274,87 @@ export class GridView {
       }
     }
     p.noStroke();
+  }
+
+  // The selected cell (a thick frame, the text being typed in it) and the ruler of symbols
+  // at the foot of the box (the grid's sounds after them, then ⌫ OK ×).
+  drawSelection(p, b, y, part) {
+    const T = Theme, m = this.m, s = this.sel;
+    const px = b.x + part.x + s.x * part.cw, py = y + part.y + s.y * part.ch;
+    p.noFill();
+    p.stroke(T.accent);
+    p.strokeWeight(2);
+    p.rect(px, py, part.cw, part.ch);
+    p.strokeWeight(1);
+    p.noStroke();
+    if (s.draft != null) {
+      p.fill(T.bg);
+      p.rect(px + 2, py + 2, part.cw - 4, part.ch - 4);
+      p.fill(T.accent);
+      p.textSize(Math.min(m.small, Math.max(8, part.cw * 0.55)));
+      const t = s.draft || '·';
+      p.text(t, px + (part.cw - p.textWidth(t)) / 2, py + part.ch - 5);
+    }
+    // the ruler
+    const keys = GridView.RULER.concat(Object.keys(part.g.sounds), Object.keys(part.g.sounds).map((k) => k.toUpperCase()), ['⌫', 'OK', '×']);
+    const ry = y + b.h - GridView.RULER_H + 2;
+    p.textSize(m.small);
+    let rx = b.x + m.pad, row = 0;
+    for (const k of keys) {
+      const bw = Math.max(16, p.textWidth(k) + 8);
+      if (rx + bw > b.x + b.w - m.pad) { rx = b.x + m.pad; row++; }
+      const by = ry + row * 19;
+      p.noFill();
+      p.stroke(T.faint);
+      p.rect(rx + 0.5, by + 0.5, bw - 1, 17);
+      p.noStroke();
+      p.fill(k === 'OK' ? T.bright : T.text);
+      p.text(k, rx + (bw - p.textWidth(k)) / 2, by + 13);
+      this.hits.push({ type: 'ruler', key: k, x: rx, y: by, w: bw, h: 18 });
+      rx += bw + 3;
+    }
+    if (s.error) { p.fill(T.err); p.textSize(m.small - 1); p.text(s.error.slice(0, 90), b.x + m.pad, ry + 2 * 19 + 12); }
+  }
+
+  // A button drawn this frame under the mouse ([S] [M] [L], the ruler), or null.
+  hit(mx, my) {
+    if (!this.contains(mx, my)) return null;
+    return this.hits.find((h) => mx >= h.x && mx <= h.x + h.w && my >= h.y && my <= h.y + h.h) || null;
+  }
+
+  // ───── editing (a cell's text, written into the grid() in the layer's code) ─────
+
+  select(layerId, name, x, y) { this.sel = { layerId, name, x, y, draft: null, error: null }; }
+
+  // What the cell holds now, in the code.
+  static cellText(layer, name, x, y) {
+    const g = layer.grids && layer.grids[name];
+    const c = g && g.rows[y] && g.rows[y][x];
+    return c ? c.raw : '.';
+  }
+
+  // Typing into the selected cell: the first key replaces its text, the next ones add to it.
+  type(ch) {
+    if (!this.sel) return;
+    this.sel.draft = (this.sel.draft == null ? '' : this.sel.draft) + ch;
+    this.sel.error = null;
+  }
+
+  backspace(layer) {
+    if (!this.sel) return;
+    const cur = this.sel.draft != null ? this.sel.draft : GridView.cellText(layer, this.sel.name, this.sel.x, this.sel.y);
+    this.sel.draft = cur.slice(0, -1);
+  }
+
+  // Moves the selection by (dx, dy) within its grid (around the edges).
+  move(layer, dx, dy) {
+    const s = this.sel;
+    const g = s && layer && layer.grids && layer.grids[s.name];
+    if (!g) return;
+    s.x = (s.x + dx + g.w) % g.w;
+    s.y = (s.y + dy + g.h) % g.h;
+    s.draft = null;
+    s.error = null;
   }
 
   contains(mx, my) {
