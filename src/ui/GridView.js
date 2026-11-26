@@ -247,6 +247,17 @@ export class GridView {
       this.hits.push({ type, layerId: b.layer.id, x: bx - 2, y: y + 2, w: bw + 4, h: 20 });
       bx -= 8;
     }
+    // [congelar] a layer without grids into one; [↺ original] a frozen one back
+    const hasGrid = pic.parts.some((x) => x.g);
+    const act = b.layer.frozenFrom ? ['unfreeze', '[↺ original]'] : !hasGrid ? ['freeze', '[congelar]'] : null;
+    if (act) {
+      const bw = p.textWidth(act[1]);
+      bx -= bw + 4;
+      p.noStroke();
+      p.fill(T.text);
+      p.text(act[1], bx, y + 16);
+      this.hits.push({ type: act[0], layerId: b.layer.id, x: bx - 2, y: y + 2, w: bw + 4, h: 20 });
+    }
     p.noFill();
     for (const part of pic.parts) {
       if (part.g) {

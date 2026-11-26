@@ -535,6 +535,38 @@
     assert(makeCoder().probe(grown).ok, 'still valid');
   });
 
+  runner.test('Freeze into a grid: what a layer played comes back the same from the grid', () => {
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
+    const harmony = new RA.Harmony();
+    const coderWith = () => {
+      const clock = new RA.Clock(120);
+      const coder = new RA.LiveCoder({ scheduler: { clock, at() {} }, audio: { bus: () => null, createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+      coder.attach(new RA.LanguageApi({ coder, audio: null, harmony, clock, energy: () => 0.5, instruments: lib }));
+      return coder;
+    };
+    const play = (code) => {
+      const coder = coderWith();
+      const layer = new RA.Layer({ id: 'F', role: 'bass', pattern: { id: 'f', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, 4);
+      return layer.played.filter((e) => e.beat < 4);
+    };
+    // a bar with drums, notes in two octaves, a held note and an accent
+    const original = play("fx({ lpf: 900 })\ngrid('o', [\"@>K . h . s . h b1 ~ ~ b3 . b5' . k b7,\"], { k: 'bombo_808bd_05', s: 'tarola_808sd_12', h: 'hihat_808_01', b: 'acid_303' }, { tom: 'b' })");
+    const f = new RA.GridFreeze({ harmony, instruments: lib });
+    const r = f.freeze(original.concat([{ kind: 's', key: 'amencutup:3', name: 'amencutup', n: 3, beat: 1 }]), 0, 16, RA.GridFreeze.fxLine("fx({ lpf: 900 })\nloop('x', () => sleep(4))"));
+    assert(r.code.startsWith('fx({ lpf: 900 })\ngrid('), r.code);
+    equal(r.left, ['amencutup:3'], 'a sample with no sound in code is left out');
+    equal(r.offKey, 0);
+    const again = play(r.code);
+    const sig = (evs) => evs.map((e) => `${e.beat}:${e.key}:${(e.notes || []).join(',')}`).sort().join(' ');
+    equal(sig(again), sig(original), 'the same sounds and notes at the same times');
+    // the held note keeps its length (the ~ came back)
+    const held = (evs) => evs.find((e) => e.key === 'acid_303' && e.beat === 1.75);
+    equal(held(again).dur, held(original).dur);
+  });
+
   runner.test('Sequencer lines: mute() and hits() rows round-trip in the code', () => {
     const CT = RA.CodeTools;
     const base = "fx({ amp: 0.8 })\nloop('kit', (i) => {\n  s('bd', { n: 1 })\n  sleep(1)\n})";

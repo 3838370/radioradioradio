@@ -45,6 +45,7 @@ import { Theme } from './ui/Theme.js';
 import { XYPad } from './ui/XYPad.js';
 import { LevelMeter } from './ui/LevelMeter.js';
 import { GridView } from './ui/GridView.js';
+import { GridFreeze } from './music/GridFreeze.js';
 
 // App: builds every component, wires them together and runs the p5 sketch (instance mode).
 //
@@ -439,6 +440,40 @@ export class App {
     s.draft = null;
     s.error = null;
     return true;
+  }
+
+  // [congelar]: the layer becomes a grid() of what it played in its last whole cycle (see
+  // GridFreeze), locked; its code before is kept for [↺ original].
+  freezeLayer(id) {
+    const deck = this.composer.deck;
+    const layer = deck.find(id);
+    if (!layer || Object.keys(layer.grids || {}).length) return;
+    const beat = this.clock.beatAt(this.audio.ac.currentTime);
+    // the loop that plays most of its sounds sets the cycle
+    const count = new Map();
+    for (const e of layer.played) if (e.beat > beat - 16 && e.beat <= beat) count.set(e.loop, (count.get(e.loop) || 0) + 1);
+    const main = [...count].sort((a, b) => b[1] - a[1])[0];
+    if (!main) { this.logger.add('congelar: esta camada ainda não tocou nada'); return; }
+    const w = SequencerView.window(layer, main[0], beat);
+    const start = w.start - w.len >= 0 ? w.start - w.len : w.start; // the last whole cycle
+    const f = new GridFreeze({ harmony: this.harmony, instruments: this.instruments, sampleCount: (n) => this.samples.count(n) });
+    const r = f.freeze(layer.played, start, w.steps, GridFreeze.fxLine(layer.code));
+    if (!Object.keys(r.sounds).length) { this.logger.add(`congelar: ${PatternBank.roleLabel(layer.role)} não tem sons que caibam numa grelha`); return; }
+    const before = layer.code;
+    const res = deck.liveEdit(id, CodeTools.withInstruments(r.code, this.instruments), { desc: 'congelada em grelha', final: true });
+    if (!res.ok) { this.logger.add(`congelar: ${res.error}`, 'err'); return; }
+    layer.frozenFrom = before;
+    if (r.left.length) this.logger.add(`congelar: ficaram de fora (sem som em código): ${r.left.join(', ')}`);
+    if (r.offKey) this.logger.add(`congelar: ${r.offKey} nota(s) fora do modo foram para a nota do modo mais perto`);
+  }
+
+  // [↺ original]: a frozen layer back to the code it had before.
+  unfreezeLayer(id) {
+    const layer = this.composer.deck.find(id);
+    if (!layer || !layer.frozenFrom) return;
+    const res = this.composer.deck.liveEdit(id, layer.frozenFrom, { desc: 'de volta ao original', final: true });
+    if (res.ok) layer.frozenFrom = null;
+    else this.logger.add(`voltar ao original: ${res.error}`, 'err');
   }
 
   // The instrument a grid cell plays: its first sound letter, or the grid's tonal sound for
