@@ -1,4 +1,3 @@
-import { SynthPresets } from '../audio/SynthPresets.js';
 import { Families } from '../music/Families.js';
 
 // CodeTools: small, safe text edits on pattern code used by the editing UI.
@@ -78,9 +77,10 @@ export class CodeTools {
 
   // Instruments a layer plays: synth('name', ...), the instruments in its params line, and
   // names chosen in code on synth lines, e.g. synth(vary('v', ['bell', 'glass'], 8), ...).
-  // `known` (instrument names) filters the quoted words; without it, the built-in presets.
+  // `known` (sound names, the library's) filters the quoted words; without it, the names
+  // the Families know.
   static synthsUsed(code, known = null) {
-    const set = new Set(known || Object.keys(SynthPresets));
+    const set = new Set(known || Object.values(Families.SYNTHS).flat());
     const names = [...code.matchAll(/synth\('(\w+)'/g)].map((m) => m[1]);
     for (const v of Object.values(CodeTools.paramsOf(code))) if (set.has(v)) names.push(v);
     if (known) {
@@ -88,6 +88,9 @@ export class CodeTools {
         if (!line.includes('synth(')) continue;
         for (const [, w] of line.matchAll(/'(\w+)'/g)) if (set.has(w)) names.push(w);
       }
+      // the sounds of a grid(): its map { k: 'bombo_808bd_05', ... } (the rows are cells, never
+      // sound names)
+      if (/\bgrid\(/.test(code)) for (const [, w] of code.matchAll(/:\s*'(\w+)'/g)) if (set.has(w)) names.push(w);
     }
     return [...new Set(names)];
   }
@@ -109,9 +112,17 @@ export class CodeTools {
     return String(v);
   }
 
-  static instLine(name, spec) { return `inst('${name}', ${CodeTools.toCode(spec)})`; }
+  // meta: { substitui: '808bd:5' } for a sample rebuilt in code
+  static instLine(name, spec, meta = null) {
+    return `inst('${name}', ${CodeTools.toCode(spec)}${meta && meta.substitui ? `, { substitui: '${meta.substitui}' }` : ''})`;
+  }
 
   static isInstLine(line) { return /^inst\('/.test(line); }
+
+  // an inst line of a sample rebuilt in code (it says which sample it plays instead of)
+  static isCodedLine(line) { return CodeTools.isInstLine(line) && /, \{ substitui: '[^']+' \}\)\s*$/.test(line); }
+
+  static withoutCoded(code) { return code.split('\n').filter((l) => !CodeTools.isCodedLine(l)).join('\n'); }
 
   // Leading inst(...) lines, the params line, the top-level fx line and the mute line are
   // the head; the rest is the body.
@@ -133,9 +144,91 @@ export class CodeTools {
     return lines.length ? lines.join('\n') + '\n' + plain : plain;
   }
 
-  // Replaces the inst line for `name` (if present) with the library's current definition.
+  // Replaces the inst line for `name` (if present) with the library's current definition
+  // (keeping what sample it replaces, when it says so).
   static updateInstrument(code, name, spec) {
-    return code.split('\n').map((l) => (l.startsWith(`inst('${name}',`) ? CodeTools.instLine(name, spec) : l)).join('\n');
+    return code.split('\n').map((l) => {
+      if (!l.startsWith(`inst('${name}',`)) return l;
+      const m = /, \{ substitui: '([^']+)' \}\)\s*$/.exec(l);
+      return CodeTools.instLine(name, spec, m ? { substitui: m[1] } : null);
+    }).join('\n');
+  }
+
+  // ───── grid() rows in the code ─────
+
+  // The row strings of grid('name', [ ... ]) in the code: [{ start, end, text }] (start/end
+  // span the whole literal, quotes included), or null if there is no such grid.
+  static gridRows(code, name) {
+    const head = new RegExp(`\\bgrid\\(\\s*(['"])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1\\s*,\\s*\\[`).exec(code);
+    if (!head) return null;
+    const rows = [];
+    let k = head.index + head[0].length;
+    while (k < code.length) {
+      const c = code[k];
+      if (c === ']') return rows;
+      if (c === "'" || c === '"') {
+        let e = k + 1, text = '';
+        while (e < code.length && code[e] !== c) { if (code[e] === '\\') { text += code[e + 1]; e += 2; } else text += code[e++]; }
+        rows.push({ start: k, end: e + 1, text });
+        k = e + 1;
+      } else k++;
+    }
+    return null;
+  }
+
+  // A grid's cells as a table of tokens: [[token]] (missing cells as '.').
+  static gridCells(code, name) {
+    const rows = CodeTools.gridRows(code, name);
+    if (!rows) return null;
+    const cells = rows.map((r) => r.text.trim().split(/\s+/).filter(Boolean));
+    const w = Math.max(1, ...cells.map((r) => r.length));
+    return cells.map((r) => { while (r.length < w) r.push('.'); return r; });
+  }
+
+  // The code with grid `name`'s rows written from a table of tokens: columns lined up, each
+  // row in single quotes (double when a token has an octave mark ').
+  static setGridCells(code, name, cells) {
+    const rows = CodeTools.gridRows(code, name);
+    if (!rows || rows.length !== cells.length) return code;
+    const w = Math.max(...cells.map((r) => r.length));
+    const widths = [];
+    for (let x = 0; x < w; x++) widths.push(Math.max(1, ...cells.map((r) => (r[x] || '.').length)));
+    const text = cells.map((r) => {
+      const line = widths.map((wd, x) => (r[x] || '.').padEnd(wd)).join(' ').replace(/\s+$/, '');
+      return line.includes("'") ? `"${line}"` : `'${line}'`;
+    });
+    let out = code;
+    for (let i = rows.length - 1; i >= 0; i--) out = out.slice(0, rows[i].start) + text[i] + out.slice(rows[i].end);
+    return out;
+  }
+
+  // The code with grid `name` resized to w × h cells: cut, or grown with rests.
+  static resizeGrid(code, name, w, h) {
+    const rows = CodeTools.gridRows(code, name);
+    const cells = CodeTools.gridCells(code, name);
+    if (!rows || !cells) return code;
+    const out = [];
+    for (let y = 0; y < h; y++) {
+      const r = (cells[y] || []).slice(0, w);
+      while (r.length < w) r.push('.');
+      out.push(r);
+    }
+    const widths = Array.from({ length: w }, (_, x) => Math.max(1, ...out.map((r) => r[x].length)));
+    const text = out.map((r) => {
+      const line = widths.map((wd, x) => r[x].padEnd(wd)).join(' ').replace(/\s+$/, '');
+      return line.includes("'") ? `"${line}"` : `'${line}'`;
+    }).join(',\n  ');
+    return code.slice(0, rows[0].start) + text + code.slice(rows[rows.length - 1].end);
+  }
+
+  // The code with one cell of grid `name` changed (x, y from 0; a cell past the edge
+  // grows the row with rests).
+  static setGridCell(code, name, x, y, token) {
+    const cells = CodeTools.gridCells(code, name);
+    if (!cells || !cells[y]) return code;
+    while (cells[y].length <= x) cells[y].push('.');
+    cells[y][x] = String(token).trim() || '.';
+    return CodeTools.setGridCells(code, name, cells);
   }
 
   // Sample folders a layer plays: s('folder', ...) and the folders in its params line.

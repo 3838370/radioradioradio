@@ -1,0 +1,24 @@
+// nome: ae_fm_perc
+// família: metal
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 3.7,
+        "index": 5,
+        "decay": 0.05
+      }
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.01,
+  "release": 0.1,
+  "cutoff": 9000,
+  "res": 0.5,
+  "pitch": {
+    "from": 12,
+    "time": 0.03
+  },
+  "gain": 0.3
+}

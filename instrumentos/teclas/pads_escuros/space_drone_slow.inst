@@ -1,0 +1,24 @@
+// nome: space_drone_slow
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "sawtooth",
+      "detune": 4,
+      "octave": -1
+    }
+  ],
+  "attack": 6,
+  "release": 8,
+  "cutoff": 600,
+  "res": 2,
+  "flfo": {
+    "rate": 0.05,
+    "depth": 1200
+  },
+  "gain": 0.1,
+  "drift": 6
+}

@@ -1,5 +1,5 @@
 // role: bass
-// genres: acid 1, saw 0.5
+// genres: acid 1
 // energy: 0.35-1
 params({ acid_bass: 'braindance_bass' })
 fx({ lpf: 1800 })

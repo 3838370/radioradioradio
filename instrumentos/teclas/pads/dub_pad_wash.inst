@@ -1,0 +1,25 @@
+// nome: dub_pad_wash
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -10,
+      "level": 0.5
+    },
+    {
+      "type": "sawtooth",
+      "detune": 10,
+      "level": 0.5
+    }
+  ],
+  "attack": 2,
+  "release": 5,
+  "cutoff": 800,
+  "res": 1,
+  "flfo": {
+    "rate": 0.1,
+    "depth": 700
+  },
+  "gain": 0.1,
+  "drift": 8
+}

@@ -1,0 +1,30 @@
+// nome: choir
+// família: pad
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "detune": -6
+    },
+    {
+      "type": "triangle",
+      "detune": 6
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.3
+    }
+  ],
+  "attack": 3,
+  "release": 5,
+  "cutoff": 2200,
+  "res": 0.4,
+  "gain": 0.14,
+  "vibrato": {
+    "rate": 0.3,
+    "depth": 10,
+    "delay": 0
+  },
+  "drift": 6
+}

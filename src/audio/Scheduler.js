@@ -46,7 +46,7 @@ export class Scheduler {
       const e = this.events.shift();
       if (e.beat < clock.beat - 0.01) this.late++;
       const t = clock.time + Math.max(0, e.beat - clock.beat) * spb;
-      try { e.fn(t, spb); } catch (err) { this.logger.add('event error: ' + err.message, 'err'); }
+      try { e.fn(t, spb); } catch (err) { this.logger.add('erro num evento: ' + err.message, 'err'); }
       fired++;
     }
     return fired;

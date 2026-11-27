@@ -1,5 +1,6 @@
 import { MathUtil } from '../core/MathUtil.js';
 import { Rng } from '../core/Rng.js';
+import { Grid } from './Grid.js';
 import { Ring } from './Ring.js';
 import { Theory } from './Theory.js';
 import { BeatGen } from '../music/BeatGen.js';
@@ -29,12 +30,15 @@ import { Phrase } from '../music/Phrase.js';
 //   beat(name, { style, density })  swing(step, k, amount)
 //   chords(name, opts)  bassline(name, opts)  collage(name, opts)  drone(name, opts)  motif(name, opts)  tape(name)
 //   melody(name, { style: 'ostinato' | 'drift' | 'probability' | 'cells', octave, beats })
+//   grid(name, ['@>K . h .', ...], { k: 'bombo_808bd_05', h: ... }, { passo, ciclo, tom, ... })
 //   KEY ROOT QUAL MODE ENERGY BAR BPM
 //
 // vary / walk / phrase keep their state per layer, so code can stay short and still never
 // play the same bar twice in a row.
 export class LanguageApi {
-  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng() }) {
+  constructor({ coder, audio, harmony, clock, energy, section = null, genres = null, fx = null, instruments = null, settings = null, rng = new Rng(), onSetup = null, arc = null }) {
+    this.arc = arc;         // the Arc, for maestro grids (sections)
+    this.onSetup = onSetup; // setup({ bpm, key, mode, progression, chordBars }): the App applies it
     this.settings = settings; // the feel parameters (humanTime, humanVel)
     this.genres = genres;   // () => the genre weights, for collage()'s default pool
     this.instruments = instruments; // InstrumentLibrary, for inst()
@@ -134,6 +138,189 @@ export class LanguageApi {
     });
   }
 
+  // ───── grid() ─────
+
+  // A drum or percussion sound (it plays at its own pitch, degrees don't move it).
+  isDrum(name) {
+    const m = this.instruments && this.instruments.info(name);
+    return !!m && (m.role === 'bateria' || m.role === 'percussao' || !!m.replaces);
+  }
+
+  // The scale step a grid degree (1-7) plays at `bar`: from the chord's root, or from the
+  // key's tonic with graus: 'tom'; on strong beats near a chord tone with fixo: true.
+  gridStep(g, degree, bar, beatInBar) {
+    const o = g.opts;
+    let step = (o.graus === 'tom' ? 0 : this.harmony.degreeAt(bar)) + degree - 1;
+    if (o.fixo && Math.abs(beatInBar - Math.round(beatInBar)) < 1e-6) step = this.harmony.snapToChord(step, bar);
+    return step;
+  }
+
+  // One turn of a grid's loop: walks its cursors through `ciclo` steps (from where they
+  // stopped last time, kept in the layer's store) and plays what they land on through
+  // synth(), so the sequencer, the card's lights, mute() and solo see it as any other sound.
+  playGrid(g) {
+    const it = this.coder.cur;
+    if (!it) return;
+    const o = g.opts;
+    const len = o.ciclo * o.passo;
+    const store = this.vars();
+    const key = 'grid:' + g.name;
+    const state = Grid.keep(g, store.get(key));
+    store.set(key, state);
+    if (o.tipo === 'maestro') return this.playMaestro(g, state, it, len);
+    if (o.tipo === 'efeitos') return this.playEffects(g, state, it, len);
+    const step0 = state.step;
+    const { hits, path } = Grid.walk(g, state, o.ciclo);
+    // where the cursors were, step by step, for the GRELHA view (a few turns back)
+    state.trace.push({ start: it.start + it.cursor, passo: o.passo, step0, path });
+    if (state.trace.length > 4) state.trace.shift();
+    const base = it.cursor;
+    try {
+      for (const h of hits) {
+        const at = base + h.k * o.passo;
+        const beat = it.start + at;
+        const bar = Math.floor(beat / 4 + 1e-6);
+        for (const hit of h.cell.hits) {
+          const snd = g.sounds[hit.letter || o.tom];
+          if (!snd) continue;
+          const acc = hit.accent ? 1.3 : 1;
+          let notes, opts;
+          if (snd.s) {
+            // a sample, played as the pattern played it (its n, level, rate)
+            const n = h.cell.ratchet;
+            for (let r = 0; r < n; r++) {
+              it.cursor = at + (r * o.passo) / n;
+              this.env.s(snd.s, { n: snd.n || 0, amp: (snd.amp != null ? snd.amp : 0.8) * o.vol * acc, rate: snd.rate });
+            }
+            continue;
+          }
+          if (snd.seq || snd.amp != null || snd.dur != null || snd.oitava != null || snd.opts) {
+            // a sound with the way it was played (a grid made from a layer): its notes in
+            // order (seq: degree over the chord, octave, level), its level, length, options
+            const drum = this.isDrum(snd.som);
+            let amp = snd.amp != null ? snd.amp : drum ? 0.4 : 0.3;
+            let noteLen = snd.dur; // each note's own length when the sequence has it
+            if (drum) notes = [60];
+            else {
+              let step, octave;
+              if (snd.seq && snd.seq.length && hit.degree == null) {
+                const at2 = state.seqAt || (state.seqAt = {});
+                const k = at2[hit.letter] = ((at2[hit.letter] == null ? -1 : at2[hit.letter]) + 1) % snd.seq.length;
+                const [d, oc, a, len] = snd.seq[k];
+                step = this.harmony.degreeAt(bar) + d;
+                octave = oc + hit.octave;
+                if (a != null) amp = a;
+                if (len != null) noteLen = len;
+              } else {
+                step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4);
+                octave = (snd.oitava != null ? snd.oitava : o.oitava) + hit.octave;
+              }
+              notes = [this.harmony.degree(step, octave)];
+              const size = snd.acorde || (o.acorde >= 4 ? 4 : o.acorde ? 3 : 1);
+              for (let k = 1; k < size; k++) notes.push(this.harmony.degree(step + 2 * k, octave));
+            }
+            opts = Object.assign({}, snd.opts || {}, { amp: amp * o.vol * acc });
+            // the length it had (none given: the instrument's own), longer when held (~)
+            if (!drum && (noteLen != null || h.hold)) opts.dur = (noteLen != null ? noteLen : o.passo) + h.hold * o.passo;
+          } else if (this.isDrum(snd.som)) {
+            notes = [60];
+            opts = { amp: 0.4 * o.vol * snd.vol * acc };
+          } else {
+            // a letter alone (A, C) walks an arpeggio of the chord: root, 3rd, 5th, octave
+            const arp = hit.degree == null && !o.acorde ? [0, 2, 4, 7][(state.arp = (state.arp || 0) + 1) % 4] : 0;
+            const step = this.gridStep(g, hit.degree || 1, bar, beat - bar * 4) + arp;
+            const octave = o.oitava + hit.octave;
+            const size = o.acorde >= 4 ? 4 : o.acorde ? 3 : 1;
+            notes = [];
+            for (let k = 0; k < size; k++) notes.push(this.harmony.degree(step + 2 * k, octave));
+            opts = { amp: 0.3 * o.vol * snd.vol * acc, dur: (o.dur + h.hold) * o.passo };
+          }
+          const n = h.cell.ratchet;
+          for (let r = 0; r < n; r++) {
+            it.cursor = at + (r * o.passo) / n;
+            this.env.synth(snd.som, notes, n > 1 && opts.dur ? Object.assign({}, opts, { dur: opts.dur / n }) : opts);
+          }
+        }
+      }
+    } finally {
+      it.cursor = base;
+    }
+    it.sleep(len);
+  }
+
+  // A maestro grid's turn: one column per step (a bar by default). Row 1 sets the chord (a
+  // degree 1-7; '.' keeps the last), row 2 the arc's section (letters, Grid.SECTIONS). Each
+  // column is set for its own bar and again a bar ahead, so every other layer's turn for
+  // that bar already finds it (turns of the same bar run in any order).
+  playMaestro(g, state, it, len) {
+    const o = g.opts;
+    const path = [];
+    const live = !this.coder.inProbe; // a probe (code checked without sound) conducts nothing
+    const set = (col, bar) => {
+      const chord = g.rows[0][col].raw;
+      if (/^[1-7]$/.test(chord)) state.chord = +chord - 1;
+      if (live && state.chord != null) this.harmony.conduct(bar, state.chord);
+      const sec = g.rows[1] && Grid.SECTIONS[g.rows[1][col].raw];
+      if (live && sec && this.arc) this.arc.conduct(bar, sec);
+    };
+    for (let k = 0; k < o.ciclo; k++) {
+      const col = state.step % g.w;
+      const beat = it.start + it.cursor + k * o.passo;
+      const bar = Math.floor(beat / 4 + 1e-6);
+      set(col, bar);
+      // a bar ahead: the next column when a step is a bar or more, else this one again
+      const next = o.passo >= 4 ? (col + 1) % g.w : col;
+      set(next, Math.floor((beat + Math.max(4, o.passo)) / 4 + 1e-6));
+      path.push(g.rows.map((_, y) => [col, y]));
+      state.step++;
+    }
+    state.trace.push({ start: it.start + it.cursor, passo: o.passo, step0: state.step - o.ciclo, path });
+    if (state.trace.length > 4) state.trace.shift();
+    it.sleep(len);
+  }
+
+  // An effects grid's turn: one column per step (a sixteenth by default), all rows at once.
+  // A curve row (filtro, reverb, crush, volume, delay, wobble) moves the layer's own setting
+  // to 0-9 of its range ('.' leaves it); a pads row fires pad 1-8 on the whole mix, held one
+  // step more for each ~ after it.
+  playEffects(g, state, it, len) {
+    const o = g.opts;
+    const base = it.cursor;
+    const path = [];
+    try {
+      for (let k = 0; k < o.ciclo; k++) {
+        const col = state.step % g.w;
+        it.cursor = base + k * o.passo;
+        const fx = {};
+        o.linhas.forEach((name, y) => {
+          const raw = g.rows[y][col].raw;
+          if (name === 'pads') {
+            if (!/^[1-8]$/.test(raw)) return;
+            let held = 1;
+            for (let j = 1; j < g.w && g.rows[y][(col + j) % g.w].raw === '~'; j++) held++;
+            const pad = (this.fx && this.fx.constructor.PADS || [])[+raw - 1];
+            if (pad) this.env.pad(pad.id, held * o.passo);
+            return;
+          }
+          if (!/^\d$/.test(raw)) return;
+          const c = Grid.CURVES[name];
+          const v = Grid.curveValue(c, +raw);
+          if (state.curves && state.curves[name] === v) return; // already there: nothing to send
+          (state.curves = state.curves || {})[name] = v;
+          fx[c.key] = Math.round(v * 1000) / 1000;
+        });
+        if (Object.keys(fx).length) this.env.fx(fx);
+        path.push(g.rows.map((_, y) => [col, y]));
+        state.step++;
+      }
+    } finally {
+      it.cursor = base;
+    }
+    state.trace.push({ start: it.start + base, passo: o.passo, step0: state.step - o.ciclo, path });
+    if (state.trace.length > 4) state.trace.shift();
+    it.sleep(len);
+  }
+
   buildEnv() {
     const { coder, audio, harmony, clock } = this;
     const self = this;
@@ -150,13 +337,40 @@ export class LanguageApi {
 
       sleep(beats) { if (coder.cur) coder.cur.sleep(beats); },
 
-      // inst('name', { osc: [...], attack, release, cutoff, ... }): defines or changes a synth
-      // instrument (the same thing the Instrumentos panel edits). Top level only.
-      inst(name, spec) {
+      // grid('bat', ['@>K . h . S . h .'], { k: 'bombo_808bd_05', s: ..., h: ... }, { passo: 1/4 }):
+      // a loop with memory. Each turn its cursors walk `ciclo` steps of the grid, playing what
+      // they land on, and the next turn carries on from there. Top level only. The symbols are
+      // in Grid.js (and Entregas\grelha-especificacao.md).
+      grid(name, rows, sounds = {}, opts = {}) {
+        if (!coder.compiling) throw new Error('grid() só pode estar no nível de cima do código');
+        const g = Grid.parse(name, rows, sounds, opts);
+        if (self.instruments && self.instruments.names().length) {
+          for (const s of Object.values(g.sounds)) {
+            if (s.som && !self.instruments.has(s.som)) throw new Error(`grid('${name}'): o som '${s.som}' não existe no painel INSTRUMENTOS`);
+          }
+        }
+        (coder.compiling.grids = coder.compiling.grids || {})[name] = g;
+        coder.compiling.defined[name] = () => self.playGrid(g);
+      },
+
+      // inst('name', { osc: [...], attack, release, cutoff, ... }): defines or changes a sound
+      // (the same recipe the INSTRUMENTOS panel edits; { layers: [...] } for a sound made of
+      // parts). A third argument { substitui: '808bd:5' } makes it play instead of that sample
+      // (always: the sample's file is never loaded). Top level only. The change is heard at once and is "por guardar".
+      inst(name, spec, meta = null) {
         if (!coder.compiling || coder.inProbe || !self.instruments) return;
-        if (!spec || !Array.isArray(spec.osc) || !spec.osc.length) throw new Error(`inst('${name}'): needs osc: [...]`);
+        const ok = spec && (Array.isArray(spec.layers) ? spec.layers.length && spec.layers.every((l) => Array.isArray(l.osc) && l.osc.length) : Array.isArray(spec.osc) && spec.osc.length);
+        if (!ok) throw new Error(`inst('${name}'): needs osc: [...] (or layers: [...])`);
         const cur = self.instruments.get(name);
-        if (!cur || JSON.stringify(cur) !== JSON.stringify(spec)) self.instruments.set(name, spec);
+        if (!cur || JSON.stringify(cur) !== JSON.stringify(spec)) self.instruments.set(name, spec, meta);
+        else if (meta && !self.instruments.info(name)) self.instruments.set(name, spec, meta);
+      },
+
+      // setup({ bpm: 110, key: 'D#', mode: 'dorian', progression: [1, 4], chordBars: 4 }): the
+      // tempo and harmony a whole program (the full code) was written in. Top level only.
+      setup(cfg) {
+        if (!coder.compiling || coder.inProbe) return;
+        if (self.onSetup) self.onSetup(cfg || {});
       },
 
       s(name, opts = {}) {
@@ -165,7 +379,7 @@ export class LanguageApi {
         if (!it) return;
         const id = it.layer.id;
         const key = `${name}:${opts.n || 0}`;
-        const meta = { kind: 's', key, name, n: opts.n || 0, amp: opts.amp, silent: self.silenced(it.layer, key) };
+        const meta = { kind: 's', key, name, n: opts.n || 0, amp: opts.amp, rate: opts.rate, silent: self.silenced(it.layer, key) };
         coder.emit((t, spb) => audio.playSample(id, name, timed(Object.assign({}, opts), spb, ['cut', 'attack', 'release']), t + Math.max(0, opts.nudge || 0) * spb), meta);
       },
 
@@ -174,7 +388,10 @@ export class LanguageApi {
         if (!it) return;
         const id = it.layer.id;
         const list = (Array.isArray(notes) ? notes : [notes]).map((n) => T.note(n));
-        const meta = { kind: 'synth', key: preset, notes: list, dur: opts.dur, amp: opts.amp, silent: self.silenced(it.layer, preset) };
+        // (the note's own sound options too, so a grid made from what played sounds the same)
+        const sound = {};
+        for (const k of ['cutoff', 'res', 'attack', 'release', 'vel']) if (typeof opts[k] === 'number') sound[k] = opts[k];
+        const meta = { kind: 'synth', key: preset, notes: list, dur: opts.dur, amp: opts.amp, opts: sound, silent: self.silenced(it.layer, preset) };
         // nudge: play late by this many beats (feel, rubato); strum: spread a chord's notes
         coder.emit((t, spb) => {
           const o = timed(Object.assign({}, opts), spb, ['dur', 'attack', 'release']);

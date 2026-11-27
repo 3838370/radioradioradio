@@ -1,0 +1,61 @@
+// nome: tabla tabla2 · 20
+// família: tabla
+// substitui: tabla2:20
+// origem: Dirt-Samples tabla2/23665_loofa_A_021.wav · refeito em código (distância 8.12)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.91,
+          "level": 0.195,
+          "decay": 0.479
+        },
+        {
+          "type": "sine",
+          "ratio": 1.13,
+          "level": 0.204,
+          "decay": 0.236
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 1.25,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 2680.0,
+      "res": 1.07,
+      "pitch": {
+        "from": 1.21,
+        "time": 0.0366
+      },
+      "drive": 0.0202,
+      "gain": 1.033,
+      "transpose": -0.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 1.5,
+      "decay": 0.137,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 663.0,
+      "res": 1.14,
+      "fenv": 3.28,
+      "fdecay": 0.014,
+      "gain": 0.5968,
+      "transpose": -0.28
+    }
+  ]
+}

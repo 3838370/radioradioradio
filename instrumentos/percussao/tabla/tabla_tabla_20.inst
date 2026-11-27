@@ -1,0 +1,61 @@
+// nome: tabla tabla · 20
+// família: tabla
+// substitui: tabla:20
+// origem: Dirt-Samples tabla/020_lower2_hit.wav · refeito em código (distância 12.13)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.07,
+          "level": 0.482,
+          "decay": 1.01
+        },
+        {
+          "type": "sine",
+          "ratio": 1.78,
+          "level": 0.4,
+          "decay": 1.15
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.45,
+      "decay": 1.15,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 1570.0,
+      "res": 0.704,
+      "pitch": {
+        "from": 0.344,
+        "time": 0.0396
+      },
+      "drive": 0.0498,
+      "gain": 0.8136,
+      "transpose": -21.93
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00186,
+      "dur": 1.45,
+      "decay": 0.211,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 200.0,
+      "res": 1.14,
+      "fenv": 1.06,
+      "fdecay": 0.0169,
+      "gain": 0.2778,
+      "transpose": -21.93
+    }
+  ]
+}

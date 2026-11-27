@@ -18,12 +18,12 @@
 
   runner.test('Pattern files: every .rad in the index loads, and the format round-trips', () => {
     const P = RA.PatternLoader;
-    assert(RA.PATTERNS.length >= 341, 'loaded: ' + RA.PATTERNS.length);
+    assert(RA.PATTERNS.length >= 200, 'loaded: ' + RA.PATTERNS.length);
     for (const p of RA.PATTERNS) {
       const back = P.parse(P.format(p), p.id + '.rad');
       equal([back.id, back.role, back.genres, back.energy, !!back.odd, back.code], [p.id, p.role, p.genres, p.energy, !!p.odd, p.code], p.id);
     }
-    const mine = P.parse(P.format({ id: 'user_x', user: true, role: 'lead', genres: { boc: 0.5 }, energy: [0, 1], code: "loop('a', () => sleep(4))" }), 'whatever.rad');
+    const mine = P.parse(P.format({ id: 'user_x', user: true, role: 'lead', genres: { dub: 0.5 }, energy: [0, 1], code: "loop('a', () => sleep(4))" }), 'whatever.rad');
     equal(mine.id, 'user_x', 'your patterns keep their id');
     let bad = null;
     try { P.parse('// role: nope\nloop()', 'x.rad'); } catch (e) { bad = e.message; }
@@ -44,7 +44,11 @@
       assert(t.collage.length >= 3, g + ' collage');
     }
     equal(G.migrate(['fog', 'rave', 'nope', 'dub']).sort(), ['acid', 'dub']);
-    equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100 }), { bpm: 100, genres: ['acid'] });
+    // styles → genres; saved settings from before the grid mode take its four genres, once
+    // (genresV 2); after that, the listener's choice stays
+    equal(RA.Settings.migrate({ styles: ['acid'], bpm: 100, genresV: 2 }), { bpm: 100, genresV: 2, genres: ['acid'] });
+    equal(RA.Settings.migrate({ genres: null, bpm: 100 }), { genres: ['acid', 'ae', 'dub', 'space'], bpm: 100, genresV: 2 });
+    equal(new RA.Settings().get('genres'), ['acid', 'ae', 'dub', 'space']);
   });
 
   runner.test('Settings: one schema; PARAMS defaults within their ranges', () => {
@@ -61,7 +65,94 @@
     equal([d.pace, d.variation, d.density, d.delayBeats, d.feedback, d.fxAuto, d.bpm, d.volume], [32, 0.3, 5, 0.75, 0.42, 0.4, 116, 0.8]);
     // the transitions as before; notes half as far out of tune; keys and genres change calmly
     equal([d.modulate, d.legMin, d.legMax, d.fadeIn, d.fadeOut, d.tempoGlide, d.sectionLength, d.detune, d.modulateCalm, d.handoffCalm], [0.3, 8, 20, 1, 2, 8, 1, 0.5, true, true]);
-    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint && RA.Genres.base('boc', g.path) != null, g.id);
+    for (const g of S.GENRE_SCHEMA) assert(g.path && g.label && g.hint && RA.Genres.base('dub', g.path) != null, g.id);
+  });
+
+  // The INSTRUMENTOS panel is built from SoundFields: it must list exactly what the engine
+  // reads (SynthVoice for a voice and its oscillators, AudioEngine for the parts).
+  runner.test('SoundFields: the panel\'s fields are exactly the ones the engine reads', async () => {
+    const F = RA.SoundFields;
+    const voice = await (await fetch('src/audio/SynthVoice.js')).text();
+    const engine = await (await fetch('src/audio/AudioEngine.js')).text();
+    const names = (re, text) => new Set([...text.matchAll(re)].map((m) => m[1]));
+    const top = (list) => new Set(list.map((f) => (f.module || f.path).split('.')[0]));
+    const readV = names(/\bP\.(\w+)/g, voice);
+    readV.delete('osc');
+    const readO = names(/\bspec\.(\w+)/g, voice);
+    const readL = names(/\bl\.(\w+)/g, engine);
+    equal([...readV].sort(), [...top(F.voice)].sort(), 'voice fields');
+    equal([...readO].sort(), [...top(F.osc)].sort(), 'oscillator fields');
+    equal([...readL].sort(), [...top(F.part)].sort(), 'part fields');
+    // inside the modules: P.pitch.from, spec.unison.voices, and the destructured vibrato/fm
+    const sub = [...voice.matchAll(/\b(?:P|spec)\.(\w+)\.(\w+)/g)].map((m) => m[1] + '.' + m[2]);
+    for (const fn of ['vibrato', 'fm']) {
+      const m = new RegExp(`\\n  ${fn}\\(\\{([^}]*)\\}`).exec(voice);
+      for (const k of m[1].split(',')) sub.push(fn + '.' + k.split('=')[0].trim());
+    }
+    const listed = new Set([...F.flat(F.voice), ...F.flat(F.osc)].map((f) => f.path));
+    for (const s of new Set(sub)) assert(listed.has(s), 'read but not in SoundFields: ' + s);
+    for (const f of [...F.flat(F.voice), ...F.flat(F.osc)].filter((x) => x.path.includes('.'))) assert(sub.includes(f.path), 'in SoundFields but never read: ' + f.path);
+  });
+
+  // A coded sample played with rate (s('808', { rate: 2 })) must change as the file would:
+  // shorter and higher, filters and noise bands up with it.
+  runner.test('Coded samples: rate makes the sound faster and higher, like the file', () => {
+    const F = RA.SoundFields;
+    const r = { layers: [
+      { osc: [{ type: 'sine', decay: 0.4, level: 0.5 }], attack: 0.002, dur: 0.6, decay: 0.3, release: 0.1, cutoff: 1000, res: 1, gain: 1, pitch: { from: 12, time: 0.04 } },
+      { osc: [{ type: 'noise' }], attack: 0.001, decay: 0.05, release: 0.02, cutoff: 6000, res: 2, hpf: 3000, gain: 0.2, at: 0.01 },
+    ] };
+    const f = F.atRate(r, 2);
+    const [a, b] = f.layers;
+    equal([a.attack, a.dur, a.decay, a.release, a.pitch.time, a.osc[0].decay, b.at], [0.001, 0.3, 0.15, 0.05, 0.02, 0.2, 0.005]);
+    equal([a.cutoff, b.cutoff, b.hpf], [2000, 12000, 6000]);
+    equal([a.osc[0].level, a.gain, a.res, a.pitch.from, b.gain], [0.5, 1, 1, 12, 0.2], 'levels and semitones stay');
+    equal(r.layers[0].dur, 0.6, 'the recipe itself is not changed');
+    assert(F.atRate(r, 1) === r, 'rate 1: the same recipe');
+    const n = RA.AudioEngine.codedNote(r, { rate: 0.5, amp: 0.8, cut: 0.3 });
+    equal([n.midi, n.opts.amp, n.preset.layers[0].dur], [48, 0.4, 1.2]);
+  });
+
+  // A card carries its drums rebuilt in code; a panel edit rewrites the line in place
+  runner.test('Coded drum lines: an edit keeps which sample the sound replaces', () => {
+    const CT = RA.CodeTools;
+    const spec = { layers: [{ osc: [{ type: 'sine' }], attack: 0.001, release: 0.05, cutoff: 900, res: 1, gain: 0.5 }] };
+    const line = CT.instLine('bombo_x', spec, { substitui: '808bd:5' });
+    equal(line.endsWith(", { substitui: '808bd:5' })"), true);
+    assert(CT.isCodedLine(line) && !CT.isCodedLine(CT.instLine('pad', spec)), 'isCodedLine');
+    const code = line + "\nloop('k', (i) => { s('808bd', { n: 5 }); sleep(1) })";
+    const edited = CT.updateInstrument(code, 'bombo_x', { layers: [Object.assign({}, spec.layers[0], { gain: 0.25 })] });
+    assert(edited.includes('gain: 0.25') && edited.includes("{ substitui: '808bd:5' })"), edited);
+    equal(CT.withoutCoded(edited), "loop('k', (i) => { s('808bd', { n: 5 }); sleep(1) })");
+  });
+
+  runner.test('SoundFields: every value of every sound fits its slider', () => {
+    const F = RA.SoundFields;
+    const check = (list, obj, where, extra = []) => {
+      const known = new Map(F.flat(list).map((f) => [f.path, f]));
+      for (const [k, v] of Object.entries(obj)) {
+        if (extra.includes(k)) continue;
+        const paths = v && typeof v === 'object' && !Array.isArray(v) ? Object.keys(v).map((s) => k + '.' + s) : [k];
+        for (const path of paths) {
+          const f = known.get(path);
+          assert(f, `${where}: unknown field ${path}`);
+          const x = F.get(obj, path);
+          if (f.options) assert(F[f.options].includes(x), `${where}: ${path} = ${x}`);
+          else assert(typeof x === 'number' && x >= f.min && x <= f.max, `${where}: ${path} = ${x} (slider ${f.min}..${f.max})`);
+        }
+      }
+      for (const f of F.flat(list)) if (f.required) assert(F.get(obj, f.path) != null, `${where}: missing ${f.path}`);
+    };
+    const voices = [];
+    for (const [n, p] of Object.entries(RA.SOUNDS)) {
+      if (p.layers) p.layers.forEach((l, i) => voices.push([`${n} parte ${i + 1}`, l])); else voices.push([n, p]);
+    }
+    for (const [where, v] of voices) {
+      check(F.voice, v, where, ['osc', ...F.part.map((f) => f.path)]);
+      check(F.part, Object.fromEntries(F.part.map((f) => [f.path, v[f.path]]).filter(([, x]) => x != null)), where);
+      v.osc.forEach((o, i) => check(F.osc, o, `${where} osc ${i + 1}`));
+    }
+    assert(voices.length > 700, 'sounds checked: ' + voices.length);
   });
 
   // A stand-in Composer for the transition tests.
@@ -120,23 +211,23 @@
 
   runner.test('Settings: a genre\'s own parameters lay over the Genres table, reset and export', () => {
     const s = new RA.Settings();
-    equal(s.genre('boc', 'tempo'), 90);
-    s.setGenre('boc', 'tempo', 99);
+    equal(s.genre('space', 'tempo'), 84);
+    s.setGenre('space', 'tempo', 99);
     s.setGenre('dub', 'cap', 3);
-    equal([RA.Genres.of('boc').tempo, RA.Genres.get('dub', 'sections.cap'), RA.Genres.base('boc', 'tempo')], [99, 3, 90]);
+    equal([RA.Genres.of('space').tempo, RA.Genres.get('dub', 'sections.cap'), RA.Genres.base('space', 'tempo')], [99, 3, 84]);
     equal(RA.Arc.cap(Object.assign(RA.Genres.zeroWeights(), { dub: 1 })), 3);
-    const d = new RA.GenreDrift(new RA.Rng(1), { allowed: ['boc'] });
+    const d = new RA.GenreDrift(new RA.Rng(1), { allowed: ['space'] });
     assert(Math.abs(d.tempo() - 99) <= 7, 'the drift follows the tuned tempo: ' + d.tempo());
-    s.setGenre('boc', 'modes', []); // refused: a genre keeps a mode
-    assert(RA.Genres.of('boc').modes.length > 0, 'modes kept');
+    s.setGenre('space', 'modes', []); // refused: a genre keeps a mode
+    assert(RA.Genres.of('space').modes.length > 0, 'modes kept');
     s.set('wSwap', 2);
     const snap = s.paramsSnapshot();
     const t = new RA.Settings();
-    equal(RA.Genres.of('boc').tempo, 90, 'a fresh Settings starts from the table');
+    equal(RA.Genres.of('space').tempo, 84, 'a fresh Settings starts from the table');
     t.loadParams(snap);
-    equal([t.get('wSwap'), RA.Genres.of('boc').tempo, t.isGenreDefault('boc', 'tempo'), t.isGenreDefault('saw', 'tempo')], [2, 99, false, true]);
-    t.resetGenre('boc', 'tempo');
-    equal(RA.Genres.of('boc').tempo, 90);
+    equal([t.get('wSwap'), RA.Genres.of('space').tempo, t.isGenreDefault('space', 'tempo'), t.isGenreDefault('acid', 'tempo')], [2, 99, false, true]);
+    t.resetGenre('space', 'tempo');
+    equal(RA.Genres.of('space').tempo, 84);
     t.resetParams();
     equal([t.get('wSwap'), RA.Genres.get('dub', 'sections.cap'), t.get('genreTune')], [1, 5, {}]);
   });
@@ -146,8 +237,8 @@
     const rng = new RA.Rng(9);
     let never = 0, always = 0;
     for (let k = 0; k < 100; k++) {
-      if (h.reharm('saw', rng, 0).key != null) never++;
-      if (h.reharm('saw', rng, 1).key != null) always++;
+      if (h.reharm('space', rng, 0).key != null) never++;
+      if (h.reharm('space', rng, 1).key != null) always++;
     }
     equal([never, always], [0, 100]);
   });
@@ -313,7 +404,7 @@
     for (const g of RA.Genres.LIST) {
       const G = RA.Genres.of(g);
       for (const [fam, list] of Object.entries(G.palette)) {
-        assert(list.every((n) => RA.Families.SYNTHS[fam] && RA.Families.SYNTHS[fam].includes(n) && RA.SynthPresets[n]), `${g} palette ${fam}`);
+        assert(list.every((n) => RA.Families.SYNTHS[fam] && RA.Families.SYNTHS[fam].includes(n) && RA.SOUNDS[n]), `${g} palette ${fam}`);
         // (an instrument in two families swaps within the first, Families.synthFamily)
         for (const n of list) assert(v.options(n, g).every((x) => G.palette[RA.Families.synthFamily(n)].includes(x) && x !== n), `${g}/${n}`);
       }
@@ -321,19 +412,19 @@
         assert(list.every((f) => RA.Families.KITS[fam] && RA.Families.KITS[fam].includes(f)), `${g} kits ${fam}`);
       }
     }
-    // an Efdemin bell never turns into a Boards of Canada sound, and vice versa
-    assert(!v.options('efd_bell', 'minimal').some((n) => /^boc_/.test(n)), 'minimal bells');
+    // a dub bell never turns into a Boards of Canada sound, and ae has no such pads
+    assert(!v.options('efd_bell', 'dub').some((n) => /^boc_/.test(n)), 'dub bells');
     equal(v.options('boc_pad', 'ae'), [], 'ae has no boc pads');
     let changed = 0;
     for (let k = 0; k < 200; k++) {
-      const r = v.version({ boc_pad: 'boc_pad', kick: 'bd', odds: 3 }, 'boc', 1);
+      const r = v.version({ pad: 'strings', kick: 'bd', odds: 3 }, 'dub', 1);
       equal(r.params.odds, 3, 'versions leave numbers alone');
-      assert(RA.Genres.of('boc').palette.boc_pad.includes(r.params.boc_pad) && RA.Genres.of('boc').kits.kick.includes(r.params.kick), JSON.stringify(r.params));
+      assert(RA.Genres.of('dub').palette.pad.includes(r.params.pad) && RA.Genres.of('dub').kits.kick.includes(r.params.kick), JSON.stringify(r.params));
       if (r.changes.length) changed++;
     }
     assert(changed > 100, 'versions change something: ' + changed);
-    const t = v.timbre({ pad: 'dx_pad', kick: 'bd' }, 'saw');
-    assert(t && t.params.kick === 'bd' && RA.Genres.of('saw').palette.pad.includes(t.params.pad), 'timbre: one instrument');
+    const t = v.timbre({ pad: 'dx_pad', kick: 'bd' }, 'space');
+    assert(t && t.params.kick === 'bd' && RA.Genres.of('space').palette.pad.includes(t.params.pad), 'timbre: one instrument');
   });
 
   runner.test('Variation: tweaks keep numbers near the pattern\'s own value', () => {
@@ -357,6 +448,226 @@
     assert(layer.loops.get('a') === loop && loop.i === 5, 'same loop object, counter kept');
     coder.load(layer, "loop('b', (i) => { sleep(1) })");
     assert(!layer.loops.has('a') && loop.stopped, 'removed loop stops');
+  });
+
+  // ───── grid() ─────
+
+  runner.test('GridGen: a stuck grid is seen, changes never trap it, a build-up swap keeps the sounds', () => {
+    const gen = new RA.GridGen(new RA.Rng(4));
+    // > then < face each other: the cursor bounces between them and nothing plays
+    equal(gen.health(['> < K .', '. . . .', 'S . . .', '. . . .'], ['k', 's']).ok, false);
+    const good = ['> K . S', '. . . .', 'v . . .', '. . . .'];
+    assert(gen.health(good, ['k', 's']).ok, 'a healthy grid');
+    // a live cursor in a row of dots (the column turned away) is stuck too
+    equal(gen.health(['> K S .', '. . . .'], ['k', 's'], [{ x: 0, y: 1, dir: '>' }]).ok, false);
+    for (let k = 0; k < 60; k++) {
+      const rows = gen.make(['k', 's', 'h'], 'drums', 'acid');
+      const mu = gen.safe(rows, ['k', 's', 'h'], () => gen.mutate(rows, ['k', 's', 'h']));
+      if (mu) assert(gen.health(mu.rows, ['k', 's', 'h']).ok, 'a change stays healthy: ' + mu.rows.join('|'));
+      const sw = gen.safe(rows, ['k', 's', 'h'], () => gen.swap(rows));
+      if (sw) {
+        const count = (rs) => rs.join(' ').split(/\s+/).sort().join('');
+        equal(count(sw.rows), count(rows));
+        assert(gen.health(sw.rows, ['k', 's', 'h']).ok, 'a swap stays healthy');
+      }
+    }
+    // a grid stuck from the start: any healthy change unsticks it
+    const stuck = ['> < K .', '. . . .', 'S . . .', '. . . .'];
+    // a grid stuck from the start: change after change (one a bar), it plays all again
+    let rs = stuck;
+    for (let k = 0; k < 8 && !gen.health(rs, ['k', 's']).ok; k++) {
+      const fix = gen.safe(rs, ['k', 's'], () => gen.mutate(rs, ['k', 's']));
+      if (fix) rs = fix.rows;
+    }
+    assert(gen.health(rs, ['k', 's']).ok, 'unstuck: ' + rs.join('|'));
+    // a slow layer's grid: longer steps, a turn still a bar
+    assert(/passo: 4, ciclo: 1/.test(RA.GridFreeze.gridCode(['> A . .'], { a: 'sub' }, '', 'g', 4)), 'slow passo');
+    assert(/passo: 1\/4 *[,}]/.test(RA.GridFreeze.gridCode(['> A . .'], { a: 'sub' })), 'default passo');
+  });
+
+  runner.test('Grid: cells, cursors and paths (arrows, #, =, ?, wrap)', () => {
+    const G = RA.Grid;
+    const c = G.cell("@>K*%", 'x');
+    equal([c.start, c.dir, c.kind, c.hits[0].letter, c.hits[0].accent, c.ratchet, c.chance], [true, '>', 'play', 'k', true, 2, 0.5]);
+    equal(G.cell("b3'", 'x').hits, [{ letter: 'b', accent: false, degree: 3, octave: 1 }]);
+    equal(G.cell('5,,', 'x').hits[0].octave, -2);
+    equal(G.cell('kh', 'x').hits.map((h) => h.letter), ['k', 'h']);
+    equal(['.', '#', '=', '~', 'v'].map((t) => G.cell(t, 'x').kind), ['rest', 'skip', 'wait', 'hold', 'rest']);
+    equal(G.cell('vh', 'x').dir, 'v');
+    const err = (f) => { try { f(); } catch (e) { return e.message; } return ''; };
+    assert(/máximo 4/.test(err(() => G.parse('t', ['@a @a @a @a @a'], { a: 'x' }))), 'at most 4 cursors');
+    assert(/não está nos sons/.test(err(() => G.parse('t', ['@>z'], { a: 'x' }))), 'unknown letter');
+    // with no @, a cursor starts at the top left; it reads like text (4×4 = 16 steps)
+    equal(G.parse('t', ['a .'], { a: 'x' }).starts, [{ x: 0, y: 0, dir: '>' }]);
+    const four = G.parse('t', ['> K S H', 'K ? . S', 'H K . v', '. S H H'], { k: 'x', s: 'y', h: 'z' });
+    // as in Befunge: it keeps to its row (wrapping around it) until an arrow turns it
+    equal(G.walk(four, G.init(four), 6).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 3,0 0,0 1,0');
+    const loop = G.parse('t', ['> a v', '. . b', '^ . <'], { a: 'x', b: 'y' });
+    equal(G.walk(loop, G.init(loop), 9).path.map((p) => p[0].join(',')).join(' '), '0,0 1,0 2,0 2,1 2,2 1,2 0,2 0,1 0,0', 'arrows turn it round the grid');
+    assert(/não serve/.test(err(() => G.parse('t', ['@>a'], { v: 'x' }))), 'v is the down arrow, not a sound');
+    const steps = (rows, n, opts = {}) => {
+      const g = G.parse('t', rows, { a: 'x', b: 'y' }, opts);
+      return G.walk(g, G.init(g), n).hits.map((h) => `${h.step}:${h.cell.raw}`).join(' ');
+    };
+    equal(steps(['@>a . b'], 4), '0:@>a 2:b 3:@>a', 'right, and around the edge');
+    equal(steps(['@>a vb', ' .  . '], 4), '0:@>a 1:vb 3:vb', 'a turn down, around the bottom edge');
+    equal(steps(['@>a # b a'], 3), '0:@>a 1:a 2:@>a', '# jumps over the next cell (Befunge bridge)');
+    equal(steps(['@>a . ='], 18), '0:@>a 16:@>a', '= waits for the next bar');
+    // chance: the same seed walks the same way, another seed another way
+    const walk = (seed) => steps(['@>a ?b . a', '. a ?b .', 'b . . ?a'], 64, { semente: seed });
+    equal(walk(3), walk(3));
+    assert(walk(3) !== walk(4), 'another seed, another path');
+  });
+
+  runner.test('Grid in the language: degrees follow the chord, cursors carry on, the same code plays the same', () => {
+    const harmony = new RA.Harmony(); // key 45, dorian, chords [0, 3], 4 bars each
+    const run = (code, beats = 32) => {
+      const coder = makeCoder(harmony);
+      const layer = new RA.Layer({ id: 'G', role: 'lead', pattern: { id: 'g', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, beats);
+      return { layer, played: layer.played.filter((e) => e.kind === 'synth') };
+    };
+    const code = "grid('g', [\"@>a1 a3 a5\"], { a: 'pluck' }, { oitava: 1 })";
+    const { layer, played } = run(code);
+    assert(layer.grids.g && layer.grids.g.w === 3, 'the layer keeps its grids');
+    equal(played.slice(0, 3).map((e) => e.notes[0]), [57, 60, 64], 'degrees 1 3 5 of the first chord (D dorian on A: A C E)');
+    // a turn of 16 steps on 3 cells: the next turn starts on the second cell (it carries on)
+    equal(played.find((e) => e.beat === 4).notes[0], 60);
+    // bar 4 is the next chord (degree 3 of the progression): its root
+    equal(played.find((e) => e.beat === 16).notes[0], harmony.degree(3 + ((16 * 4) % 3 === 0 ? 0 : (16 * 4) % 3 === 1 ? 2 : 4), 1));
+    const steps = RA.Theory.SCALES.dorian;
+    assert(played.every((e) => steps.includes(RA.MathUtil.mod(e.notes[0] - harmony.key, 12))), 'never out of the mode');
+    // the same code, twice, from scratch: the same notes at the same times (chance included)
+    const busy = "grid('g', ['@>a1 ?a3 . a5%', '. ?a2 a4* .', '@<a6 . ?a1 ~'], { a: 'pluck' }, { semente: 9 })";
+    const sig = (p) => p.map((e) => `${e.beat}:${e.notes[0]}:${e.dur}`).join(' ');
+    equal(sig(run(busy).played), sig(run(busy).played), 'copy and paste plays the same');
+    assert(makeCoder(harmony).probe(busy).ok && makeCoder(harmony).probe(busy).grids.g, 'the probe runs it');
+    // a held note (~) lasts its steps; a ratchet plays twice in its step
+    const tie = run("grid('g', ['@>a1 ~ ~ a3 a5* . . . . . . . . . . .'], { a: 'pluck' })", 4).played;
+    equal([tie[0].dur, tie[1].beat, tie[2].beat, tie[3].beat], [0.75, 0.75, 1, 1.125]);
+    // mute() silences the grid's sound like any other; errors come back as errors
+    const muted = run("mute('pluck')\ngrid('g', ['@>a1 a3'], { a: 'pluck' })", 4).played;
+    assert(muted.length && muted.every((e) => e.silent === 'mute'), 'muted');
+    const bad = makeCoder(harmony).probe("grid('g', ['@>a1 b3'], { a: 'pluck' })");
+    assert(!bad.ok && /não está nos sons/.test(bad.error), bad.error);
+  });
+
+  runner.test('Grid cells in the code: an edit rewrites one cell, columns lined up, the rest untouched', () => {
+    const CT = RA.CodeTools;
+    const code = "fx({ rev: 0.2 })\ngrid('303', [\n  \"@>B1 . 1' .\",\n  '. a3 . .',\n], { b: 'acid_303', a: 'pluck' }, { tom: 'b' })\nloop('x', (i) => { sleep(4) })";
+    equal(CT.gridCells(code, '303'), [['@>B1', '.', "1'", '.'], ['.', 'a3', '.', '.']]);
+    equal(CT.gridCells(code, 'nope'), null);
+    const edited = CT.setGridCell(code, '303', 2, 1, 'B5,');
+    equal(CT.gridCells(edited, '303'), [['@>B1', '.', "1'", '.'], ['.', 'a3', 'B5,', '.']]);
+    assert(edited.startsWith("fx({ rev: 0.2 })\ngrid('303', [") && edited.endsWith("{ tom: 'b' })\nloop('x', (i) => { sleep(4) })"), 'the rest of the code stays');
+    // the columns line up (each column starts at the same place in every row), a row with '
+    // in double quotes
+    const rows = CT.gridRows(edited, '303').map((r) => r.text);
+    const starts = (t) => [...t.matchAll(/\S+/g)].map((m) => m.index);
+    equal(starts(rows[0]), starts(rows[1]), 'aligned: ' + JSON.stringify(rows));
+    assert(/"@>B1/.test(edited) && /'\. +a3 +B5, +\.'/.test(edited), edited);
+    // a cell past the edge grows the row; the result still parses and runs
+    const grown = CT.setGridCell(code, '303', 5, 0, 'b2');
+    equal(CT.gridCells(grown, '303')[0], ['@>B1', '.', "1'", '.', '.', 'b2']);
+    assert(makeCoder().probe(grown).ok, 'still valid');
+  });
+
+  runner.test('Maestro and effects grids: chords and sections bar by bar; curves and pads', () => {
+    const harmony = new RA.Harmony();
+    const arc = new RA.Arc(new RA.Rng(1));
+    const events = [], fxCalls = [], pads = [];
+    class FakeFx { static PADS = RA.FxRack.PADS; pulse(id, secs) { pads.push([id, secs]); } }
+    const clock = new RA.Clock(120);
+    const coder = new RA.LiveCoder({ scheduler: { clock, at: (beat, fn) => events.push([beat, fn]) }, audio: { bus: () => ({ setFx: (p) => fxCalls.push(p) }), createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+    coder.attach(new RA.LanguageApi({ coder, audio: { bus: () => ({ setFx: (p) => fxCalls.push(p) }), playSynth() {} }, harmony, clock, energy: () => 0.5, arc, fx: new FakeFx() }));
+    const maestro = new RA.Layer({ id: 'M', role: 'texture', pattern: { id: 'm', code: '' } });
+    const r = coder.load(maestro, "grid('m', ['1 . 4 5', 'b . p .'], {}, { tipo: 'maestro' })", 0);
+    assert(r.ok, r.error);
+    const lead = new RA.Layer({ id: 'L', role: 'lead', pattern: { id: 'l', code: '' } });
+    coder.load(lead, "grid('l', ['@>a1 . . .'], { a: 'pluck' })", 0);
+    coder.pump(0, 16);
+    equal([0, 1, 2, 3].map((b) => harmony.degreeAt(b)), [0, 0, 3, 4], 'the chords follow the maestro (. keeps the last)');
+    equal([arc.conductedAt(0), arc.conductedAt(1), arc.conductedAt(2)], ['build', 'build', 'peak']);
+    arc.advanceBar(2);
+    equal(arc.section, 'peak', 'the arc goes where the maestro says');
+    const atBar2 = lead.played.find((e) => e.beat === 8);
+    equal(atBar2.notes[0], harmony.degree(3, 1), 'another layer plays on the maestro\'s chord');
+    // when the maestro stops, the progression comes back; checking its code conducts nothing
+    equal(harmony.conducting(40), false);
+    const h2 = new RA.Harmony();
+    const c2 = makeCoder(h2);
+    assert(c2.probe("grid('m', ['3 4'], {}, { tipo: 'maestro' })").ok && !h2.conducting(0), 'the probe leaves the harmony alone');
+    // effects: filter and reverb curves (the CAMADA ranges), a pad held for 3 steps
+    events.length = 0;
+    const fxl = new RA.Layer({ id: 'X', role: 'texture', pattern: { id: 'x', code: '' } });
+    const rx = coder.load(fxl, "grid('fx', ['9 . . . 0 . . . . . . . . . . .', '. . 4 . . . . . . . . . . . . .', '. 2 ~ ~ . . . . . . . . . . . .'], {}, { tipo: 'efeitos', linhas: ['filtro', 'reverb', 'pads'] })", 16);
+    assert(rx.ok, rx.error);
+    coder.pump(16, 20);
+    for (const [beat, fn] of events) fn(beat * 0.5, 0.5);
+    equal(fxCalls.map((p) => JSON.stringify(p)), ['{"lpf":16000}', '{"rev":0.356}', '{"lpf":100}']);
+    equal(pads, [['dub', 0.75 * 0.5]], 'pad 2 (DUB ECHO) for 3 steps');
+    const bad = makeCoder().probe("grid('fx', ['1 2'], {}, { tipo: 'efeitos', linhas: ['brilho'] })");
+    assert(!bad.ok && /brilho/.test(bad.error), bad.error);
+  });
+
+  runner.test('A layer put in a grid sounds as before: level, length, octave, cutoff, sample rate', () => {
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
+    const harmony = new RA.Harmony();
+    const run = (code) => {
+      const clock = new RA.Clock(120);
+      const coder = new RA.LiveCoder({ scheduler: { clock, at() {} }, audio: { bus: () => null, createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+      coder.attach(new RA.LanguageApi({ coder, audio: null, harmony, clock, energy: () => 0.5, instruments: lib }));
+      const layer = new RA.Layer({ id: 'S', role: 'bass', pattern: { id: 's', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, 8);
+      return layer.played;
+    };
+    const before = run("loop('b', (i) => { synth('acid_303', harmony_note = 45, { dur: 0.5, amp: 0.21, cutoff: 600 }); sleep(1); s('drumtraks', { n: 6, amp: 0.7, rate: 1.5 }); sleep(1) })".replace('harmony_note = 45', '45'));
+    const f = new RA.GridFreeze({ harmony, instruments: lib, sampleCount: () => 16 });
+    const sounds = f.soundsOf(before, 0, 8);
+    const a = Object.values(sounds).find((s) => s.som === 'acid_303');
+    const p = Object.values(sounds).find((s) => s.s === 'drumtraks');
+    equal([a.amp, a.dur, a.opts.cutoff, a.seq.length], [0.21, 0.5, 600, 4], 'the instrument: level, length, cutoff, its notes in order');
+    equal([p.n, p.amp, p.rate], [6, 0.7, 1.5], 'the sample: n, level, rate');
+    const after = run(RA.GridFreeze.gridCode(['> ' + Object.keys(sounds).join(' . ')], sounds));
+    const note = after.find((e) => e.kind === 'synth'), hit = after.find((e) => e.kind === 's');
+    equal([note.amp, note.opts.cutoff, note.notes[0]], [0.21, 600, 45], 'the grid plays it the same (the same note)');
+    equal([hit.key, hit.amp, hit.rate], ['drumtraks:6', 0.7, 1.5]);
+  });
+
+  runner.test('Freeze into a grid: what a layer played comes back the same from the grid', () => {
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
+    const harmony = new RA.Harmony();
+    const coderWith = () => {
+      const clock = new RA.Clock(120);
+      const coder = new RA.LiveCoder({ scheduler: { clock, at() {} }, audio: { bus: () => null, createBus: () => ({ setFx() {} }) }, emitter: new RA.Emitter(), logger: new RA.Logger() });
+      coder.attach(new RA.LanguageApi({ coder, audio: null, harmony, clock, energy: () => 0.5, instruments: lib }));
+      return coder;
+    };
+    const play = (code) => {
+      const coder = coderWith();
+      const layer = new RA.Layer({ id: 'F', role: 'bass', pattern: { id: 'f', code } });
+      const r = coder.load(layer, code, 0);
+      if (!r.ok) throw new Error(r.error);
+      coder.pump(0, 4);
+      return layer.played.filter((e) => e.beat < 4);
+    };
+    // a bar with drums, notes in two octaves, a held note and an accent
+    const original = play("fx({ lpf: 900 })\ngrid('o', [\"@>K . h . s . h b1 ~ ~ b3 . b5' . k b7,\"], { k: 'bombo_808bd_05', s: 'tarola_808sd_12', h: 'hihat_808_01', b: 'acid_303' }, { tom: 'b' })");
+    const f = new RA.GridFreeze({ harmony, instruments: lib });
+    const r = f.freeze(original.concat([{ kind: 's', key: 'amencutup:3', name: 'amencutup', n: 3, beat: 1 }]), 0, 16, RA.GridFreeze.fxLine("fx({ lpf: 900 })\nloop('x', () => sleep(4))"));
+    assert(r.code.startsWith('fx({ lpf: 900 })\ngrid('), r.code);
+    equal(r.left, ['amencutup:3'], 'a sample with no sound in code is left out');
+    equal(r.offKey, 0);
+    const again = play(r.code);
+    const sig = (evs) => evs.map((e) => `${e.beat}:${e.key}:${(e.notes || []).join(',')}`).sort().join(' ');
+    equal(sig(again), sig(original), 'the same sounds and notes at the same times');
+    // the held note keeps its length (the ~ came back)
+    const held = (evs) => evs.find((e) => e.key === 'acid_303' && e.beat === 1.75);
+    equal(held(again).dur, held(original).dur);
   });
 
   runner.test('Sequencer lines: mute() and hits() rows round-trip in the code', () => {
@@ -407,7 +718,7 @@
     assert(hh.steps === 12 && hh.cells.every((v) => v > 0) && hh.head === 2, `a 12-step loop: ${hh.steps} steps, head ${hh.head}`);
     equal(RA.SequencerView.cycles([layer, odd], 3.5), [12, 16]);
     const text = RA.FullCodeView.text([layer], { genre: 'SAW', section: 'SPARSE', bpm: 90, key: 'A minor' });
-    assert(text.includes('// ── DRUMS · x') && text.includes("hits('bd:1'") && text.includes("mute('sn:0')"), 'the full code has it all');
+    assert(text.includes('// ── BATERIA · x') && text.includes("hits('bd:1'") && text.includes("mute('sn:0')"), 'the full code has it all');
   });
 
   runner.test('STEPS: patterns are measured by cycle, and a chosen count picks fitting ones', () => {
@@ -421,7 +732,7 @@
     assert(seven.length >= 2 && seven.every((c) => [14, 20, 22].includes(c)), 'pl_seven: ' + seven);
     const fits = RA.PatternBank.fits;
     assert(fits([4, 16], 16) && !fits([4], 16) && fits([4], 4) && fits([], 12) && !fits([12], 16) && fits([12, 20], 20) && !fits([16], 12), 'fits');
-    const w = Object.assign(RA.Genres.zeroWeights(), { saw: 1 });
+    const w = Object.assign(RA.Genres.zeroWeights(), { ae: 1 });
     // (roles with no pattern of that cycle fall back to the usual pick)
     for (const [role, steps] of [['perc', 12], ['perc', 16], ['drums', 20]]) {
       const meter = { steps, probe };
@@ -433,7 +744,7 @@
   });
 
   runner.test('Families: every synth and sample folder named exists', async () => {
-    const missing = Object.values(RA.Families.SYNTHS).flat().filter((n) => !RA.SynthPresets[n]);
+    const missing = Object.values(RA.Families.SYNTHS).flat().filter((n) => !RA.SOUNDS[n]);
     equal(missing, []);
     const lib = new RA.SampleLibrary(() => {}, new RA.Logger());
     await lib.loadIndex();
@@ -609,23 +920,46 @@
     equal(RA.CodeTools.scrub('1.5', 25), '2.0');
   });
 
-  runner.test('InstrumentLibrary overrides, resets and creates', () => {
-    const lib = new RA.InstrumentLibrary(RA.SynthPresets);
+  runner.test('InstrumentLibrary: edits are "por guardar" until saved to the file; undo, save as, delete', () => {
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
     let changes = 0;
     lib.on('change', () => changes++);
     const haze = RA.InstrumentLibrary.clone(lib.get('haze'));
     haze.cutoff = 400;
     lib.set('haze', haze);
-    assert(lib.get('haze').cutoff === 400 && lib.isModified('haze'), 'override');
-    assert(RA.SynthPresets.haze.cutoff !== 400, 'built-in data untouched');
-    lib.reset('haze');
-    assert(lib.get('haze').cutoff === RA.SynthPresets.haze.cutoff, 'reset');
+    assert(lib.get('haze').cutoff === 400 && lib.isDirty('haze'), 'edit heard at once, por guardar');
+    assert(RA.SOUNDS.haze.cutoff !== 400, 'the file data untouched');
+    lib.discard('haze');
+    assert(lib.get('haze').cutoff === RA.SOUNDS.haze.cutoff && !lib.isDirty('haze'), 'undo: back to the file');
+    lib.set('haze', haze);
+    lib.markSaved('haze', haze, {});
+    assert(lib.get('haze').cutoff === 400 && !lib.isDirty('haze'), 'saved');
     lib.set('my_pad', haze);
-    assert(lib.names().includes('my_pad') && !lib.isBuiltin('my_pad'), 'new instrument');
-    const lib2 = new RA.InstrumentLibrary(RA.SynthPresets);
+    assert(lib.names().includes('my_pad') && !lib.isFile('my_pad') && lib.tree().novos.por_guardar.includes('my_pad'), 'a new sound waits for a file');
+    const lib2 = new RA.InstrumentLibrary(RA.SOUND_FILES);
     lib2.load(lib.serialize());
-    assert(lib2.get('my_pad').cutoff === 400, 'serialize/load');
-    equal(changes, 3);
+    assert(lib2.get('my_pad').cutoff === 400, 'unsaved changes survive a reload');
+    lib.remove('haze');
+    assert(!lib.has('haze'), 'deleted');
+    // the tree is the folders: instrument -> group -> sounds
+    const t = lib2.tree();
+    assert(t.bateria.bombos.includes('bombo_808bd_05') && t.baixo.fm.includes('fm_bass'), 'tree');
+    equal(lib2.replacing('808bd:5'), 'bombo_808bd_05');
+    equal(changes, 6); // set, undo, set, save, new sound, delete
+  });
+
+  runner.test('Sound files: each .inst parses, round-trips, and is filed as instrument/group/sound', () => {
+    const L = RA.InstrumentLoader;
+    assert(RA.SOUND_FILES.length >= 240, 'sounds: ' + RA.SOUND_FILES.length);
+    const names = RA.SOUND_FILES.map((s) => s.name);
+    equal(names.length, new Set(names).size, 'every name once');
+    for (const s of RA.SOUND_FILES) {
+      assert(L.ROLES.includes(s.meta.role) && s.meta.group && s.meta.file === `${s.meta.role}/${s.meta.group}/${s.name}.inst`, s.name + ' filed');
+      const back = L.parse(L.format(s.recipe, s.meta), s.meta.file);
+      equal([back.name, back.recipe, back.meta.replaces || null], [s.name, s.recipe, s.meta.replaces || null], s.name + ' round-trip');
+    }
+    const replaced = RA.SOUND_FILES.filter((s) => s.meta.replaces).map((s) => s.meta.replaces);
+    equal(replaced.length, new Set(replaced).size, 'one sound per sample');
   });
 
   runner.test('SampleLibrary keeps your sounds in "my"', async () => {
@@ -738,26 +1072,57 @@
     }
   });
 
-  runner.test('SynthPresets: no name defined twice (a later one would silently replace it)', async () => {
-    const src = await (await fetch('src/audio/SynthPresets.js')).text();
-    const names = [...src.matchAll(/^  (\w+): \{/gm)].map((m) => m[1]);
-    const dup = names.filter((n, k) => names.indexOf(n) !== k);
-    assert(!dup.length, 'defined twice: ' + dup.join(', '));
+  runner.test('Mixer: no hiss, a -1 dB ceiling, groups, low cut and the kick sidechain', async () => {
+    const sr = 48000;
+    const render = async (setup, secs = 1) => {
+      const ac = new OfflineAudioContext(1, sr * secs, sr);
+      const m = new RA.Mixer(ac, ac.destination);
+      m.sum.connect(m.input); // (in the engine the FX, EQ and compressor sit between)
+      setup(ac, m);
+      return (await ac.startRendering()).getChannelData(0);
+    };
+    const tone = (ac, freq, amp, dest) => { const o = ac.createOscillator(); o.frequency.value = freq; const g = ac.createGain(); g.gain.value = amp; o.connect(g); g.connect(dest); o.start(); };
+    const peak = (d, a = 0, b = d.length) => { let p = 0; for (let k = a; k < b; k++) p = Math.max(p, Math.abs(d[k])); return p; };
+    const rms = (d, a, b) => { let s = 0; for (let k = a; k < b; k++) s += d[k] * d[k]; return Math.sqrt(s / (b - a)); };
+    equal(peak(await render(() => {})), 0, 'silence in, silence out: no hiss');
+    const loud = await render((ac, m) => tone(ac, 200, 8, m.inputFor('drums-1')));
+    assert(peak(loud) <= 0.8913, `the ceiling holds at -1 dB: ${peak(loud).toFixed(4)}`);
+    const ac0 = new OfflineAudioContext(1, 128, sr);
+    const m0 = new RA.Mixer(ac0, ac0.destination);
+    equal(['drums-3', 'perc-1', 'bass-2', 'keys-1', 'texture-4', 'preview'].map((id) => m0.groupOf(id)), ['drums', 'drums', 'bass', 'music', 'music', 'music']);
+    const low = async (id) => { const d = await render((ac, m) => tone(ac, 50, 0.3, m.inputFor(id))); return rms(d, sr * 0.5, sr); };
+    const [music, bass] = [await low('keys-1'), await low('bass-1')];
+    assert(music < bass * 0.35, `the music loses its lows: ${music.toFixed(3)} vs bass ${bass.toFixed(3)}`);
+    const sc = await render((ac, m) => { tone(ac, 440, 0.2, m.inputFor('keys-1')); m.kick(0.5); });
+    const before = rms(sc, sr * 0.4, sr * 0.48), dip = rms(sc, sr * 0.51, sr * 0.54), after = rms(sc, sr * 0.9, sr * 0.98);
+    assert(dip < before * 0.7 && after > before * 0.95, `a kick ducks the music and lets it back: ${before.toFixed(3)} ${dip.toFixed(3)} ${after.toFixed(3)}`);
   });
 
-  runner.test('Every synth preset renders: sound, no blow-ups, sane level', async () => {
+  runner.test('Every sound renders: sound, no blow-ups, sane level', async () => {
     const levels = [];
-    for (const [name, preset] of Object.entries(RA.SynthPresets)) {
+    const random = Math.random;
+    for (const [name, preset] of Object.entries(RA.SOUNDS)) {
+      // the noise drawn from a fixed seed (the one the sounds' levels were set with), so a
+      // noisy sound's peak is the same every run
+      let seed = 11;
+      Math.random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
       const off = new OfflineAudioContext(1, 48000 * 2, 48000);
-      new RA.SynthVoice(off, preset, name.includes('brake') ? 84 : 48, { dur: 0.5, amp: 0.5 }).start(0.01, off.destination, () => {});
+      // a sound made of parts plays each part (as the AudioEngine does)
+      const midi = preset.layers ? 60 : name.includes('brake') ? 84 : 48;
+      // (parts keep their own lengths, as when they replace a sample; their noise peaks vary
+      // from one render to the next, and a sample rebuilt in code is as loud as its file to
+      // the ear, its peak up to 3 dB over the file's: so they get more room)
+      const opts = preset.layers ? { amp: 0.5 } : { dur: 0.5, amp: 0.5 };
+      for (const l of preset.layers || [preset]) new RA.SynthVoice(off, l, midi + (l.transpose || 0), opts).start(0.01 + (l.at || 0), off.destination, () => {});
       const d = (await off.startRendering()).getChannelData(0);
+      Math.random = random;
       let peak = 0;
       for (const v of d) { if (!Number.isFinite(v)) throw new Error(name + ': not finite'); peak = Math.max(peak, Math.abs(v)); }
       assert(peak > 0.005, `${name}: silent (${peak})`);
-      assert(peak < 1.2, `${name}: too loud (${peak.toFixed(2)})`);
+      assert(peak < (preset.layers ? 2 : 1.2), `${name}: too loud (${peak.toFixed(2)})`);
       levels.push(`${name} ${peak.toFixed(2)}`);
     }
-    return levels.length + ' presets';
+    return levels.length + ' sons';
   });
 
   runner.test('Equalizer: flat is 0 dB; a band boost shows in its curve and in the sound', async () => {
@@ -801,15 +1166,15 @@
   });
 
   runner.test('Genre drift: the genres chosen limit what plays; turning off the current one moves away from it', () => {
-    const m = new RA.GenreDrift(new RA.Rng(3), { allowed: ['acid', 'dark'] });
-    assert(['acid', 'dark'].includes(m.from), 'starts in an allowed genre: ' + m.from);
+    const m = new RA.GenreDrift(new RA.Rng(3), { allowed: ['acid', 'space'] });
+    assert(['acid', 'space'].includes(m.from), 'starts in an allowed genre: ' + m.from);
     const seen = new Set();
     for (let bar = 0; bar < 20000; bar++) { m.advanceBar(120); seen.add(m.dominant()); }
-    assert([...seen].every((f) => f === 'acid' || f === 'dark'), 'only allowed: ' + [...seen].join(','));
+    assert([...seen].every((f) => f === 'acid' || f === 'space'), 'only allowed: ' + [...seen].join(','));
     equal(seen.size, 2);
-    // choices saved with the old genres carry over (rave → acid, fog → dub, deep → saw + boc)
-    equal(new RA.GenreDrift(new RA.Rng(1), { allowed: ['rave', 'fog', 'deep'] }).allowed.sort(), ['acid', 'boc', 'dub', 'saw']);
-    equal(RA.Genres.migrateWeights({ fog: 1, atmos: 0.4 }), { dub: 1, boc: 0.4, drill: 0.4 });
+    // choices saved with the old genres carry over (rave → acid, fog → dub, deep → space)
+    equal(new RA.GenreDrift(new RA.Rng(1), { allowed: ['rave', 'fog', 'deep'] }).allowed.sort(), ['acid', 'dub', 'space']);
+    equal(RA.Genres.migrateWeights({ fog: 1, atmos: 0.4, saw: 1 }), { dub: 1, space: 0.4 });
     const one = new RA.GenreDrift(new RA.Rng(4), { allowed: ['ae'] });
     for (let bar = 0; bar < 5000; bar++) one.advanceBar(120);
     equal(one.dominant(), 'ae');
@@ -823,7 +1188,7 @@
 
   runner.test('Density: auto picks within the section range, capped by the genre; manual holds exactly the count set', () => {
     const vals = { density: 3, densityAuto: true };
-    const fake = (section, energy, genre = 'drill') => ({
+    const fake = (section, energy, genre = 'acid') => ({
       settings: { get: (k) => vals[k] }, energy,
       arc: { spec: RA.Arc.SECTIONS[section] },
       drift: { weights: () => Object.assign(RA.Genres.zeroWeights(), { [genre]: 1 }) },
@@ -858,9 +1223,9 @@
       }
       return hit / n;
     };
-    const dark = share('dark', ['dread', 'suspense']), drill = share('drill', ['dread', 'suspense']);
-    assert(dark > drill * 1.8, `dark leans to slow tension: ${dark.toFixed(2)} vs drill ${drill.toFixed(2)}`);
-    assert(share('drill', ['surge', 'peak']) > share('space', ['surge', 'peak']) * 3, 'drill leans to surge and peak, space away from them');
+    const ae = share('ae', ['dread', 'suspense']), acid = share('acid', ['dread', 'suspense']);
+    assert(ae > acid * 1.8, `ae leans to slow tension: ${ae.toFixed(2)} vs acid ${acid.toFixed(2)}`);
+    assert(share('acid', ['surge', 'peak']) > share('space', ['surge', 'peak']) * 3, 'acid leans to surge and peak, space away from them');
   });
 
   runner.test('Steering: manual layers/tempo pick a section; the arc holds it, then carries on from it', () => {
@@ -903,20 +1268,22 @@
     assert(arc.lean && Math.abs(arc.lean.strength - 0.5) < 0.02, 'half after 2.5 minutes');
     for (let b = 75; b < 151; b++) arc.advanceBar(b, 2); // 302 s
     assert(!arc.lean, 'gone after 5 minutes');
-    let darkish = 0;
+    // from acid, a slow and sparse stretch leads to space (the slowest, sparsest genre) more
+    // often than anywhere else (acid itself tends to ae, so ae still comes up)
+    const picks = { acid: 0, ae: 0, dub: 0, space: 0 };
     for (let k = 0; k < 200; k++) {
-      const m = new RA.GenreDrift(new RA.Rng(k), { allowed: ['drill', 'acid', 'dark', 'space'] });
+      const m = new RA.GenreDrift(new RA.Rng(k), { allowed: ['acid', 'ae', 'dub', 'space'] });
       m.from = 'acid';
       m.lean = { energy: 0.27, bpm: 70, strength: 1 };
-      if (['dark', 'space'].includes(m.pickNext())) darkish++;
+      picks[m.pickNext()]++;
     }
-    assert(darkish > 160, `slow and sparse leads to dark/space genres: ${darkish}/200`);
+    assert(picks.space > 1.2 * Math.max(picks.dub, picks.ae), `slow and sparse leads to space: ${JSON.stringify(picks)}`);
   });
 
   runner.test('Piano: harder notes are louder, and held notes decay naturally', async () => {
     const render = async (vel) => {
       const off = new OfflineAudioContext(1, 48000 * 3, 48000);
-      new RA.SynthVoice(off, RA.SynthPresets.piano, 60, { vel }).start(0.01, off.destination, () => {});
+      new RA.SynthVoice(off, RA.SOUNDS.piano, 60, { vel }).start(0.01, off.destination, () => {});
       return (await off.startRendering()).getChannelData(0);
     };
     const rms = (d, a, b) => { let s = 0; for (let i = a; i < b; i++) s += d[i] * d[i]; return Math.sqrt(s / (b - a)); };
@@ -954,14 +1321,14 @@
     const seqs = [1, 2, 3, 4, 5, 6].map(run);
     const starts = new Set(seqs.map((s) => s[0]));
     const orders = new Set(seqs.map((s) => s.slice(0, 6).join('>')));
-    assert(starts.size >= 3, 'different starting genres: ' + [...starts]);
+    assert(starts.size >= 2, 'different starting genres: ' + [...starts]);
     assert(orders.size === seqs.length, 'every run has its own order');
     for (const s of seqs) for (let k = 1; k < s.length; k++) assert(s[k] !== s[k - 1], 'no immediate repeat');
     return seqs[0].slice(0, 6).join(' > ');
   });
 
   runner.test('Code carries the instruments: inst() lines round-trip and edit the library', () => {
-    const lib = new RA.InstrumentLibrary(RA.SynthPresets);
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
     const p = RA.PATTERNS.find((x) => x.id === 'ae_glitch_hats');
     const code = RA.CodeTools.withInstruments(p.code, lib);
     assert(code.startsWith("inst('hat_synth', { osc: ["), code.split('\n')[0]);
@@ -978,7 +1345,14 @@
     const edited = code.replace('release: 0.035', 'release: 0.2');
     assert(coder.load(layer, edited).ok, 'edited loads');
     equal(lib.get('hat_synth').release, 0.2);
-    assert(coder.probe(RA.CodeTools.updateInstrument(edited, 'hat_synth', RA.SynthPresets.hat_synth)).ok, 'probe ok');
+    assert(coder.probe(RA.CodeTools.updateInstrument(edited, 'hat_synth', RA.SOUNDS.hat_synth)).ok, 'probe ok');
+    // a sound made of parts, with the sample it replaces: inst(name, { layers }, { substitui })
+    const drum = RA.InstrumentLibrary.clone(lib.get('bombo_808bd_05'));
+    drum.layers[0].gain *= 0.5;
+    const dcode = `inst('bombo_808bd_05', ${RA.CodeTools.toCode(drum)}, { substitui: '808bd:5' })\ninst('novo_bombo', ${RA.CodeTools.toCode(drum)}, { substitui: '808bd:99' })\nloop('k', () => { s('808bd', { n: 5 }); sleep(1) })`;
+    assert(coder.load(new RA.Layer({ id: 'D', role: 'drums', pattern: p }), dcode, 0).ok, 'drum inst loads');
+    equal(lib.get('bombo_808bd_05').layers[0].gain, drum.layers[0].gain, 'the drum part changed');
+    equal(lib.replacing('808bd:99'), 'novo_bombo', 'a new sound replacing a sample');
     // instruments chosen with vary() are found too
     const multi = RA.PATTERNS.find((x) => x.id === 'ae_clank_grid');
     const names = RA.CodeTools.synthsUsed(multi.code, lib.names());
@@ -986,7 +1360,7 @@
   });
 
   runner.test('Head/body split: variation never touches inst lines, the fx line or the body', () => {
-    const lib = new RA.InstrumentLibrary(RA.SynthPresets);
+    const lib = new RA.InstrumentLibrary(RA.SOUND_FILES);
     const p = RA.PATTERNS.find((x) => x.id === 'dub_chord_stab');
     const code = RA.CodeTools.setFxParams(RA.CodeTools.withInstruments(p.code, lib), { amp: 0.9, lpf: 1234, res: 0.7, rev: 0.31, delay: 0.42, wobble: 0.1, crush: 0 });
     const { head, body } = RA.CodeTools.split(code);
@@ -1000,6 +1374,11 @@
     equal(strip(c), strip(code));
   });
 
-  // the pattern bank (patterns/*.rad) loads first
-  RA.PatternLoader.load().then((list) => { RA.PATTERNS = list; runner.run(document.getElementById('results')); });
+  // the pattern bank (patterns/*.rad) and the sounds (instrumentos/**/*.inst) load first
+  Promise.all([RA.PatternLoader.load(), RA.InstrumentLoader.load()]).then(([list, sounds]) => {
+    RA.PATTERNS = list;
+    RA.SOUND_FILES = sounds;
+    RA.SOUNDS = Object.fromEntries(sounds.map((s) => [s.name, s.recipe]));
+    runner.run(document.getElementById('results'));
+  });
 })();

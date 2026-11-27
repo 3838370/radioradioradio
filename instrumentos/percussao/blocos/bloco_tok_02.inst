@@ -1,0 +1,52 @@
+// nome: bloco tok · 2
+// família: blocos
+// substitui: tok:2
+// origem: Dirt-Samples tok/002_2.wav · refeito em código (distância 3.52)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0905,
+          "decay": 0.0468
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00429,
+          "decay": 0.0468
+        },
+        {
+          "type": "sine",
+          "ratio": 6.48,
+          "level": 0.301,
+          "decay": 0.00453
+        },
+        {
+          "type": "noise",
+          "level": 0.103,
+          "decay": 0.00102
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.265,
+      "decay": 0.212,
+      "sustain": 0.00136,
+      "release": 0.0742,
+      "cutoff": 2330.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 10.3,
+        "time": 0.0417
+      },
+      "drive": 0.0,
+      "gain": 1.312,
+      "transpose": -30.95
+    }
+  ]
+}

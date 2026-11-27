@@ -1,0 +1,140 @@
+// nome: tarola 808sd · 21
+// família: tarolas
+// substitui: 808sd:21
+// origem: Dirt-Samples 808sd/SD7510.WAV · refeito em código (distância 5.86)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.19,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.04834,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.19,
+      "decay": 0.0854,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.2405,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.19,
+      "decay": 0.0271,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.8313,
+      "transpose": 4.77
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.0075,
+      "dur": 0.19,
+      "decay": 0.0857,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.1027,
+      "transpose": 70.3
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.19,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 3.389,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.19,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 3.193,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.19,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.1075,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.19,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 1.292,
+      "hpf": 5000
+    }
+  ]
+}

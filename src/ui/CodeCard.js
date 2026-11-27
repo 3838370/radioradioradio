@@ -1,16 +1,18 @@
+import { PatternBank } from '../music/PatternBank.js';
 import { MathUtil } from '../core/MathUtil.js';
 import { Theme } from './Theme.js';
 
 // CodeCard: shows one layer's code. Edits are typed in character by character (delete the
 // differing middle, then type the new text), the border flashes when the layer sounds,
-// four buttons (sound panel, mute, lock, regenerate) sit in the bottom-right corner, and numbers in the
+// five buttons (sound panel, solo, mute, lock, regenerate) sit in the bottom-right corner, and numbers in the
 // code can be found under the mouse so they can be dragged.
 export class CodeCard {
   static BUTTONS = [
-    { action: 'sound', label: '≈', title: 'sound panel' },
-    { action: 'mute', label: 'M', title: 'mute' },
-    { action: 'lock', label: 'L', title: 'lock' },
-    { action: 'regen', label: '↻', title: 'regenerate' },
+    { action: 'sound', label: '≈', title: 'painel de som' },
+    { action: 'solo', label: 'S', title: 'solo' },
+    { action: 'mute', label: 'M', title: 'mudo' },
+    { action: 'lock', label: 'L', title: 'bloquear' },
+    { action: 'regen', label: '↻', title: 'trocar por outro padrão' },
   ];
 
   constructor(layer, highlighter) {
@@ -23,7 +25,7 @@ export class CodeCard {
     this.cursor = 0;
     this.removing = false;
     this.editAt = 0;
-    this.label = 'new layer';
+    this.label = 'camada nova';
     this.labelAt = performance.now();
     this.flashAt = 0;
     this.hits = [];
@@ -84,7 +86,14 @@ export class CodeCard {
   }
 
   measure(m) {
-    this.view = this.highlighter.layout(this.shown, m.maxCols, this.cursor);
+    // the code laid out in rows and coloured: only when it (or the width, or the cursor) changed,
+    // not every frame (a long card took most of a frame, and the note scheduler waited)
+    const key = this.shown.length + '|' + m.maxCols + '|' + this.cursor;
+    if (!this.view || this.viewKey !== key || this.viewText !== this.shown) {
+      this.view = this.highlighter.layout(this.shown, m.maxCols, this.cursor);
+      this.viewKey = key;
+      this.viewText = this.shown;
+    }
     const extra = m.padLine && !this.removing ? Math.ceil(m.padLine.length / m.maxCols) : 0;
     return m.pad * 2 + m.header + (Math.max(1, this.view.rows.length) + extra) * m.lh + m.small + 8; // + button row
   }
@@ -92,7 +101,7 @@ export class CodeCard {
   draw(p, x, y, w, h, m, now) {
     const T = Theme;
     const f = Math.exp(-(now - this.flashAt) / 160);
-    const alpha = this.removing ? 0.45 : this.layer.muted ? 0.35 : 1;
+    const alpha = this.removing ? 0.45 : this.layer.muted || this.layer.silenced ? 0.35 : 1;
     const fill = (c, a = 1) => p.fill(c[0], c[1], c[2], 255 * a * alpha);
     this.rect = { x, y, w, h };
 
@@ -104,15 +113,15 @@ export class CodeCard {
     p.noStroke();
 
     // header: ROLE  pattern-id [edited] [locked]          last edit
-    // bottom-right corner: [≈][M][L][↻]
+    // bottom-right corner: [≈][S][M][L][↻]
     const hy = y + m.pad + m.ts;
     p.textSize(m.small);
     fill(T.bright);
-    const role = this.layer.role.toUpperCase();
+    const role = PatternBank.roleLabel(this.layer.role).toUpperCase();
     p.text(role, x + m.pad, hy);
     const roleW = p.textWidth(role + '  ');
     fill(T.dim);
-    const tags = (this.layer.pattern.edited ? ' · edited' : '') + (this.layer.locked ? ' · locked' : '') + (this.layer.muted ? ' · muted' : '');
+    const tags = (this.layer.pattern.edited ? ' · editado' : '') + (this.layer.locked ? ' · bloqueado' : '') + (this.layer.soloed ? ' · solo' : '') + (this.layer.muted ? ' · mudo' : '');
     p.text(this.layer.patternId + tags, x + m.pad + roleW, hy);
 
     this.hits = [];
@@ -120,7 +129,7 @@ export class CodeCard {
     let bx = x + w - m.pad - bw;
     const bb = y + h - m.pad + 2; // the buttons' text baseline
     for (const b of CodeCard.BUTTONS.slice().reverse()) {
-      const active = (b.action === 'mute' && this.layer.muted) || (b.action === 'lock' && this.layer.locked);
+      const active = (b.action === 'mute' && this.layer.muted) || (b.action === 'lock' && this.layer.locked) || (b.action === 'solo' && this.layer.soloed);
       const by = bb - m.small;
       if (active) {
         p.fill(T.bright);
@@ -151,11 +160,46 @@ export class CodeCard {
       p.fill(T.text[0], T.text[1], T.text[2], this.typing ? 22 : 22 * (1 - (now - this.editAt) / 1500));
       p.rect(x + 1, ty + cursor.row * m.lh + 2, w - 2, m.lh);
     }
-    for (let r = 0; r < rows.length; r++) {
-      for (const seg of rows[r]) {
-        p.fill(seg.color[0], seg.color[1], seg.color[2], 255 * alpha);
-        p.text(seg.str, x + m.pad + seg.col * m.charW, ty + r * m.lh + m.ts);
+    {
+      // The coloured code is drawn once into a picture of its own, and that picture is what
+      // each frame shows (thousands of coloured pieces every frame kept the page busy, and
+      // the note scheduler late): it's redrawn only when the code, width or look changes,
+      // and while the composer types new code in, at most every 60 ms (the typing still shows,
+      // a few letters at a time).
+      const ctx = p.drawingContext;
+      const d = p.pixelDensity();
+      const key = `${this.viewKey}|${w}|${alpha}|${d}|${ctx.font}`;
+      const wait = this.typing && this.textCanvas && now - (this.textAt || 0) < 60;
+      if (!wait && (this.textKey !== key || this.textView !== this.view)) {
+        this.textAt = now;
+        const cw = Math.max(1, Math.ceil((w - m.pad) * d)), chh = Math.max(1, Math.ceil((rows.length + 1) * m.lh * d));
+        const c = this.textCanvas || (this.textCanvas = document.createElement('canvas'));
+        // Only the rows that changed are drawn again (an edit in the panel changes one or two
+        // rows of a long card); a new size or look draws them all.
+        const look = `${w}|${alpha}|${d}|${ctx.font}|${m.lh}|${m.charW}`;
+        const sig = rows.map((row) => row.map((s) => `${s.col}:${s.color}:${s.str}`).join('\u0001'));
+        const all = c.width !== cw || c.height !== chh || this.textLook !== look || !this.textRows;
+        if (all) { c.width = cw; c.height = chh; }
+        const g = c.getContext('2d');
+        g.setTransform(d, 0, 0, d, 0, 0);
+        if (all) g.clearRect(0, 0, cw, chh);
+        g.font = ctx.font;
+        g.textBaseline = ctx.textBaseline;
+        g.textAlign = 'left';
+        for (let r = 0; r < rows.length; r++) {
+          if (!all && this.textRows[r] === sig[r]) continue;
+          if (!all) g.clearRect(0, r * m.lh, cw / d, m.lh);
+          for (const seg of rows[r]) {
+            g.fillStyle = `rgba(${seg.color[0]}, ${seg.color[1]}, ${seg.color[2]}, ${alpha})`;
+            g.fillText(seg.str, seg.col * m.charW, r * m.lh + m.ts);
+          }
+        }
+        this.textRows = sig;
+        this.textLook = look;
+        this.textKey = key;
+        this.textView = this.view;
       }
+      ctx.drawImage(this.textCanvas, x + m.pad, ty, this.textCanvas.width / d, this.textCanvas.height / d);
     }
     // live effect-pad modulation, as a comment under the code
     if (m.padLine && !this.removing) {
@@ -180,6 +224,20 @@ export class CodeCard {
     const seg = row.find((s) => col >= s.col && col < s.col + s.str.length);
     if (!seg || seg.color !== Theme.num) return null;
     return { start: seg.tokStart, len: seg.tokLen };
+  }
+
+  // The line of code under the mouse (as shown), or ''.
+  lineAt(mx, my) {
+    if (!this.textOrigin || !this.view) return '';
+    const { y, m } = this.textOrigin;
+    if (my < y) return '';
+    const row = this.view.rows[Math.floor((my - y) / m.lh)];
+    const seg = row && row.find((s) => s.tokStart != null);
+    if (!seg) return '';
+    const t = this.shown;
+    const a = t.lastIndexOf('\n', seg.tokStart - 1) + 1;
+    const b = t.indexOf('\n', seg.tokStart);
+    return t.slice(a, b < 0 ? t.length : b);
   }
 
   // A header button, or 'edit' anywhere else on the card.

@@ -1,0 +1,30 @@
+// nome: prepared_mute
+// família: prepared
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "sine",
+      "ratio": 2.01,
+      "level": 0.3,
+      "decay": 0.08
+    },
+    {
+      "type": "noise",
+      "level": 0.12,
+      "decay": 0.008
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.05,
+  "decay": 0.25,
+  "sustain": 0,
+  "release": 0.15,
+  "cutoff": 1500,
+  "res": 0.6,
+  "veltrack": 0.5,
+  "gain": 0.42,
+  "drift": 3
+}

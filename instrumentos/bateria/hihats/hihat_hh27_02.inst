@@ -1,0 +1,242 @@
+// nome: hihat hh27 · 2
+// família: hihats
+// substitui: hh27:2
+// origem: Dirt-Samples hh27/002_hh27hit1.wav · refeito em código (distância 8.8)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.2546,
+      "transpose": 29.8
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.6,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.005875,
+      "transpose": 29.8
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.04578,
+      "transpose": 52.0
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.08641,
+      "transpose": -0.952
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.45,
+      "decay": 0.006,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 3.622,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.45,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 0.1803,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.024,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1000,
+      "res": 1.4,
+      "gain": 2.024,
+      "hpf": 625
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1000,
+      "res": 1.4,
+      "gain": 0.6095,
+      "hpf": 625
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.75,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1000,
+      "res": 1.4,
+      "gain": 0.03304,
+      "hpf": 625
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.0025,
+      "dur": 0.45,
+      "decay": 0.75,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 0.03525,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.024,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.9302,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.3599,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.1153,
+      "hpf": 5000
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.45,
+      "decay": 0.75,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.006927,
+      "hpf": 5000
+    }
+  ]
+}

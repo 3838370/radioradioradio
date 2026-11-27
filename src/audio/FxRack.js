@@ -16,7 +16,7 @@ export class FxRack extends Emitter {
     { id: 'dub', label: 'DUB ECHO', key: '2', hint: 'sobe o delay das camadas + feedback alto, ecos escuros' },
     { id: 'warp', label: 'WARP', key: '3', hint: 'o tempo do delay salta e desliza (à Aphex)' },
     { id: 'wash', label: 'REVERB WASH', key: '4', hint: 'sobe a reverb de todas as camadas, cauda longa' },
-    { id: 'sweep', label: 'FILTER', key: '5', hint: 'fecha o filtro de todas as camadas' },
+    { id: 'sweep', label: 'FILTRO', key: '5', hint: 'fecha o filtro de todas as camadas' },
     { id: 'stutter', label: 'STUTTER', key: '6', hint: 'repete 1/16 em loop' },
     { id: 'wobble', label: 'VIBRATO', key: '7', hint: 'sobe o wobble das camadas + vibrato da fita' },
     { id: 'tapestop', label: 'TAPE STOP', key: '8', hint: 'a fita abranda e para' },
@@ -40,11 +40,6 @@ export class FxRack extends Emitter {
       if (['delayBeats', 'feedback', 'glide'].includes(name)) this.update();
     });
     this.update();
-  }
-
-  static noteName(beats) {
-    const n = FxRack.DELAY_NOTES.find(([, b]) => Math.abs(b - beats) < 0.01);
-    return n ? n[0] : `${beats.toFixed(2)} beats`;
   }
 
   isOn(id) { const s = this.active.get(id); return !!s && s.size > 0; }

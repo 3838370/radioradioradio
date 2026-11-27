@@ -1,0 +1,52 @@
+// nome: tabla tabla · 5
+// família: tabla
+// substitui: tabla:5
+// origem: Dirt-Samples tabla/005_dead_hit3.wav · refeito em código (distância 5.33)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0481,
+          "decay": 0.165
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.168,
+          "decay": 0.165
+        },
+        {
+          "type": "sine",
+          "ratio": 3.21,
+          "level": 0.0171,
+          "decay": 0.00126
+        },
+        {
+          "type": "noise",
+          "level": 0.755,
+          "decay": 0.00923
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.0504,
+      "decay": 0.0292,
+      "sustain": 0.0341,
+      "release": 0.169,
+      "cutoff": 3620.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 12.6,
+        "time": 0.227
+      },
+      "drive": 0.82,
+      "gain": 1.499,
+      "transpose": -29.78
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+// nome: bombo ifdrums · 0
+// família: bombos
+// substitui: ifdrums:0
+// origem: Dirt-Samples ifdrums/ignorebd.wav · refeito em código (distância 6.73)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.312,
+          "decay": 0.16
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00383,
+          "decay": 0.16
+        },
+        {
+          "type": "sine",
+          "ratio": 5.77,
+          "level": 0.219,
+          "decay": 0.00326
+        },
+        {
+          "type": "noise",
+          "level": 0.365,
+          "decay": 0.038
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.105,
+      "decay": 0.295,
+      "sustain": 0.00148,
+      "release": 0.0864,
+      "cutoff": 6230.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 24.8,
+        "time": 0.0632
+      },
+      "drive": 0.0248,
+      "gain": 2.499,
+      "transpose": -26.52
+    }
+  ]
+}

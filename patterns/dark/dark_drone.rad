@@ -1,9 +1,0 @@
-// role: bass
-// genres: dark 1
-// energy: 0-1
-params({ pad_dark: 'dark_pad' })
-fx({ lpf: 500, wobble: 0.3 })
-loop('drone', (i) => {
-  synth(P.pad_dark, ROOT, { dur: 13, attack: 3, release: 4, amp: 0.5 })
-  sleep(16)
-})

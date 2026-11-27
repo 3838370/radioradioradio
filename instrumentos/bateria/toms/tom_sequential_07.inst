@@ -1,0 +1,61 @@
+// nome: tom sequential · 7
+// família: toms
+// substitui: sequential:7
+// origem: Dirt-Samples sequential/007_Tom Tom2.wav · refeito em código (distância 6.66)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.88,
+          "level": 0.785,
+          "decay": 0.189
+        },
+        {
+          "type": "sine",
+          "ratio": 2.48,
+          "level": 0.0703,
+          "decay": 0.306
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.315,
+      "decay": 0.165,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 1980.0,
+      "res": 1.42,
+      "pitch": {
+        "from": 2.4,
+        "time": 0.0122
+      },
+      "drive": 0.0327,
+      "gain": 3.197,
+      "transpose": -14.23
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00178,
+      "dur": 0.315,
+      "decay": 0.069,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 901.0,
+      "res": 0.851,
+      "fenv": 1.57,
+      "fdecay": 0.142,
+      "gain": 2.925,
+      "transpose": -14.23
+    }
+  ]
+}

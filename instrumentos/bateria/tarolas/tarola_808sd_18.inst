@@ -1,0 +1,174 @@
+// nome: tarola 808sd · 18
+// família: tarolas
+// substitui: 808sd:18
+// origem: Dirt-Samples 808sd/SD5050.WAV · refeito em código (distância 2.6)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.148,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.0856,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.4949,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.0267,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.6016,
+      "transpose": 4.77
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.0738,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.04228,
+      "transpose": 28.5
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.17,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 1.035,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.005,
+      "dur": 0.17,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 0.06504,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 1.225,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.05295,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.5583,
+      "hpf": 5000
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.17,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 16000,
+      "res": 1.4,
+      "gain": 0.06775,
+      "hpf": 10000
+    }
+  ]
+}

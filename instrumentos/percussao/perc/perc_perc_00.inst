@@ -1,0 +1,52 @@
+// nome: perc perc · 0
+// família: perc
+// substitui: perc:0
+// origem: Dirt-Samples perc/000_perc0.wav · refeito em código (distância 9.8)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.137,
+          "decay": 0.288
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00829,
+          "decay": 0.288
+        },
+        {
+          "type": "sine",
+          "ratio": 2.0,
+          "level": 0.0589,
+          "decay": 0.00197
+        },
+        {
+          "type": "noise",
+          "level": 0.779,
+          "decay": 0.0151
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.287,
+      "decay": 0.355,
+      "sustain": 0.00203,
+      "release": 0.123,
+      "cutoff": 4930.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 17.1,
+        "time": 0.0411
+      },
+      "drive": 0.0,
+      "gain": 2.133,
+      "transpose": -34.59
+    }
+  ]
+}

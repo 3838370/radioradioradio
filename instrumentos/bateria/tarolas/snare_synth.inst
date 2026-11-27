@@ -1,0 +1,24 @@
+// nome: snare_synth
+{
+  "osc": [
+    {
+      "type": "noise",
+      "level": 0.9
+    },
+    {
+      "type": "triangle",
+      "level": 0.5
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "release": 0.18,
+  "ftype": "bandpass",
+  "cutoff": 1800,
+  "res": 0.7,
+  "pitch": {
+    "from": 7,
+    "time": 0.03
+  },
+  "gain": 0.5
+}

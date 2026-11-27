@@ -107,7 +107,7 @@ export class SamplePanel {
 
   audition() {
     if (!this.folder) return;
-    if (!this.app.audio) { this.status.html('Carrega em ▶ Tune in para ouvir.'); return; }
+    if (!this.app.audio) { this.status.html('Carrega em ▶ Sintonizar para ouvir.'); return; }
     const spb = this.app.clock ? this.app.clock.spb() : 60 / 90;
     const o = this.opts();
     if (o.cut) o.cut *= spb;

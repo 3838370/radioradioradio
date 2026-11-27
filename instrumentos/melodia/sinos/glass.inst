@@ -1,0 +1,26 @@
+// nome: glass
+// família: bell
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 7.01,
+        "index": 1.4,
+        "decay": 0.2
+      }
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.18
+    }
+  ],
+  "attack": 0.003,
+  "release": 1.2,
+  "dur": 0,
+  "cutoff": 9000,
+  "res": 0.5,
+  "gain": 0.2,
+  "drift": 4
+}

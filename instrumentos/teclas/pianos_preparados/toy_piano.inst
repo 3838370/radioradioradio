@@ -1,0 +1,35 @@
+// nome: toy_piano
+// família: prepared
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 4.1,
+        "index": 1.8,
+        "decay": 0.12
+      }
+    },
+    {
+      "type": "sine",
+      "ratio": 6.9,
+      "level": 0.15,
+      "decay": 0.1
+    },
+    {
+      "type": "noise",
+      "level": 0.1,
+      "decay": 0.008
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.6,
+  "decay": 0.9,
+  "sustain": 0,
+  "release": 0.4,
+  "cutoff": 6000,
+  "res": 0.6,
+  "veltrack": 0.5,
+  "gain": 0.24,
+  "drift": 6
+}

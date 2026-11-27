@@ -1,0 +1,11 @@
+// role: bass
+// genres: ae 0.6
+// energy: 0.2-1
+params({ fm_bass: 'ae_bass' })
+fx({ lpf: 600, crush: 0.05 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: 'sub' })) {
+    if (b.note) synth(P.fm_bass, b.note, { dur: b.len, amp: 0.36 * b.vel })
+    sleep(b.dur)
+  }
+})

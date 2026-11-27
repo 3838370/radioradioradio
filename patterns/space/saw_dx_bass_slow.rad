@@ -1,0 +1,11 @@
+// role: bass
+// genres: space 0.7
+// energy: 0-0.9
+params({ sub: 'dx_bass' })
+fx({ lpf: 900, rev: 0.15 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('st', ['sub', 'dub'], 16) })) {
+    if (b.note) synth(P.sub, b.note, { dur: b.len, amp: 0.38 * b.vel })
+    sleep(b.dur)
+  }
+})

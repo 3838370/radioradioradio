@@ -2,18 +2,13 @@
 
 The radio never plays AI audio. It plays **code**. The `patterns/` files hold the bank of
 AI-written code layers, and the composer picks, mutates and chains them while the genre
-drifts slowly (8–20 minutes each) through nine IDM genres, each at its own tempo:
-- **saw** (~96 BPM): Aphex Twin's ambient side (*Selected Ambient Works 85-92* and *II*, the *Drukqs* prepared pianos). FM pads, loose 808, ostinatos, tape.
+drifts slowly (8–20 minutes each) through four IDM genres, each at its own tempo:
 - **acid** (~132 BPM): Aphex Twin's acid and braindance (*Analord*, *Richard D. James Album*). Raw 303, 808/909, odd-interval motifs.
-- **drill** (~168 BPM): drill'n'bass (*Drukqs*, *Come to Daddy*). The amen chopped at speed with ratchets, under slow, sad melodies.
-- **boc** (~90 BPM): Boards of Canada. Slow dusty hip-hop breaks, detuned drifting synths, tape, voices and numbers stations.
-- **minimal** (~122 BPM): Efdemin. Dry 4/4 with shuffled hats, bells and organ in little figures of different cycle lengths.
-- **dub** (~120 BPM): dub techno and Gas. Chord stabs into long delays, a muffled kick, hiss.
+- **dub** (~120 BPM): dub techno and Gas. Chord stabs into long delays, a muffled kick.
 - **space** (~84 BPM): drifting space ambient (*Aethereon*) and FSOL collage.
-- **dark** (~76 BPM): slow tension. Half-time weight, drones, low brass, detuned pianos, the metro.
 - **ae** (~118 BPM): Autechre (*AE_LIVE 2016–2018*). Generated, shifting rhythms, harsh FM, lines with no tonic.
 
-The order is drawn at random, leaning on each genre's `tends` (`src/music/Genres.js`) (ambient into acid, acid into drill, drill into dark or ae...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours.
+The order is drawn at random, leaning on each genre's `tends` (`src/music/Genres.js`) (acid into ae, ae into acid or space, space into dub...). The genres of earlier versions (fog, deep, atmos, rave, industrial) map to these, both in saved choices and in your saved patterns' flavours; SAW, DRILL, BOC, MINIMAL and DARK were taken out (their patterns that also served these four moved into their folders).
 
 On top of the genre, an **arc** moves through sections. Tension comes two ways, fast or slow:
 
@@ -32,10 +27,11 @@ On top of the genre, an **arc** moves through sections. Tension comes two ways, 
 
 - With density on **auto**, the section gives the range of layers and the genre's energy picks within it.
 - Each genre prefers some sections and avoids others, and caps the layers:
-  - dark → dread and suspense;
-  - drill → surge, peak and collapse;
-  - saw, boc and space → drift, sparse, suspense (space at most 4 layers);
-  - acid, drill, minimal and ae → up to 6 layers.
+  - acid → build, tension and surge;
+  - ae → surge, suspense, collapse and dread;
+  - dub → drift, build and dread;
+  - space → sparse, suspense and drift (at most 4 layers);
+  - acid and ae → up to 6 layers.
 - Over hours, auto spends about a quarter of the time on 1–2 layers, 45% on 3–4 and 30% on 5–6, and over 40% in tense sections.
 
 **Steering by hand.** When density or tempo is on manual, the radio reads what you're doing and holds the arc in the matching section. The HUD shows it with **MANUAL** next to the section name.
@@ -53,21 +49,20 @@ On top of the genre, an **arc** moves through sections. Tension comes two ways, 
 When you tick auto again, the arc carries on from that section and keeps your **register**:
 - The next sections are drawn close to it in level and tempo, staying in the same one included.
 - The tempo stays near yours.
-- The next genre leans towards genres of similar intensity and tempo (slow and sparse → dark, space, saw; full and fast → drill, acid).
+- The next genre leans towards genres of similar intensity and tempo (slow and sparse → space, dub; full and fast → acid, ae).
 
 The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½ minutes, gone at 5. After that the radio wanders freely again.
 
-(The previous IDM bank, BoC / SAW / Autechre / drill, is archived in `Temp\patterns-idm-v2`.)
 
 ## Running it
-- Start a local server from this folder. The helper scripts (kept outside the repository, in the
-  project's `Scripts` folder) include `serve.py`, which turns browser caching off so code changes
-  always show up on reload and serves `.js` as JavaScript:
+- Start the local server in this folder, `serve.py`: it turns browser caching off so code
+  changes always show up on reload, serves `.js` as JavaScript, and lets the Instrumentos panel
+  save sounds to their files:
   ```bash
-  python Scripts/serve.py
+  python serve.py
   ```
   Then open http://localhost:8765 and click **▶ Tune in**. With `python -m http.server` the browser may keep old copies of the files (use Ctrl+Shift+R), and on Windows it may serve `.js` as plain text, which the browser refuses for modules.
-- `test.html` on the same server runs the checks. `python Scripts/testar.py` runs them in a headless Chrome; `python Scripts/testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.
+- `test.html` on the same server runs the checks. (Outside the repository, the project's helper `Scripts/testar.py` runs them in a headless Chrome; `python Scripts/testar.py --radio 60` plays the radio silently for a minute and reports the log and any errors.)
 - **URL flags:** `?fast=1` (each genre lasts about 1 minute and the pace is divided by 8), `?seed=123` (repeatable choices).
 - **Controls:**
   - **Pace:** how often something changes (every 4–64 bars).
@@ -112,9 +107,9 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 - **Drag numbers:** drag any number in a card's code up or down to hear it change at once. Big numbers (filters) move exponentially; small ones step.
 - **Sound panel (≈):** four tabs.
   - **Camada:** volume, filter, resonance, reverb, delay, wobble and crush for one layer. The sliders rewrite its `fx({...})` line, and there are links to the instruments and samples it uses.
-  - **Instrumentos:** design synths (oscillators, envelope, filter, FM, vibrato, drift). Edits are heard on the next note. **Guardar como** creates a new instrument for `synth('name', ...)`, and **repor** restores a built-in.
+  - **Instrumentos:** every sound, organised as its files are: pick the instrument (bateria, percussão, baixo, teclas, melodia, textura), then a sound in its groups (bombos, tarolas, hihats…). Every field the sound engine reads is a control (built from `SoundFields`); sounds made of parts (the drums rebuilt in code) edit one part at a time, with **▶ original** and **▶ A/B** against the sample they rebuild. Edits are heard at once, show in the sound's code and are marked "por guardar" until **guardar** writes them to the sound's file (through the local server `serve.py`; online they can't be saved). **guardar como** makes a new file in the same folder, **desfazer** goes back to the file, **apagar** deletes it.
   - **Samples:** browse the Dirt-Samples folders and your own sounds. Shape them with pitch/rate, start, length, reverse and granular, then listen and insert the code.
-  - **Guardar:** your saved patterns, instruments and sounds, plus .json export/import.
+  - **Guardar:** your saved patterns and sounds, the sounds with changes not yet saved to their files, plus .json export/import.
 - **XY pad** (bottom right): X is the master filter, Y the space (reverb/delay). Double-click resets.
 - **Your own sounds:** drag .wav / .mp3 / .ogg files onto the window. They become `s('my', { n })`.
 - **Saving:** every edit is saved in this browser. Edited layers become `user_…` patterns that the composer also picks.
@@ -124,7 +119,7 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
   - **Esc** closes without running, and **Tab** indents.  - Code with an error is refused and the old code keeps playing.
   - An edited layer is locked and marked `[edited]`. Unlock it (L) to let the composer mutate it again, using your code as its new starting point.
 - **The card shows everything that makes the sound:**
-  - one `inst('name', {...})` line for each instrument the layer plays (edit it there and the instrument changes, in the Instrumentos tab too)
+  - one `inst('name', {...})` line for each sound the layer plays (edit it there and the sound changes, in the Instrumentos tab too, "por guardar")
   - a full `fx({...})` line, which the automation rewrites as it moves and the Camada sliders also write to
   - a highlighted comment for the effect pads active right now, e.g. `// + REVERB WASH (rev +0.45)`
   - The composer only mutates the code below these lines.
@@ -144,10 +139,12 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 - `src/audio`:
   - Clock and Scheduler (lookahead timing)
   - SampleLibrary (Dirt-Samples)
-  - AudioEngine, Bus and TapeFx (the master and per-layer chains; TapeFx's wow is scaled per genre)
+  - AudioEngine, Bus and Mixer (the per-layer chains and the clean mix: groups drums / bass / music, low cut, kick sidechain, limiter with a −1 dB ceiling, level meter; TapeMotion keeps the tape's wow, scaled per genre, and the vibrato and tape-stop pads; no hiss)
   - Reverb: an algorithmic Freeverb-style reverb. It replaced p5.Reverb, whose long convolution caused crackling.
   - FxRack: the 8 effect pads and the master delay
-  - SynthVoice (its random drift and notes' detune scaled by PARAMS detune), SampleVoice and SynthPresets
+  - SynthVoice (its random drift and notes' detune scaled by PARAMS detune) and SampleVoice; SoundFields describes every field of a sound's recipe (the Instrumentos panel is built from it, and a test keeps it equal to what SynthVoice reads)
+  - InstrumentLoader (reads `instrumentos/**/*.inst`, one file per sound; saves through the local server) and InstrumentLibrary (the sounds by name, changes "por guardar", which sound replaces which sample)
+  - A sample with a sound that says `// substitui: folder:n` always plays that sound instead (AudioEngine.codedFor, with the sample's rate/cut/attack via codedNote and SoundFields.atRate); its file is never loaded. Samples without one (breaks, voices, field sounds) play their file. Each card carries the inst lines of the drums it plays.
 - `src/lang`: the language itself. LiveCoder compiles, hot-swaps and rolls back code (and captures `fx()`, `params()` and `mute()`), LanguageApi is what code can call, plus CodeTools (the head lines: inst, params, fx, mute, hits), Layer, Loop, Iteration, Ring and Theory.
 - `src/music`:
   - Genres: everything that makes each genre itself, in one table: tempo, intensity, where it tends to go, the sections it prefers and its layer cap, modes, progressions, chord length (`chordBars`), tape wow, role order, collage pool, and its **palette** (instruments per family) and **kits** (sample folders per family). The PARAMS row lays the listener's values over it.
@@ -176,11 +173,10 @@ The pull fades out evenly over **5 minutes**, whatever the tempo: half after 2½
 You are writing layers for an endless IDM radio. Each layer is a short program in a tiny
 JavaScript live-coding language with Sonic Pi semantics. Write **N new patterns** with role
 **ROLE** (`drums`, `perc`, `bass`, `keys`, `lead` or `texture`) for the genre **GENRE**
-(one of `saw`, `acid`, `drill`, `boc`, `minimal`, `dub`, `space`, `dark`, `ae`; see the list
-at the top of this file). Nothing EDM: no supersaws, hoovers, risers with drops, festival
-stabs or "yeah" shouts. Melodies should not close like songs: use `melody()` with the style of
-the genre (ostinato for saw/acid/drill, drift for boc/space, probability for ae, cells for
-minimal/dub).
+(one of `acid`, `dub`, `space`, `ae`; see the list at the top of this file). Nothing EDM: no
+supersaws, hoovers, risers with drops, festival stabs or "yeah" shouts. Melodies should not
+close like songs: use `melody()` with the style of the genre (ostinato for acid, drift for
+space, probability for ae, cells for dub).
 
 Write each pattern in 4-beat bars at its own genre's tempo.
 
@@ -190,7 +186,7 @@ Return each pattern as a `.rad` file: a short header in comments, then the code.
 
 ```js
 // role: perc
-// genres: dub 1, minimal 0.3
+// genres: dub 1, space 0.3
 // energy: 0.2-0.9
 params({ rim: 'rs', odds: 3 })
 fx({ lpf: 1800, rev: 0.45, crush: 0.2 })
@@ -200,7 +196,7 @@ loop('name', (i) => {
   sleep(0.25)
 })
 ```
-- the file name (the id): prefixed with the genre (`saw_`, `acid_`, `drill_`, `boc_`, `min_`, `dub_`, `space_`, `dark_`, `ae_`), snake_case, unique.
+- the file name (the id): prefixed with the genre (`acid_`, `dub_`, `space_`, `ae_`), snake_case, unique.
 - `role`: `drums`, `perc`, `bass`, `keys`, `lead` or `texture`.
 - `genres`: how well the layer fits each genre, 0..1. Use crossover weights so layers can bridge between genres.
 - `energy`: the min-max range of intensity (0..1) where it fits.
@@ -245,10 +241,18 @@ loop('name', (i) => {
   - **Tension (dread, suspense):** `dread_sub`, `dread_pad`, `low_brass`, `riser_slow` (climbs two octaves over 8 s), `tension_string` (tremolo), `metal_scrape`
   - **Collage (FSOL):** `radio_tune`, `tape_warble`, `formant_voice`, `shortwave`
 - `fx({ lpf, res, rev, delay, amp, wobble, crush })`: the layer's filter, reverb send (0..0.7), delay send (0..0.6), level, tape wobble (0..0.9, pitch drift) and bit-crush (0..0.6). At the top level it sets the layer. Inside a loop it changes it at that moment.
-- `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or overrides an instrument (same fields as the presets). The radio writes these lines itself, so patterns don't need them.
+- `inst('name', { osc: [...], attack, release, cutoff, ... })`: defines or changes a sound (the fields of `SoundFields`; `{ layers: [...] }` for a sound made of parts). A third argument `{ substitui: '808bd:5' }` makes it play instead of that sample (always). The radio writes these lines itself, so patterns don't need them. Every sound lives in its own file, `instrumentos/<instrument>/<group>/<name>.inst`.
+- `setup({ bpm, key, mode, progression, chordBars })`: the tempo and harmony of a whole program. The full code starts with it; pasting the full code back ([COLAR]) applies it.
+- `grid(name, rows, sounds, opts)`: a loop with memory, top level. Each turn its cursors walk `ciclo` steps (16 sixteenths by default) of a grid and play what they land on; the next turn carries on from there. Rows are strings of cells separated by spaces; `sounds` maps letters to instruments of the Instrumentos panel; degrees follow the current chord and never leave the mode.
+  ```js
+  grid('bat', ['@>K h% h h% Ks h% h h% K h% h h% Ks h% o h*'],
+    { k: 'bombo_808bd_05', s: 'tarola_808sd_12', h: 'hihat_808_01', o: 'hihat_aberto_808oh_00' })
+  grid('303', ["@>B1 .  1' .  3  B1 ~  5,  1  .  B4 1' ~  .  7, 1"], { b: 'acid_303' }, { tom: 'b', oitava: 0 })
+  ```
+  Cells: `@` a cursor starts (with `> < ^ v` its direction; 4 at most), `> < ^ v` turn, `?` a direction by chance, `.` rest, `#` skipped (no time), `=` wait for the next bar, `~` hold the note, `a`–`z` a sound (`v` is never a sound), `A`–`Z` accented, `kh` together, `1`–`7` a degree for the `tom` sound, `b3` sound b on degree 3, `'` `,` an octave up/down, `*` ratchet, `%` half the time. Chance comes from the grid's `semente` (seed), so the probe, the sound and a pasted copy walk the same way. Options: `passo` (beats per step), `ciclo` (steps per turn), `tom`, `oitava`, `graus` ('acorde' or 'tom'), `fixo`, `acorde` (3 or 4: chord stabs), `dur`, `vol`, `semente`, `tipo` ('instrumento', 'maestro', 'efeitos').
 - `params({ name: value, ... })`: top level, what the radio may vary in this layer; the code reads `P.name`.
 - **Harmony.** Always use these; never write note names.
-  - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 2-4 bars in saw and boc, 8-16 in acid, minimal, dub and ae).
+  - `harm(octave, '' | '7' | '9')`: the current chord (it lasts the genre's chord length: 4-8 bars in space, 8-16 in acid, dub and ae).
   - `ROOT`: its root in the bass register. `QUAL`: `'minor'` or `'major'`.
   - `degree(d, octave)`: a note of the current mode, where 0 is the key's root.
   - `modal(octave, octaves)`: the mode's notes.
@@ -291,7 +295,7 @@ loop('name', (i) => {
     - `drone(name, { voices, octave })` returns `{ notes, changed }`: chord tones held for minutes, with one voice moving a step now and then.
     - `motif(name, { beats, density, octave })` returns `[{ note, dur, vel }]`: a short melody that repeats and changes one detail at a time (Selected Ambient Works-style). Two motifs on alternate bars make a call and response.
     - `melody(name, { style, octave, beats, chord })` returns `[{ note, notes, len, vel, detune, ratchet, dur }]`. The melody styles, built on a bank of 63 original cells (`src/music/Melodies.js`):
-      - `ostinato` (Aphex: saw, acid, drill): a short cell repeats, then rotates, transposes, swaps an octave or a note. Cells of 1.5, 2.5 or 3 beats run against the bar. `chord: true` follows the chord's root.
+      - `ostinato` (Aphex: acid): a short cell repeats, then rotates, transposes, swaps an octave or a note. Cells of 1.5, 2.5 or 3 beats run against the bar. `chord: true` follows the chord's root.
       - `drift` (Boards of Canada, space): long modal notes and rests, each with its own `detune` in cents. Pass it on: `synth(x, n.note, { detune: n.detune })`.
       - `probability` (Autechre): an odd-length step sequence where each step plays with its own chance; notes leave the mode, slightly detuned, now and then a `ratchet` (play it twice in the step).
       - `cells` (Efdemin, dub): two or three tiny bell figures each in its own cycle length; play `n.notes` (it can be several at once, or none).
@@ -306,7 +310,7 @@ loop('name', (i) => {
   - Loops may last 1, 2, 3, 4, 5, 6, 7, 8 or 16 beats. Odd lengths run against the 4-beat bar (polymeter).
 - **Live values:** `ENERGY` (0..1, the current intensity), `BAR`, `BPM`, `SECTION` (`sparse`, `drift`, `build`, `tension`, `surge`, `peak`, `dread`, `suspense`, `release` or `collapse`).
   - After a euphoric, accelerating `peak` the radio usually `collapse`s: slower, darker and wetter.
-  - After drill it tends to fall into dark or ae; acid leads into drill.
+  - Acid tends to lead into ae, ae back to acid or into space, space into dub.
 
 ### Samples (Dirt-Samples folders; `n` picks a file)
 - **Vintage drum machines:**

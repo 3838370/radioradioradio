@@ -1,0 +1,25 @@
+// nome: boc_lead
+// família: boc_lead
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.08,
+  "release": 1,
+  "cutoff": 1800,
+  "res": 0.6,
+  "vibrato": {
+    "rate": 0.5,
+    "depth": 22,
+    "delay": 0
+  },
+  "gain": 0.2,
+  "drift": 18
+}

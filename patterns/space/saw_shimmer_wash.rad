@@ -1,0 +1,9 @@
+// role: texture
+// genres: space 0.7
+// energy: 0-0.8
+params({ pad: 'shimmer_pad' })
+fx({ rev: 0.6, lpf: 6000 })
+loop('wash', (i) => {
+  synth(P.pad, harm(2, ''), { dur: 12, attack: 4, release: 5, amp: 0.18 })
+  sleep(16)
+})

@@ -1,0 +1,10 @@
+// role: texture
+// genres: space 0.7
+// energy: 0-0.9
+fx({ rev: 0.4, delay: 0.2, lpf: 7000 })
+loop('field', (i) => {
+  for (const e of collage('c', { pool: ['birds3', 'insect', 'outdoor', 'birds'], rate: walk('r', 0.2, 0.6, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate, begin: e.begin, pan: e.pan, amp: e.amp * 0.8, cut: 3 })
+    sleep(e.dur)
+  }
+})

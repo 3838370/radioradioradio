@@ -1,0 +1,28 @@
+// nome: sync_lead
+// família: lead
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "square",
+      "octave": 1,
+      "detune": 7,
+      "level": 0.5
+    }
+  ],
+  "attack": 0.005,
+  "release": 0.2,
+  "cutoff": 2200,
+  "res": 5,
+  "fenv": 2,
+  "fdecay": 0.3,
+  "drive": 0.55,
+  "vibrato": {
+    "rate": 6,
+    "depth": 10,
+    "delay": 0.15
+  },
+  "gain": 0.16
+}

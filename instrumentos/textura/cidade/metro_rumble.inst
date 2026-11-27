@@ -1,0 +1,22 @@
+// nome: metro_rumble
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 2,
+  "release": 3,
+  "cutoff": 220,
+  "res": 2,
+  "flfo": {
+    "rate": 0.5,
+    "depth": 600
+  },
+  "gain": 0.9
+}

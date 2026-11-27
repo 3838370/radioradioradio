@@ -1,0 +1,19 @@
+// nome: kick_synth
+{
+  "osc": [
+    {
+      "type": "sine"
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.06,
+  "release": 0.28,
+  "cutoff": 900,
+  "res": 0.5,
+  "pitch": {
+    "from": 20,
+    "time": 0.035
+  },
+  "drive": 0.25,
+  "gain": 0.9
+}

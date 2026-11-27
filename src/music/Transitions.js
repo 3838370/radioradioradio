@@ -55,14 +55,14 @@ export class Transitions {
     if (settings.get('key') === 'auto') change.key = harmony.key + rng.pick([0, 5, 7, -3]);
     harmony.request(change);
     this.c.nextMove = Math.min(this.c.nextMove, bar + (this.c.fast ? 1 : 4)); // start handing over soon
-    logger.add(`bar ${bar}: genre → ${Genres.label(dom)}`, 'event');
+    logger.add(`compasso ${bar}: género → ${Genres.label(dom)}`, 'event');
     // the hand-over goes through a quiet section the new genre likes (not while the listener
     // steers the arc by hand, or holds the layer count)
     if (settings.get('handoffCalm') && !arc.held && settings.get('densityAuto') && !Transitions.QUIET.includes(arc.section) && arc.section !== 'collapse') {
       const w = { [dom]: 1 };
       const quiet = rng.weighted(Transitions.QUIET.map((s) => [s, Arc.genreBias(s, w)]));
       arc.enter(quiet, bar);
-      logger.add(`bar ${bar}: section → ${quiet.toUpperCase()} (hand-over)`, 'event');
+      logger.add(`compasso ${bar}: secção → ${Arc.label(quiet).toUpperCase()} (passagem)`, 'event');
     }
   }
 };

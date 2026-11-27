@@ -1,3 +1,4 @@
+import { PatternBank } from '../music/PatternBank.js';
 import { MathUtil } from '../core/MathUtil.js';
 import { CodeTools } from '../lang/CodeTools.js';
 import { Theme } from './Theme.js';
@@ -13,7 +14,7 @@ import { Theme } from './Theme.js';
 //   a cell   add/remove a hit           → a hits('key', 'x...') row in a 'hand' loop
 //   [×]      give the row back          → the hits row is removed
 //   a name   hear the sound
-//   [M] [L]  mute / lock the layer
+//   [S] [M] [L]  solo / mute / lock the layer
 export class SequencerView {
   static MAX_STEPS = 32;
 
@@ -129,7 +130,7 @@ export class SequencerView {
     }
     p.drawingContext.restore();
 
-    if (!layers.length) { p.fill(T.dim); p.text('nothing playing yet', x + m.pad, y + 24); }
+    if (!layers.length) { p.fill(T.dim); p.text('ainda nada a tocar', x + m.pad, y + 24); }
   }
 
   drawBlock(p, layer, rows, g) {
@@ -137,7 +138,7 @@ export class SequencerView {
     const { x, w, lh, gridX, gridW, btnW, labelW, m } = g;
     const add = (hit) => { if (hit.y + hit.h > g.top && hit.y < g.bottom) this.hits.push(hit); };
     let cy = g.cy;
-    const a = layer.muted ? 0.4 : 1;
+    const a = layer.muted || layer.silenced ? 0.4 : 1;
     const fill = (c, k = 1) => p.fill(c[0], c[1], c[2], 255 * a * k);
 
     // layer header: ROLE pattern            [M] [L]
@@ -146,13 +147,13 @@ export class SequencerView {
     p.rect(x, cy, w, 1);
     const hy = cy + lh * 0.95;
     fill(T.bright);
-    const role = layer.role.toUpperCase();
+    const role = PatternBank.roleLabel(layer.role).toUpperCase();
     p.text(role, x + m.pad, hy);
     fill(T.dim);
     const seq = rows.some((r) => r.hand);
-    p.text(`${layer.patternId}${seq ? ' · seq' : ''}${layer.locked ? ' · locked' : ''}`, x + m.pad + p.textWidth(role + '  '), hy);
+    p.text(`${layer.patternId}${seq ? ' · seq' : ''}${layer.locked ? ' · bloqueado' : ''}`, x + m.pad + p.textWidth(role + '  '), hy);
     let bx = x + w - m.pad;
-    for (const [type, label, on] of [['layer-lock', '[L]', layer.locked], ['layer-mute', '[M]', layer.muted]]) {
+    for (const [type, label, on] of [['layer-lock', '[L]', layer.locked], ['layer-mute', '[M]', layer.muted], ['layer-solo', '[S]', layer.soloed]]) {
       const bw = p.textWidth(label);
       bx -= bw;
       if (on) { p.fill(T.bright); p.rect(bx - 1, hy - m.small - 1, bw + 2, m.small + 5); p.fill(T.bg); } else fill(T.dim);
@@ -162,7 +163,7 @@ export class SequencerView {
     }
     cy += lh * 1.5;
 
-    if (!rows.length) { fill(T.faint); p.text('(no sounds yet)', x + m.pad, cy + lh * 0.7); return; }
+    if (!rows.length) { fill(T.faint); p.text('(ainda sem sons)', x + m.pad, cy + lh * 0.7); return; }
 
     const cellH = 6;
     for (const r of rows) {

@@ -1,0 +1,26 @@
+// nome: gl_buzz_fast
+// família: gl_buzz
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.8
+    },
+    {
+      "type": "square",
+      "detune": 15,
+      "level": 0.4
+    }
+  ],
+  "attack": 0.001,
+  "release": 0.03,
+  "ftype": "highpass",
+  "cutoff": 2200,
+  "res": 3,
+  "trem": {
+    "rate": 59,
+    "depth": 0.9
+  },
+  "drive": 0.8,
+  "gain": 0.28
+}

@@ -1,0 +1,23 @@
+// nome: door_slam
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sine",
+      "level": 0.8
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.02,
+  "release": 0.25,
+  "cutoff": 350,
+  "res": 1.5,
+  "pitch": {
+    "from": 7,
+    "time": 0.05
+  },
+  "drive": 0.5,
+  "gain": 0.7
+}

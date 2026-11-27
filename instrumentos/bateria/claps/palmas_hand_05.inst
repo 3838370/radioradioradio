@@ -1,0 +1,160 @@
+// nome: palmas hand · 5
+// família: claps
+// substitui: hand:5
+// origem: Dirt-Samples hand/hand16-mono.wav · refeito em código (distância 8.49)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 63,
+      "res": 1.4,
+      "gain": 4.244
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.006,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 250,
+      "res": 1.4,
+      "gain": 12.83,
+      "hpf": 156
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 250,
+      "res": 1.4,
+      "gain": 2.341,
+      "hpf": 156
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 250,
+      "res": 1.4,
+      "gain": 0.4818,
+      "hpf": 156
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.006,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 18.91,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 6.158,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 0.4886,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.1599,
+      "hpf": 5000
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.325,
+      "decay": 0.24,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.03298,
+      "hpf": 5000
+    }
+  ]
+}

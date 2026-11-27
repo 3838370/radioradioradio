@@ -1,0 +1,19 @@
+// nome: noise_drone
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 3,
+  "release": 4,
+  "ftype": "bandpass",
+  "cutoff": 400,
+  "res": 12,
+  "flfo": {
+    "rate": 0.07,
+    "depth": 1800
+  },
+  "gain": 0.5
+}

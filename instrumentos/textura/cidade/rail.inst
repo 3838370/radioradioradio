@@ -1,0 +1,19 @@
+// nome: rail
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "square",
+      "level": 0.3
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "release": 0.06,
+  "ftype": "bandpass",
+  "cutoff": 1200,
+  "res": 5,
+  "gain": 0.6
+}

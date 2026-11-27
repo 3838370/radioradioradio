@@ -1,0 +1,61 @@
+// nome: shaker 808 · 4
+// família: shakers
+// substitui: 808:4
+// origem: Dirt-Samples 808/MA.WAV · refeito em código (distância 2.91)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.28,
+          "level": 0.0203,
+          "decay": 0.00797
+        },
+        {
+          "type": "square",
+          "ratio": 4.33,
+          "level": 0.0595,
+          "decay": 0.00692
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.06,
+      "decay": 0.005,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 6560.0,
+      "res": 2.67,
+      "pitch": {
+        "from": 3.29,
+        "time": 0.00671
+      },
+      "drive": 0.0192,
+      "gain": 0.08936,
+      "transpose": 49.35
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.02,
+      "dur": 0.06,
+      "decay": 0.00633,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 6740.0,
+      "res": 2.28,
+      "fenv": 1.81,
+      "fdecay": 0.285,
+      "gain": 4.002,
+      "transpose": 49.35
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+// nome: perc dr · 4
+// família: outros
+// substitui: dr:4
+// origem: Dirt-Samples dr/004_006.WAV · refeito em código (distância 10.03)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.0025,
+      "dur": 0.145,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.01551,
+      "transpose": 36.4
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.0025,
+      "dur": 0.145,
+      "decay": 0.106,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.297,
+      "transpose": 36.4
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.145,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.1655,
+      "transpose": -24.2
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.145,
+      "decay": 0.129,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.2446,
+      "transpose": -24.2
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.0475,
+      "dur": 0.145,
+      "decay": 0.0631,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.04135,
+      "transpose": 54.2
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.015,
+      "dur": 0.145,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 250,
+      "res": 1.4,
+      "gain": 4.411,
+      "hpf": 156
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.004,
+      "dur": 0.115,
+      "release": 0.02,
+      "ftype": "bandpass",
+      "cutoff": 250,
+      "res": 1.4,
+      "gain": 0.489,
+      "hpf": 156
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.05,
+      "dur": 0.145,
+      "decay": 0.024,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 500,
+      "res": 1.4,
+      "gain": 1.935,
+      "hpf": 312
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.02,
+      "dur": 0.145,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1000,
+      "res": 1.4,
+      "gain": 2.799,
+      "hpf": 625
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.004,
+      "dur": 0.115,
+      "release": 0.02,
+      "ftype": "bandpass",
+      "cutoff": 1000,
+      "res": 1.4,
+      "gain": 0.7554,
+      "hpf": 625
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.004,
+      "dur": 0.115,
+      "release": 0.02,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 0.162,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.004,
+      "dur": 0.115,
+      "release": 0.02,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.07816,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.05,
+      "dur": 0.145,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.08427,
+      "hpf": 5000
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+// nome: welder
+// família: metal
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 0.01,
+  "release": 0.1,
+  "ftype": "highpass",
+  "cutoff": 4500,
+  "res": 1,
+  "trem": {
+    "rate": 37,
+    "depth": 1
+  },
+  "flfo": {
+    "rate": 11,
+    "depth": 1200
+  },
+  "gain": 0.3
+}

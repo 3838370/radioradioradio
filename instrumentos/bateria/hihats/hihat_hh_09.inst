@@ -1,0 +1,61 @@
+// nome: hihat hh · 9
+// família: hihats
+// substitui: hh:9
+// origem: Dirt-Samples hh/009_hh3rerc2.wav · refeito em código (distância 12.84)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 2.07,
+          "level": 0.233,
+          "decay": 0.328
+        },
+        {
+          "type": "square",
+          "ratio": 2.12,
+          "level": 0.311,
+          "decay": 0.698
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.17,
+      "decay": 0.249,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2670.0,
+      "res": 0.654,
+      "pitch": {
+        "from": 1.35,
+        "time": 0.0123
+      },
+      "drive": 0.0897,
+      "gain": 0.1454,
+      "transpose": 39.49
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.17,
+      "decay": 1.01,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 5910.0,
+      "res": 0.431,
+      "fenv": 1.11,
+      "fdecay": 0.0182,
+      "gain": 0.04931,
+      "transpose": 39.49
+    }
+  ]
+}

@@ -19,7 +19,6 @@ export class Rng {
   int(a, b) { return Math.floor(a + this.next() * (b - a + 1)); }
   pick(arr) { return arr[Math.floor(this.next() * arr.length)]; }
   chance(p) { return this.next() < p; }
-  oneIn(n) { return this.next() * n < 1; }
 
   // items: [[value, weight], ...]
   weighted(items) {

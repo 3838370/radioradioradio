@@ -1,5 +1,5 @@
 // role: bass
-// genres: dub 1, minimal 0.7
+// genres: dub 1
 // energy: 0.25-1
 params({ sub: 'dx_bass' })
 fx({ lpf: 1100, delay: 0.05 })

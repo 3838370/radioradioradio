@@ -1,0 +1,26 @@
+// nome: fm_sub
+// família: sub
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 0.5,
+        "index": 3.5,
+        "decay": 0.16
+      }
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.8
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.15,
+  "release": 0.12,
+  "cutoff": 2500,
+  "res": 0.8,
+  "drive": 0.5,
+  "gain": 0.3
+}

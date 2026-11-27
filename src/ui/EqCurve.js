@@ -130,10 +130,10 @@ export class EqCurve {
     p.text('EQ', x + 4, y + 11);
     // [RESET], brighter when the curve isn't flat
     const flat = Equalizer.BANDS.every((b) => this.eq.values[b.id].g === 0);
-    const rw = p.textWidth('[RESET]');
+    const rw = p.textWidth('[REPOR]');
     this.resetRect = { x: x + w - rw - 6, y: y + 2, w: rw + 4, h: 12 };
     p.fill(this.hoverReset ? T.bright : flat ? T.faint : T.dim);
-    p.text('[RESET]', x + w - rw - 4, y + 11);
+    p.text('[REPOR]', x + w - rw - 4, y + 11);
     p.fill(T.dim);
     if (this.drag || this.hover) {
       const id = this.drag || this.hover;

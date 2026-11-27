@@ -1,0 +1,25 @@
+// nome: sub808
+// família: sub
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "triangle",
+      "octave": 1,
+      "level": 0.1
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.3,
+  "release": 0.6,
+  "cutoff": 2000,
+  "res": 0.5,
+  "pitch": {
+    "from": 12,
+    "time": 0.05
+  },
+  "drive": 0.35,
+  "gain": 0.55
+}

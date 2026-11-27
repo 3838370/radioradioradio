@@ -1,0 +1,52 @@
+// nome: click click · 2
+// família: rims
+// substitui: click:2
+// origem: Dirt-Samples click/002_click2.wav · refeito em código (distância 5.48)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.444,
+          "decay": 0.0182
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.466,
+          "decay": 0.0182
+        },
+        {
+          "type": "sine",
+          "ratio": 2.88,
+          "level": 0.395,
+          "decay": 0.00168
+        },
+        {
+          "type": "noise",
+          "level": 0.338,
+          "decay": 0.0147
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.0265,
+      "decay": 0.02,
+      "sustain": 0.015,
+      "release": 0.297,
+      "cutoff": 9730.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 23.4,
+        "time": 0.00314
+      },
+      "drive": 0.0,
+      "gain": 0.492,
+      "transpose": -28.76
+    }
+  ]
+}

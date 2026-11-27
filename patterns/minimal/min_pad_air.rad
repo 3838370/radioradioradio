@@ -1,9 +1,0 @@
-// role: texture
-// genres: minimal 1, space 0.5
-// energy: 0-1
-params({ pad: 'efd_pad' })
-fx({ rev: 0.55, lpf: 5000 })
-loop('air', (i) => {
-  synth(P.pad, degree(choose([4, 6]), 2), { dur: 12, attack: 4, release: 4, amp: 0.1 })
-  sleep(16)
-})

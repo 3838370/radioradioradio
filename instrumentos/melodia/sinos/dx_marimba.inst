@@ -1,0 +1,23 @@
+// nome: dx_marimba
+// família: bell
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 4,
+        "index": 2.5,
+        "decay": 0.08
+      }
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "decay": 0.6,
+  "sustain": 0,
+  "release": 0.4,
+  "cutoff": 6000,
+  "res": 0.5,
+  "keytrack": 0.3,
+  "gain": 0.32
+}

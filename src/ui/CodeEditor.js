@@ -4,7 +4,7 @@
 // keeps editing, Esc closes without running, Tab inserts two spaces. Clicks in `keepOpen`
 // elements (the side panels, which insert code here) leave it open.
 export class CodeEditor {
-  static HINT = 'click outside: run & close · Ctrl+Enter run · Esc cancel';
+  static HINT = 'clica fora: corre e fecha · Ctrl+Enter corre · Esc cancela';
 
   constructor(p, parent, { onRun, onOpen, onClose, keepOpen = [] }) {
     this.onRun = onRun;
@@ -29,7 +29,7 @@ export class CodeEditor {
   commit() {
     if (this.area.value() !== this.layer.code) {
       const result = this.onRun(this.layer, this.area.value());
-      if (!result.ok) { this.setStatus(`not run: ${result.error}`, 'err'); return; }
+      if (!result.ok) { this.setStatus(`não correu: ${result.error}`, 'err'); return; }
     }
     this.close();
   }
@@ -42,7 +42,7 @@ export class CodeEditor {
     this.layer = layer;
     this.onOpen(layer);
     this.area.value(layer.code);
-    this.setStatus(`${layer.role} (held while editing) · ${CodeEditor.HINT}`, 'hint');
+    this.setStatus(`${layer.role} (parada enquanto editas) · ${CodeEditor.HINT}`, 'hint');
     this.box.style('display', 'flex'); // p5's show() would force display: block
     // Focus after the click that opened us finishes, or the browser takes focus back.
     setTimeout(() => {
@@ -63,8 +63,8 @@ export class CodeEditor {
 
   run() {
     const result = this.onRun(this.layer, this.area.value());
-    if (result.ok) this.setStatus(`running ✓ — layer locked · ${CodeEditor.HINT}`, 'ok');
-    else this.setStatus(`not run: ${result.error}`, 'err');
+    if (result.ok) this.setStatus(`a correr ✓ — camada bloqueada · ${CodeEditor.HINT}`, 'ok');
+    else this.setStatus(`não correu: ${result.error}`, 'err');
   }
 
   onKey(e) {

@@ -1,0 +1,23 @@
+// nome: braindance_bass
+// família: acid_bass
+{
+  "osc": [
+    {
+      "type": "square"
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.6
+    }
+  ],
+  "attack": 0.002,
+  "release": 0.1,
+  "cutoff": 500,
+  "res": 4,
+  "fenv": 3,
+  "fdecay": 0.1,
+  "drive": 0.2,
+  "gain": 0.35,
+  "drift": 3
+}

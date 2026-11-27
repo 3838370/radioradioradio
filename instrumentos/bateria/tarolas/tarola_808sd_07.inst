@@ -1,0 +1,91 @@
+// nome: tarola 808sd · 7
+// família: tarolas
+// substitui: 808sd:7
+// origem: Dirt-Samples 808sd/SD1025.WAV · refeito em código (distância 2.6)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.125,
+      "decay": 0.0827,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.3129,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.125,
+      "decay": 0.027,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 1.723,
+      "transpose": 4.77
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.0025,
+      "dur": 0.125,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2000,
+      "res": 1.4,
+      "gain": 0.1625,
+      "hpf": 1250
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.125,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4000,
+      "res": 1.4,
+      "gain": 0.1625,
+      "hpf": 2500
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.125,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8000,
+      "res": 1.4,
+      "gain": 0.03895,
+      "hpf": 5000
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+// nome: bombo drumtraks · 6
+// família: bombos
+// substitui: drumtraks:6
+// origem: Dirt-Samples drumtraks/006_DT Kick.wav · refeito em código (distância 4.88)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.498,
+          "decay": 0.0372
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.149,
+          "decay": 0.0372
+        },
+        {
+          "type": "sine",
+          "ratio": 3.94,
+          "level": 0.00496,
+          "decay": 0.00313
+        },
+        {
+          "type": "noise",
+          "level": 0.58,
+          "decay": 0.0191
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.0432,
+      "decay": 0.186,
+      "sustain": 0.00144,
+      "release": 0.0504,
+      "cutoff": 1760.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 14.7,
+        "time": 0.0474
+      },
+      "drive": 0.00884,
+      "gain": 2.95,
+      "transpose": -22.41
+    }
+  ]
+}

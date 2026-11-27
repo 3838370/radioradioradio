@@ -1,5 +1,5 @@
 // role: perc
-// genres: dub 1, minimal 0.7
+// genres: dub 1
 // energy: 0.2-1
 params({ perc: 'perc' })
 fx({ lpf: 6000, rev: 0.2, delay: 0.15 })

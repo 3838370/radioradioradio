@@ -1,0 +1,25 @@
+// nome: grind
+// família: machine
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sawtooth",
+      "octave": -2,
+      "level": 0.4
+    }
+  ],
+  "attack": 0.05,
+  "release": 0.3,
+  "ftype": "bandpass",
+  "cutoff": 600,
+  "res": 10,
+  "flfo": {
+    "rate": 6,
+    "depth": 1500
+  },
+  "drive": 0.5,
+  "gain": 0.4
+}

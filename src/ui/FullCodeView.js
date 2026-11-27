@@ -1,3 +1,4 @@
+import { PatternBank } from '../music/PatternBank.js';
 import { Theme } from './Theme.js';
 
 // FullCodeView: every playing layer's code as one program, in full and live: it follows
@@ -14,14 +15,34 @@ export class FullCodeView {
     this.rect = null;
   }
 
-  // The program: a header, then one section per layer.
+  // The program: everything needed to play this track again (paste it back with [COLAR]):
+  //   a header with setup({ bpm, key, mode, progression, chordBars }),
+  //   then one section per layer: the sounds it plays (inst lines, the drums rebuilt in code
+  //   included, from info.sounds(layer)) and its code.
   static text(layers, info) {
-    const out = [`// BROKEN-RADIO · ${info.genre} · ${info.section} · ${info.bpm} bpm · ${info.key}`, ''];
+    const out = [`// BROKEN-RADIO · ${info.genre} · ${info.section} · ${info.bpm} bpm · ${info.key}`];
+    if (info.setup) out.push(info.setup);
+    out.push('');
     for (const l of layers) {
-      const title = `// ── ${l.role.toUpperCase()} · ${l.patternId}${l.muted ? ' · muted' : ''}${l.locked ? ' · locked' : ''} `;
-      out.push(title + '─'.repeat(Math.max(4, 60 - title.length)), l.code.replace(/\s+$/, ''), '');
+      const title = `// ── ${PatternBank.roleLabel(l.role).toUpperCase()} · ${l.patternId}${l.muted ? ' · mudo' : ''}${l.locked ? ' · bloqueado' : ''} `;
+      out.push(title + '─'.repeat(Math.max(4, 60 - title.length)));
+      const extra = info.sounds ? info.sounds(l) : [];
+      if (extra.length) out.push(...extra);
+      out.push(l.code.replace(/\s+$/, ''), '');
     }
     return out.join('\n');
+  }
+
+  // A pasted program -> { setup: '{...}' | null, sections: [{ role label, id, code }] }
+  static parse(text) {
+    const parts = text.replace(/\r/g, '').split(/^(?=\/\/ ── )/m);
+    const head = parts[0].startsWith('// ── ') ? '' : parts[0];
+    const m = /^setup\((\{[^\n]*\})\)\s*$/m.exec(head);
+    const sections = parts.filter((s) => s.startsWith('// ── ')).map((s) => {
+      const t = /^\/\/ ── (.+?) · (\S+)/.exec(s);
+      return { label: t ? t[1].trim() : '', id: t ? t[2] : 'colado', code: s.split('\n').slice(1).join('\n').trim() };
+    });
+    return { setup: m ? m[1] : null, sections };
   }
 
   layout(text, cols) {
@@ -50,16 +71,22 @@ export class FullCodeView {
     // header: title, and [COPY] on the right
     p.textSize(m.small);
     p.fill(T.bright);
-    p.text('FULL CODE', x + m.pad, y + m.pad + m.ts);
+    p.text('CÓDIGO COMPLETO', x + m.pad, y + m.pad + m.ts);
     p.fill(T.dim);
-    p.text(`${flashes.length} layers · live`, x + m.pad + p.textWidth('FULL CODE  '), y + m.pad + m.ts);
+    p.text(`${flashes.length} camadas · ao vivo`, x + m.pad + p.textWidth('CÓDIGO COMPLETO  '), y + m.pad + m.ts);
     const copied = now - this.copiedAt < 1800;
-    const label = copied ? '[COPIED]' : '[COPY]';
-    const bw = p.textWidth(label);
-    const bx = x + w - m.pad - bw, by = y + m.pad + m.ts;
-    p.fill(copied ? T.bright : T.dim);
-    p.text(label, bx, by);
-    this.hits.push({ type: 'copy', x: bx - 3, y: by - m.small - 2, w: bw + 6, h: m.small + 7 });
+    const pasted = now - (this.pastedAt || -1e9) < 1800;
+    const by = y + m.pad + m.ts;
+    let bx = x + w - m.pad;
+    // [COLAR] loads a whole program (copied from here) back into the radio; [COPIAR] copies it
+    for (const [type, label, lit] of [['paste', pasted ? '[COLADO]' : '[COLAR]', pasted], ['copy', copied ? '[COPIADO]' : '[COPIAR]', copied], ['edit', '[EDITAR]', false]]) {
+      const bw = p.textWidth(label);
+      bx -= bw;
+      p.fill(lit ? T.bright : T.dim);
+      p.text(label, bx, by);
+      this.hits.push({ type, x: bx - 3, y: by - m.small - 2, w: bw + 6, h: m.small + 7 });
+      bx -= p.textWidth('  ');
+    }
 
     const cols = Math.max(20, Math.floor((w - m.pad * 2 - 8) / m.charW));
     const { view, heads } = this.layout(text, cols);

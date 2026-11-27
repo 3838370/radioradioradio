@@ -1,0 +1,19 @@
+// nome: clap_synth
+{
+  "osc": [
+    {
+      "type": "noise"
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.035,
+  "release": 0.14,
+  "ftype": "bandpass",
+  "cutoff": 1300,
+  "res": 1.6,
+  "trem": {
+    "rate": 95,
+    "depth": 0.85
+  },
+  "gain": 0.9
+}

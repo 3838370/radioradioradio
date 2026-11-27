@@ -1,0 +1,35 @@
+// nome: horror
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -35,
+      "level": 0.4
+    },
+    {
+      "type": "sawtooth",
+      "detune": 31,
+      "level": 0.4
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.6
+    }
+  ],
+  "attack": 3,
+  "release": 5,
+  "cutoff": 900,
+  "res": 4,
+  "trem": {
+    "rate": 5.5,
+    "depth": 0.5
+  },
+  "vibrato": {
+    "rate": 0.15,
+    "depth": 40,
+    "delay": 0
+  },
+  "gain": 0.12
+}

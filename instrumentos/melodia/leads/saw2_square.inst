@@ -1,0 +1,29 @@
+// nome: saw2_square
+// família: lead
+{
+  "osc": [
+    {
+      "type": "square",
+      "level": 0.6
+    },
+    {
+      "type": "square",
+      "detune": 8,
+      "octave": -1,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.02,
+  "release": 0.6,
+  "cutoff": 1400,
+  "res": 2,
+  "fenv": 1.6,
+  "fdecay": 0.4,
+  "gain": 0.16,
+  "vibrato": {
+    "rate": 5,
+    "depth": 6,
+    "delay": 0.5
+  },
+  "drift": 8
+}

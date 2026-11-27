@@ -1,5 +1,5 @@
 // role: perc
-// genres: ae 1, drill 0.5
+// genres: ae 1
 // energy: 0.3-1
 params({ metal: 'ae_fm_perc' })
 fx({ delay: 0.15, crush: 0.15 })

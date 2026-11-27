@@ -127,6 +127,7 @@ export class Bus {
   }
 
   setMuted(muted, time = this.ac.currentTime) {
+    this.muted = !!muted; // (a muted kick doesn't duck the mix)
     this.mute.gain.setTargetAtTime(muted ? 0 : 1, time, 0.15);
   }
 

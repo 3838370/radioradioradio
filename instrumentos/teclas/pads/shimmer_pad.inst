@@ -1,0 +1,33 @@
+// nome: shimmer_pad
+// família: pad
+{
+  "osc": [
+    {
+      "type": "sine",
+      "octave": 1
+    },
+    {
+      "type": "sine",
+      "octave": 2,
+      "level": 0.4
+    },
+    {
+      "type": "triangle",
+      "level": 0.6
+    }
+  ],
+  "attack": 3,
+  "release": 6,
+  "cutoff": 6000,
+  "res": 0.3,
+  "trem": {
+    "rate": 3,
+    "depth": 0.2
+  },
+  "vibrato": {
+    "rate": 0.4,
+    "depth": 6,
+    "delay": 0
+  },
+  "gain": 0.1
+}

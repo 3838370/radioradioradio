@@ -1,0 +1,52 @@
+// nome: bombo sequential · 3
+// família: bombos
+// substitui: sequential:3
+// origem: Dirt-Samples sequential/003_Tom Kick.wav · refeito em código (distância 7.81)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0199,
+          "decay": 0.17
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.127,
+          "decay": 0.17
+        },
+        {
+          "type": "sine",
+          "ratio": 8.66,
+          "level": 0.0145,
+          "decay": 0.0149
+        },
+        {
+          "type": "noise",
+          "level": 0.574,
+          "decay": 0.0541
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.0576,
+      "decay": 0.106,
+      "sustain": 0.00503,
+      "release": 0.00958,
+      "cutoff": 4540.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 24.6,
+        "time": 0.0152
+      },
+      "drive": 0.0901,
+      "gain": 3.413,
+      "transpose": -33.38
+    }
+  ]
+}

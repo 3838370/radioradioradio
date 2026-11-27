@@ -1,0 +1,29 @@
+// nome: choir_dark
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "detune": -8
+    },
+    {
+      "type": "triangle",
+      "detune": 8
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.5
+    }
+  ],
+  "attack": 3,
+  "release": 5,
+  "cutoff": 1100,
+  "res": 0.5,
+  "trem": {
+    "rate": 0.3,
+    "depth": 0.3
+  },
+  "gain": 0.16,
+  "drift": 8
+}

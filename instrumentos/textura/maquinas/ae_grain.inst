@@ -1,0 +1,27 @@
+// nome: ae_grain
+// família: machine
+{
+  "osc": [
+    {
+      "type": "noise"
+    },
+    {
+      "type": "sine",
+      "level": 0.4
+    }
+  ],
+  "attack": 0.01,
+  "release": 0.2,
+  "ftype": "bandpass",
+  "cutoff": 2000,
+  "res": 9,
+  "trem": {
+    "rate": 31,
+    "depth": 0.8
+  },
+  "flfo": {
+    "rate": 3,
+    "depth": 1800
+  },
+  "gain": 0.2
+}

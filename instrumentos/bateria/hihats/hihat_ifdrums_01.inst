@@ -1,0 +1,61 @@
+// nome: hihat ifdrums · 1
+// família: hihats
+// substitui: ifdrums:1
+// origem: Dirt-Samples ifdrums/ignorehh.wav · refeito em código (distância 6.21)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.26,
+          "level": 0.134,
+          "decay": 0.0365
+        },
+        {
+          "type": "square",
+          "ratio": 1.62,
+          "level": 0.077,
+          "decay": 0.00576
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.105,
+      "decay": 0.046,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "highpass",
+      "cutoff": 4790.0,
+      "res": 1.66,
+      "pitch": {
+        "from": 24.0,
+        "time": 0.0315
+      },
+      "drive": 0.197,
+      "gain": 0.403,
+      "transpose": 50.11
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00102,
+      "dur": 0.105,
+      "decay": 0.0495,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "highpass",
+      "cutoff": 4150.0,
+      "res": 1.1,
+      "fenv": 1.15,
+      "fdecay": 0.0688,
+      "gain": 0.1103,
+      "transpose": 50.11
+    }
+  ]
+}

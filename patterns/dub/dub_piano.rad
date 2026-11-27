@@ -1,5 +1,5 @@
 // role: lead
-// genres: dub 1, saw 0.7
+// genres: dub 1
 // energy: 0-0.8
 params({ keys: 'felt' })
 fx({ delay: 0.45, rev: 0.45, lpf: 3000, wobble: 0.15 })

@@ -1,0 +1,29 @@
+// nome: efd_organ
+// família: organ
+{
+  "osc": [
+    {
+      "type": "sine"
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.5
+    },
+    {
+      "type": "sine",
+      "ratio": 3,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.01,
+  "release": 0.15,
+  "cutoff": 3000,
+  "res": 0.4,
+  "trem": {
+    "rate": 6,
+    "depth": 0.15
+  },
+  "gain": 0.16,
+  "drift": 2
+}

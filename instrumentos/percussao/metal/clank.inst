@@ -1,0 +1,21 @@
+// nome: clank
+// família: metal
+{
+  "osc": [
+    {
+      "type": "square",
+      "fm": {
+        "ratio": 3.73,
+        "index": 8,
+        "decay": 0.08
+      }
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "release": 0.15,
+  "ftype": "bandpass",
+  "cutoff": 2500,
+  "res": 3,
+  "gain": 0.35
+}

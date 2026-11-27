@@ -1,0 +1,56 @@
+// nome: tarola 808sd · 10
+// família: tarolas
+// substitui: 808sd:10
+// origem: Dirt-Samples 808sd/SD2500.WAV · refeito em código (distância 1.82)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.165,
+      "decay": 0.06,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.1833,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.165,
+      "decay": 0.0856,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.8047,
+      "transpose": -7.23
+    },
+    {
+      "osc": [
+        {
+          "type": "sine"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.165,
+      "decay": 0.0269,
+      "sustain": 0,
+      "release": 0.03,
+      "cutoff": 18000,
+      "res": 0.5,
+      "gain": 0.2624,
+      "transpose": 4.77
+    }
+  ]
+}

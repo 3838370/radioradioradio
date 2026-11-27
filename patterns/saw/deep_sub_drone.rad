@@ -1,9 +1,0 @@
-// role: bass
-// genres: saw 1
-// energy: 0-0.6
-params({ sub: 'sub' })
-fx({ lpf: 800 })
-loop('drone', (i) => {
-  synth(P.sub, ROOT, { dur: 5, attack: 1, release: 1.5, amp: 0.42 })
-  sleep(8)
-})

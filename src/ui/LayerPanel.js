@@ -1,3 +1,4 @@
+import { PatternBank } from '../music/PatternBank.js';
 import { Bus } from '../audio/Bus.js';
 import { CodeTools } from '../lang/CodeTools.js';
 import { SliderRow } from './SliderRow.js';
@@ -23,7 +24,7 @@ export class LayerPanel {
     this.lastInput = 0;
     this.editing = false;
     const root = p.createDiv().addClass('panel').parent(parent);
-    this.empty = p.createP('Carrega em ▶ Tune in. Depois escolhe uma camada aqui, ou carrega no ≈ de um cartão.').addClass('hint').parent(root);
+    this.empty = p.createP('Carrega em ▶ Sintonizar. Depois escolhe uma camada aqui, ou carrega no ≈ de um cartão.').addClass('hint').parent(root);
     this.body = p.createDiv().parent(root);
     const head = p.createDiv().addClass('row').parent(this.body);
     p.createSpan('camada').addClass('label').parent(head);
@@ -57,7 +58,7 @@ export class LayerPanel {
   refresh() {
     const layers = this.layers();
     this.select.elt.innerHTML = '';
-    for (const l of layers) this.select.option(`${l.role} · ${l.patternId}`, l.id);
+    for (const l of layers) this.select.option(`${PatternBank.roleLabel(l.role)} · ${l.patternId}`, l.id);
     if (!layers.some((l) => l.id === this.layerId)) this.layerId = layers.length ? layers[0].id : null;
     if (this.layerId) this.select.selected(this.layerId);
     this.sync();
@@ -77,11 +78,15 @@ export class LayerPanel {
     this.auto.checked(layer.fxAuto !== false);
     this.tick();
     this.links.html('');
-    for (const name of CodeTools.synthsUsed(layer.code)) {
+    const lib = this.app.instruments;
+    for (const name of CodeTools.synthsUsed(layer.code, lib.names())) {
       this.p.createButton(`synth:${name}`).addClass('chip').parent(this.links).mousePressed(() => this.app.openInstrument(name));
     }
     for (const name of CodeTools.samplesUsed(layer.code)) {
       this.p.createButton(`s:${name}`).addClass('chip').parent(this.links).mousePressed(() => this.app.openSamples(name));
+      // the same sample rebuilt in code: edit it in INSTRUMENTOS
+      const coded = lib.names().find((n) => ((lib.info(n) || {}).replaces || '').startsWith(name + ':'));
+      if (coded) this.p.createButton(`código:${name}`).addClass('chip').parent(this.links).mousePressed(() => this.app.openInstrument(coded));
     }
   }
 

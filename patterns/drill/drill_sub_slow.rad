@@ -1,9 +1,0 @@
-// role: bass
-// genres: drill 1, saw 0.5
-// energy: 0.3-1
-params({ sub: 'drill_sub' })
-fx({ lpf: 450 })
-loop('sub', (i) => {
-  synth(P.sub, ROOT, { dur: 7, attack: 0.05, release: 1, amp: 0.5 })
-  sleep(8)
-})

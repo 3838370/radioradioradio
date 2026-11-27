@@ -1,0 +1,61 @@
+// nome: metal metal · 6
+// família: metal
+// substitui: metal:6
+// origem: Dirt-Samples metal/006_6.wav · refeito em código (distância 6.81)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 2.25,
+          "level": 0.398,
+          "decay": 0.577
+        },
+        {
+          "type": "square",
+          "ratio": 1.85,
+          "level": 0.177,
+          "decay": 0.142
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.42,
+      "decay": 0.234,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2930.0,
+      "res": 3.08,
+      "pitch": {
+        "from": 1.72,
+        "time": 0.00438
+      },
+      "drive": 0.149,
+      "gain": 0.5576,
+      "transpose": 41.76
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00121,
+      "dur": 0.42,
+      "decay": 0.0468,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 7010.0,
+      "res": 0.981,
+      "fenv": 1.6,
+      "fdecay": 0.0656,
+      "gain": 0.1085,
+      "transpose": 41.76
+    }
+  ]
+}

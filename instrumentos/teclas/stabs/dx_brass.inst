@@ -1,0 +1,31 @@
+// nome: dx_brass
+// família: stab
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1,
+        "index": 2.5,
+        "decay": 0.6
+      }
+    },
+    {
+      "type": "sine",
+      "octave": -1,
+      "level": 0.3
+    }
+  ],
+  "attack": 0.08,
+  "release": 0.8,
+  "cutoff": 2500,
+  "res": 0.6,
+  "fenv": 1.5,
+  "fdecay": 0.4,
+  "gain": 0.18,
+  "vibrato": {
+    "rate": 5,
+    "depth": 6,
+    "delay": 0.4
+  }
+}

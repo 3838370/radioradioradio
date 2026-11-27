@@ -1,0 +1,20 @@
+// nome: glitch_blip
+// família: pluck
+{
+  "osc": [
+    {
+      "type": "square",
+      "fm": {
+        "ratio": 8.7,
+        "index": 12,
+        "decay": 0.03
+      }
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.01,
+  "release": 0.04,
+  "cutoff": 9000,
+  "res": 2,
+  "gain": 0.12
+}

@@ -1,5 +1,5 @@
 // role: keys
-// genres: dub 1, minimal 0.7
+// genres: dub 1
 // energy: 0.15-1
 params({ stab: 'stab' })
 fx({ delay: 0.55, rev: 0.3, lpf: 2600 })

@@ -1,0 +1,144 @@
+/* BROKEN-RADIO: todo o aspeto do site.
+   As CORES estão todas aqui, em :root, e valem para as duas partes do ecrã:
+   - a parte HTML (barra de cima, painéis, editor, pads de efeitos), por este ficheiro;
+   - o canvas (HUD, cartões, código, sequenciador, ecrã inicial), que o src/ui/Theme.js lê daqui.
+   Para mudar uma cor, muda-a só aqui. */
+
+/* 1-bit handheld screen: black and white, greys for hierarchy, small type, hairlines */
+:root {
+  /* base */
+  --bg: #000000;        /* fundo */
+  --panel: #000000;     /* fundo dos painéis e da barra */
+  --card: #000000;      /* fundo dos cartões de código */
+  --text: #e4e4e4;      /* texto normal */
+  --bright: #ffffff;    /* texto em destaque, valores */
+  --dim: #969696;       /* nomes, texto secundário */
+  --faint: #3e3e3e;     /* quase apagado (grelhas, barras de rolar) */
+  --line: #4a4a4a;      /* linhas finas entre controlos */
+  --err: #ff5a4a;       /* erros (o único vermelho) */
+  --accent: #ffffff;    /* realce no canvas */
+  --mood: #ebebeb;      /* género e secção no HUD */
+  /* cores do código nos cartões */
+  --code-str: #c4c4c4;      /* textos entre aspas */
+  --code-num: #ffffff;      /* números (arrastáveis) */
+  --code-kw: #eeeeee;       /* palavras da linguagem */
+  --code-live: #ffffff;     /* o que está a tocar agora */
+  --code-comment: #767676;  /* comentários */
+  /* cor de cada papel (cartões e sequenciador) */
+  --role-drums: #ffffff; --role-perc: #ffffff; --role-bass: #ffffff;
+  --role-keys: #ffffff; --role-lead: #ffffff; --role-texture: #ffffff;
+}
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
+  font: 11.5px/1.4 "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", monospace; letter-spacing: 0.02em;
+  text-shadow: none; }
+::selection { background: var(--text); color: var(--bg); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--faint); }
+::-webkit-scrollbar-track { background: transparent; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+#top { flex: none; border-bottom: 1px solid var(--line); background: var(--panel); }
+#main { flex: 1; display: flex; min-height: 0; }
+#stage { flex: 1; position: relative; min-height: 0; min-width: 0; }
+canvas { display: block; }
+#drawer { display: none; flex: none; width: 340px; overflow-y: auto; border-left: 1px solid var(--line); background: var(--panel); }
+#drawer.open { display: block; }
+@media (max-width: 760px) { #drawer.open { position: fixed; right: 0; top: 0; bottom: 0; width: min(340px, 100vw); z-index: 10; } }
+
+/* shared controls */
+button, select, input { font: inherit; color: inherit; text-shadow: inherit; }
+input[type=range] { -webkit-appearance: none; appearance: none; height: 11px; background: transparent; cursor: pointer; }
+input[type=range]::-webkit-slider-runnable-track { height: 1px; background: var(--dim); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 5px; height: 11px; margin-top: -5px; background: var(--bright); border: none; }
+input[type=range]::-moz-range-track { height: 1px; background: var(--dim); }
+input[type=range]::-moz-range-thumb { width: 5px; height: 11px; background: var(--bright); border: none; border-radius: 0; }
+select { background: var(--bg); border: 1px solid var(--line); border-radius: 0; padding: 1px 4px; color: var(--text); }
+option { background: var(--bg); }
+/* checkbox: a dot; on = filled white, off = white outline */
+input[type=checkbox] { -webkit-appearance: none; appearance: none; flex: none; margin: 0; width: 10px; height: 10px;
+  box-sizing: border-box; border: 1px solid var(--bright); border-radius: 50%; background: var(--bg); cursor: pointer; }
+input[type=checkbox]:checked { background: var(--bright); }
+.btn { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 0; padding: 3px 8px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+.btn:hover, .chip:hover { background: var(--text); color: var(--bg); text-shadow: none; }
+.btn.small { padding: 1px 6px; }
+.btn.danger { color: var(--err); }
+.chip { background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 0; padding: 1px 6px; font-size: 11px; cursor: pointer; }
+.chip.active { color: var(--bright); border-color: var(--dim); }
+
+/* top control strip */
+/* each control is one tight unit (name, slider, value, its AUTO), units split by a line */
+.controls { display: flex; flex-wrap: wrap; gap: 4px 0; padding: 7px 12px; align-items: center; font-size: 11px; }
+.control { display: flex; align-items: center; gap: 5px; padding: 0 9px; border-left: 1px solid var(--line); }
+.controls > .control:first-child, .fxctl > .control:first-child { padding-left: 0; border-left: none; }
+.control .name { color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; }
+.control .value { color: var(--text); white-space: nowrap; }
+.control .check { margin-left: 2px; }
+.control input[type=range] { width: 64px; }
+.controls .tail { margin-left: auto; padding-left: 9px; display: flex; align-items: center; gap: 6px; }
+/* the PARAMS (ParamsBar), in their tab of the side panel: one group under the other,
+   one parameter per line (name, slider, value, ↺) */
+.params { padding: 4px 12px 18px; font-size: 11px; }
+.params > .control { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 0 0 10px; border-left: none; }
+.params > .control > .name { width: 100%; margin: 10px 0 2px; padding-bottom: 3px; border-bottom: 1px solid var(--line); color: var(--text); }
+.params .param { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; min-height: 18px; }
+.params .plabel { width: 120px; flex: none; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.params input[type=range] { flex: 1; min-width: 0; width: auto; }
+.params .value { width: 34px; text-align: right; color: var(--bright); }
+.params .reset { width: 10px; color: var(--bright); cursor: pointer; }
+.params .chip { padding: 0 4px; }
+.params select { width: 100%; margin: 2px 0 4px; }
+.check { display: inline-flex; }
+.check label { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+
+/* side panel */
+.tabs { display: flex; position: sticky; top: 0; z-index: 1; background: var(--panel); border-bottom: 1px solid var(--line); }
+.tab { flex: 1; padding: 8px 2px; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid transparent; }
+.tab.active { color: var(--bright); border-bottom-color: var(--text); }
+.tab.close { flex: none; width: 30px; }
+.panel { padding: 10px 12px 18px; }
+.panel .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+.panel .label { width: 96px; flex: none; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.panel .label.wide { width: auto; flex: 1; color: var(--text); text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel input[type=range] { flex: 1; min-width: 0; }
+.panel .out { width: 48px; flex: none; text-align: right; font-size: 11px; color: var(--bright); }
+.panel select, .panel input[type=text], .panel input:not([type]) { flex: 1; min-width: 0; background: var(--bg); color: var(--text);
+  border: 1px solid var(--line); border-radius: 0; padding: 3px 5px; }
+.panel > input { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
+.section { margin: 12px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line); color: var(--text); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.12em; }
+.hint { color: var(--dim); font-size: 11px; line-height: 1.5; margin: 6px 0; }
+.buttons { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin: 6px 0; }
+.list, .variants, .links { display: flex; flex-wrap: wrap; gap: 3px; margin: 5px 0; }
+.list { max-height: 160px; overflow-y: auto; }
+.snippet { background: transparent; border: 1px solid var(--line); padding: 6px; white-space: pre-wrap; word-break: break-all;
+  font-size: 11px; color: var(--bright); min-height: 14px; margin: 6px 0; }
+
+/* code editor laid over a card */
+.editor { position: absolute; display: flex; flex-direction: column; z-index: 5; box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.97); border: 1px solid var(--dim); }
+.editor textarea { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; resize: none; border: none; outline: none;
+  background: transparent; color: var(--bright); caret-color: var(--bright);
+  font: 12px/1.45 "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", monospace; padding: 10px; tab-size: 2; white-space: pre; }
+.editor-status { flex: none; padding: 4px 10px; border-top: 1px solid var(--line); font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
+.editor-status.ok { color: var(--text); }
+.editor-status.err { color: var(--err); }
+
+.start { position: absolute; left: 50%; top: 50%; transform: translate(-50%, 14px); padding: 9px 20px; z-index: 7;
+  background: transparent; color: var(--text); border: 1px solid var(--text); border-radius: 0;
+  font-size: 12px; letter-spacing: 0.25em; cursor: pointer; }
+.start:hover { background: var(--text); color: var(--bg); text-shadow: none; }
+
+/* effect pads and delay controls at the bottom */
+#fxbar { flex: none; border-top: 1px solid var(--line); background: var(--panel); }
+.fxbar { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 8px 12px; align-items: center; }
+.pads { display: grid; grid-template-columns: repeat(8, minmax(58px, 1fr)); gap: 4px; flex: 1 1 520px; }
+.pad { position: relative; height: 42px; background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 0;
+  font-size: 10px; letter-spacing: 0.08em; cursor: pointer; user-select: none; touch-action: none; padding: 12px 2px 2px; }
+.pad .k { position: absolute; top: 3px; left: 5px; color: var(--dim); font-size: 10px; }
+.pad:hover { border-color: var(--dim); color: var(--text); }
+.pad.on { background: var(--text); color: var(--bg); border-color: var(--text); text-shadow: none; }
+.pad.on .k { color: var(--bg); }
+.pad.latched { box-shadow: inset 0 0 0 2px var(--bright); }
+.pad.auto:not(.latched) { border-style: dashed; }
+.fxctl { display: flex; flex-wrap: wrap; gap: 4px 0; align-items: center; font-size: 11px; }

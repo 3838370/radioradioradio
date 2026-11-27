@@ -1,0 +1,61 @@
+// nome: perc dr_few · 2
+// família: outros
+// substitui: dr_few:2
+// origem: Dirt-Samples dr_few/002_012.WAV · refeito em código (distância 13.36)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.53,
+          "level": 0.67,
+          "decay": 0.508
+        },
+        {
+          "type": "sine",
+          "ratio": 2.84,
+          "level": 0.547,
+          "decay": 0.148
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.245,
+      "decay": 0.385,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 100.0,
+      "res": 2.28,
+      "pitch": {
+        "from": 8.51,
+        "time": 0.00609
+      },
+      "drive": 0.168,
+      "gain": 4.504,
+      "transpose": -24.28
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00153,
+      "dur": 0.245,
+      "decay": 0.176,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2880.0,
+      "res": 3.15,
+      "fenv": 0.903,
+      "fdecay": 0.00893,
+      "gain": 1.466,
+      "transpose": -24.28
+    }
+  ]
+}

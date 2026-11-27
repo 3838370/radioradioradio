@@ -1,0 +1,122 @@
+// nome: tarola sequential · 5
+// família: tarolas
+// substitui: sequential:5
+// origem: Dirt-Samples sequential/005_Tom Snare.wav · refeito em código (distância 7.62)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.71,
+          "level": 0.625,
+          "decay": 0.0415
+        },
+        {
+          "type": "sine",
+          "ratio": 3.23,
+          "level": 0.481,
+          "decay": 0.00338
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.15,
+      "decay": 0.075,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 3720.0,
+      "res": 0.452,
+      "pitch": {
+        "from": 4.94,
+        "time": 0.00645
+      },
+      "drive": 0.134,
+      "gain": 2.234,
+      "transpose": -8.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 0.15,
+      "decay": 0.00696,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1380.0,
+      "res": 0.311,
+      "fenv": 0.878,
+      "fdecay": 0.0271,
+      "gain": 4.371,
+      "at": 0.0,
+      "transpose": -8.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 0.15,
+      "decay": 0.00696,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1380.0,
+      "res": 0.311,
+      "fenv": 0.878,
+      "fdecay": 0.0271,
+      "gain": 4.371,
+      "at": 0.0107,
+      "transpose": -8.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 0.15,
+      "decay": 0.00696,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1380.0,
+      "res": 0.311,
+      "fenv": 0.878,
+      "fdecay": 0.0271,
+      "gain": 4.371,
+      "at": 0.0215,
+      "transpose": -8.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00104,
+      "dur": 0.15,
+      "decay": 0.0824,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1380.0,
+      "res": 0.311,
+      "fenv": 0.878,
+      "fdecay": 0.0271,
+      "gain": 4.371,
+      "at": 0.0322,
+      "transpose": -8.15
+    }
+  ]
+}

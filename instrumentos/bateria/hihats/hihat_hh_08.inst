@@ -1,0 +1,61 @@
+// nome: hihat hh · 8
+// família: hihats
+// substitui: hh:8
+// origem: Dirt-Samples hh/008_hh3rerc1.wav · refeito em código (distância 10.25)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.7,
+          "level": 0.071,
+          "decay": 1.53
+        },
+        {
+          "type": "square",
+          "ratio": 1.42,
+          "level": 0.0689,
+          "decay": 2.0
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.835,
+      "decay": 0.941,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 11100.0,
+      "res": 0.736,
+      "pitch": {
+        "from": 1.06,
+        "time": 0.00638
+      },
+      "drive": 0.335,
+      "gain": 0.02008,
+      "transpose": 50.53
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.835,
+      "decay": 0.118,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 8570.0,
+      "res": 3.97,
+      "fenv": 1.75,
+      "fdecay": 0.0058,
+      "gain": 0.6238,
+      "transpose": 50.53
+    }
+  ]
+}

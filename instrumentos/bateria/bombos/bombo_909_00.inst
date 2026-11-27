@@ -1,0 +1,52 @@
+// nome: bombo 909 · 0
+// família: bombos
+// substitui: 909:0
+// origem: Dirt-Samples 909/BT0A0A7.WAV · refeito em código (distância 6.88)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0203,
+          "decay": 0.0228
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.158,
+          "decay": 0.0228
+        },
+        {
+          "type": "sine",
+          "ratio": 4.03,
+          "level": 0.0298,
+          "decay": 0.00181
+        },
+        {
+          "type": "noise",
+          "level": 0.732,
+          "decay": 0.00674
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.26,
+      "decay": 0.212,
+      "sustain": 0.00113,
+      "release": 0.0507,
+      "cutoff": 2850.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 13.0,
+        "time": 0.0661
+      },
+      "drive": 0.0382,
+      "gain": 2.248,
+      "transpose": -28.86
+    }
+  ]
+}

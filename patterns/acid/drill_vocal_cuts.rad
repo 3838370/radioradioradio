@@ -1,0 +1,10 @@
+// role: texture
+// genres: acid 0.5
+// energy: 0.4-1
+fx({ delay: 0.15, crush: 0.12 })
+loop('cuts', (i) => {
+  for (const e of collage('c', { pool: ['speech', 'mouth', 'alphabet'], rate: walk('r', 0.5, 1, 0.1) })) {
+    if (e.s) s(e.s, { n: e.n, rate: e.rate * choose([1, 1.5, 2]), begin: e.begin, pan: e.pan, amp: e.amp * 0.55, cut: 0.12 })
+    sleep(e.dur)
+  }
+})

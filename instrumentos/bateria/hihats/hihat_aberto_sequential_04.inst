@@ -1,0 +1,61 @@
+// nome: hihat aberto sequential · 4
+// família: hihats
+// substitui: sequential:4
+// origem: Dirt-Samples sequential/004_Tom Openhat.wav · refeito em código (distância 12.71)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.66,
+          "level": 0.163,
+          "decay": 2.0
+        },
+        {
+          "type": "square",
+          "ratio": 3.38,
+          "level": 0.174,
+          "decay": 0.414
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.435,
+      "decay": 0.952,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 231.0,
+      "res": 0.751,
+      "pitch": {
+        "from": 3.52,
+        "time": 0.018
+      },
+      "drive": 0.348,
+      "gain": 0.079,
+      "transpose": 50.1
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00234,
+      "dur": 0.435,
+      "decay": 0.784,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2160.0,
+      "res": 0.3,
+      "fenv": 0.3,
+      "fdecay": 0.214,
+      "gain": 3.377,
+      "transpose": 50.1
+    }
+  ]
+}

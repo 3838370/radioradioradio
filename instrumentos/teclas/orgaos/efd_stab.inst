@@ -1,0 +1,22 @@
+// nome: efd_stab
+// família: organ
+{
+  "osc": [
+    {
+      "type": "triangle"
+    },
+    {
+      "type": "sawtooth",
+      "level": 0.3
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.05,
+  "release": 0.25,
+  "cutoff": 1600,
+  "res": 3,
+  "fenv": 2.5,
+  "fdecay": 0.07,
+  "gain": 0.22,
+  "drift": 3
+}

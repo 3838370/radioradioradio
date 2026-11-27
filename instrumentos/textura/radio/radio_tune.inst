@@ -1,0 +1,28 @@
+// nome: radio_tune
+// família: radio
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "noise",
+      "level": 0.5
+    }
+  ],
+  "attack": 0.1,
+  "release": 0.5,
+  "ftype": "bandpass",
+  "cutoff": 1500,
+  "res": 8,
+  "flfo": {
+    "rate": 2,
+    "depth": 1500
+  },
+  "vibrato": {
+    "rate": 7,
+    "depth": 40,
+    "delay": 0
+  },
+  "gain": 0.1
+}

@@ -32,46 +32,50 @@ export class Settings extends Emitter {
     { id: 'mode', def: 'auto' },           // 'auto' or a mode name
     { id: 'steps', def: 'auto' },          // 'auto' or a loop cycle in 16th steps the patterns should have
     { id: 'volume', def: 0.8 },
-    { id: 'genres', def: null },           // the genres allowed to play (array of names); null = all
+    // the genres allowed to play (array of names); null = all. While the grid mode is built,
+    // only these four (the others stay in the bank, switched off; their genre names can be
+    // clicked back on)
+    { id: 'genres', def: ['acid', 'ae', 'dub', 'space'] },
+    { id: 'genresV', def: 2 },             // which default genre choice the saved settings have
     { id: 'eq', def: null },               // master EQ { low, lomid, himid, high: { f, g } }; null = flat
     { id: 'genreTune', def: {} },          // the listener's values for genre parameters: { genre: { id: value } }
 
     // ───── the PARAMS row: how the composer varies things ─────
-    { id: 'wSwap', def: 1, group: 'variation', label: 'swaps', hint: 'how often a layer is replaced by another pattern', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wReroll', def: 1, group: 'variation', label: 'versions', hint: 'how often a layer comes back as a new version of itself (other instruments of its family)', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wTimbre', def: 1, group: 'variation', label: 'timbres', hint: 'how often an instrument is swapped for another of its family, same notes', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wMutate', def: 1, group: 'variation', label: 'tweaks', hint: 'how often small values (levels, filters, sends) move', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wDropout', def: 1, group: 'variation', label: 'drops', hint: 'how often a layer goes quiet for a few bars (dub style)', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wCollage', def: 1, group: 'variation', label: 'collage', hint: 'how often voices, radio and field sounds are scattered over the music', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'wReharm', def: 1, group: 'variation', label: 'reharm', hint: 'how often the chord progression changes within the genre', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wSwap', def: 1, group: 'variation', label: 'trocas', hint: 'quantas vezes uma camada é trocada por outro padrão', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wReroll', def: 1, group: 'variation', label: 'versões', hint: 'quantas vezes uma camada volta numa versão nova de si mesma (outros instrumentos da família)', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wTimbre', def: 1, group: 'variation', label: 'timbres', hint: 'quantas vezes um instrumento é trocado por outro da família, com as mesmas notas', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wMutate', def: 1, group: 'variation', label: 'ajustes', hint: 'quantas vezes mudam pequenos valores (números dos params)', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wDropout', def: 1, group: 'variation', label: 'silêncios', hint: 'quantas vezes uma camada se cala por uns compassos (à dub)', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wCollage', def: 1, group: 'variation', label: 'colagens', hint: 'quantas vezes aparecem vozes, rádio e sons de campo por cima da música', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'wReharm', def: 1, group: 'variation', label: 'progressões', hint: 'quantas vezes muda a progressão de acordes dentro do género', min: 0, max: 3, step: 0.1, ui: 'params' },
 
     // human feel and tuning
-    { id: 'humanTime', def: 1, group: 'feel', label: 'timing', hint: 'how loose melodies are in time (rubato)', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'humanVel', def: 1, group: 'feel', label: 'dynamics', hint: 'how much the loudness of melody notes varies', min: 0, max: 3, step: 0.1, ui: 'params' },
-    { id: 'detune', def: 0.5, group: 'feel', label: 'detune', hint: 'how far each note drifts out of tune (synth drift and melody detune); 0 = perfectly in tune, 1 = as the instruments were designed. The tape wow (per genre) bends everything together', min: 0, max: 2, step: 0.05, ui: 'params' },
+    { id: 'humanTime', def: 1, group: 'feel', label: 'tempo humano', hint: 'quão soltas no tempo são as melodias (rubato)', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'humanVel', def: 1, group: 'feel', label: 'dinâmica', hint: 'quanto varia a força das notas das melodias', min: 0, max: 3, step: 0.1, ui: 'params' },
+    { id: 'detune', def: 0.5, group: 'feel', label: 'desafinação', hint: 'quanto cada nota sai do tom (drift dos sintetizadores e detune das melodias); 0 = afinado, 1 = como os instrumentos foram desenhados. O wow da fita (por género) dobra tudo junto', min: 0, max: 2, step: 0.05, ui: 'params' },
 
     // harmony
-    { id: 'modulate', def: 0.3, group: 'harmony', label: 'modulate', hint: 'chance that a change of progression also moves to another key', min: 0, max: 1, step: 0.05, ui: 'params' },
-    { id: 'modulateCalm', def: true, group: 'harmony', label: 'keys when calm', hint: 'key changes wait for a calm moment (a quiet section, two layers or fewer, or a break) instead of jumping with everything playing', kind: 'bool', ui: 'params' },
+    { id: 'modulate', def: 0.3, group: 'harmony', label: 'modular', hint: 'probabilidade de uma progressão nova também mudar de tom', min: 0, max: 1, step: 0.05, ui: 'params' },
+    { id: 'modulateCalm', def: true, group: 'harmony', label: 'tom na calma', hint: 'as mudanças de tom esperam por um momento calmo (secção calma, duas camadas ou menos, ou um break) em vez de saltarem com tudo a tocar', kind: 'bool', ui: 'params' },
 
     // transitions
-    { id: 'legMin', def: 8, group: 'transitions', label: 'genre min', hint: 'shortest time on one genre, in minutes', min: 1, max: 60, step: 1, ui: 'params' },
-    { id: 'legMax', def: 20, group: 'transitions', label: 'genre max', hint: 'longest time on one genre, in minutes', min: 1, max: 90, step: 1, ui: 'params' },
-    { id: 'handoffCalm', def: true, group: 'transitions', label: 'calm hand-over', hint: 'when a new genre takes over, the music thins out first (a quiet section), the tempo moves with little playing, then the new genre builds up', kind: 'bool', ui: 'params' },
-    { id: 'fadeIn', def: 1, group: 'transitions', label: 'fade in', hint: 'bars a new pad, melody or texture takes to come in (drums and bass come in at once)', min: 0, max: 8, step: 0.25, ui: 'params' },
-    { id: 'fadeOut', def: 2, group: 'transitions', label: 'fade out', hint: 'bars a layer takes to fade out. When drums or bass are swapped for others, the old ones stop at once, so two beats or two basslines never play together', min: 0, max: 8, step: 0.25, ui: 'params' },
-    { id: 'tempoGlide', def: 8, group: 'transitions', label: 'tempo glide', hint: 'bars a tempo change takes', min: 1, max: 32, step: 1, ui: 'params' },
-    { id: 'sectionLength', def: 1, group: 'transitions', label: 'sections', hint: 'how long the arc stays in each section (×)', min: 0.25, max: 3, step: 0.05, ui: 'params' },
+    { id: 'legMin', def: 8, group: 'transitions', label: 'género mín.', hint: 'o tempo mínimo num género, em minutos', min: 1, max: 60, step: 1, ui: 'params' },
+    { id: 'legMax', def: 20, group: 'transitions', label: 'género máx.', hint: 'o tempo máximo num género, em minutos', min: 1, max: 90, step: 1, ui: 'params' },
+    { id: 'handoffCalm', def: true, group: 'transitions', label: 'passagem calma', hint: 'quando entra um género novo, a música esvazia primeiro (secção calma), o tempo muda com pouco a tocar, e só depois o género novo cresce', kind: 'bool', ui: 'params' },
+    { id: 'fadeIn', def: 1, group: 'transitions', label: 'fade in', hint: 'compassos que um pad, melodia ou textura nova leva a entrar (a bateria e o baixo entram logo)', min: 0, max: 8, step: 0.25, ui: 'params' },
+    { id: 'fadeOut', def: 2, group: 'transitions', label: 'fade out', hint: 'compassos que uma camada leva a sair. Quando a bateria ou o baixo são trocados, os antigos param logo, para nunca tocarem duas baterias ou dois baixos juntos', min: 0, max: 8, step: 0.25, ui: 'params' },
+    { id: 'tempoGlide', def: 8, group: 'transitions', label: 'deslize de tempo', hint: 'compassos que uma mudança de tempo leva', min: 1, max: 32, step: 1, ui: 'params' },
+    { id: 'sectionLength', def: 1, group: 'transitions', label: 'secções', hint: 'quanto tempo o arco fica em cada secção (×)', min: 0.25, max: 3, step: 0.05, ui: 'params' },
   ];
 
   // Each genre's own parameters (PARAMS row, genre block). Defaults come from Genres.TABLE.
   static GENRE_SCHEMA = [
-    { id: 'tempo', path: 'tempo', label: 'tempo', hint: 'its BPM (each visit varies ±7%)', min: 60, max: 180, step: 1 },
-    { id: 'intensity', path: 'intensity', label: 'energy', hint: 'how intense it is (more layers, busier patterns)', min: 0, max: 1, step: 0.05 },
-    { id: 'cap', path: 'sections.cap', label: 'max layers', hint: 'the most layers it plays on auto', min: 1, max: 6, step: 1 },
-    { id: 'modes', path: 'modes', label: 'modes', hint: 'the modes it plays in', options: ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'] },
-    { id: 'chordBars', path: 'chordBars', label: 'bars per chord', hint: 'how long each chord lasts (one of those ticked, drawn per progression)', options: [1, 2, 4, 8, 16] },
-    { id: 'wow', path: 'wow', label: 'tape wow', hint: 'how much the tape wow and flutter bend the whole mix (×)', min: 0, max: 3, step: 0.1 },
+    { id: 'tempo', path: 'tempo', label: 'tempo', hint: 'o BPM do género (cada visita varia ±7%)', min: 60, max: 180, step: 1 },
+    { id: 'intensity', path: 'intensity', label: 'energia', hint: 'quão intenso é (mais camadas, padrões mais cheios)', min: 0, max: 1, step: 0.05 },
+    { id: 'cap', path: 'sections.cap', label: 'máx. camadas', hint: 'o máximo de camadas que toca em auto', min: 1, max: 6, step: 1 },
+    { id: 'modes', path: 'modes', label: 'modos', hint: 'os modos em que toca', options: ['dorian', 'aeolian', 'lydian', 'mixolydian', 'phrygian', 'locrian'] },
+    { id: 'chordBars', path: 'chordBars', label: 'compassos por acorde', hint: 'quanto dura cada acorde (um dos marcados, sorteado em cada progressão)', options: [1, 2, 4, 8, 16] },
+    { id: 'wow', path: 'wow', label: 'wow da fita', hint: 'quanto o wow e o flutter da fita dobram a mistura toda (×)', min: 0, max: 3, step: 0.1 },
   ];
 
   static DEFAULTS = Object.fromEntries(Settings.SCHEMA.map((s) => [s.id, s.def]));
@@ -80,13 +84,17 @@ export class Settings extends Emitter {
 
   static genreSpec(id) { return Settings.GENRE_SCHEMA.find((s) => s.id === id) || null; }
 
-  // Saved settings from earlier versions: `styles` (the genres allowed to play) is now `genres`.
+  // Saved settings from earlier versions: `styles` (the genres allowed to play) is now `genres`;
+  // `codedSamples` (the [SAMPLE]/[CÓDIGO] switch) is gone: the drums rebuilt in code always play.
   static migrate(saved) {
     const s = Object.assign({}, saved || {});
     if ('styles' in s) {
       if (!('genres' in s)) s.genres = s.styles;
       delete s.styles;
     }
+    delete s.codedSamples;
+    // the four genres of the grid mode (ACID, AE, DUB, SPACE), once, over an older choice
+    if (saved && s.genresV !== 2) { s.genres = ['acid', 'ae', 'dub', 'space']; s.genresV = 2; }
     return s;
   }
 

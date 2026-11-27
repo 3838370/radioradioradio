@@ -1,0 +1,52 @@
+// nome: tom 808mt · 0
+// família: toms
+// substitui: 808mt:0
+// origem: Dirt-Samples 808mt/MT00.WAV · refeito em código (distância 5.74)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.0408,
+          "decay": 0.289
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.0798,
+          "decay": 0.289
+        },
+        {
+          "type": "sine",
+          "ratio": 3.63,
+          "level": 0.0815,
+          "decay": 0.01
+        },
+        {
+          "type": "noise",
+          "level": 0.13,
+          "decay": 0.00432
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.327,
+      "decay": 0.171,
+      "sustain": 0.00108,
+      "release": 0.0942,
+      "cutoff": 1030.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 0.905,
+        "time": 0.0468
+      },
+      "drive": 0.0246,
+      "gain": 1.341,
+      "transpose": -12.93
+    }
+  ]
+}

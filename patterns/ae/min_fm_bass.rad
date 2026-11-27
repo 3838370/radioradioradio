@@ -1,0 +1,11 @@
+// role: bass
+// genres: ae 0.5
+// energy: 0.35-1
+params({ fm_bass: 'fm_bass', odds: 4 })
+fx({ lpf: 1200 })
+loop('bass', (i) => {
+  for (const b of bassline('b', { style: vary('st', ['pedal', 'dub'], 16) })) {
+    if (b.note && !one_in(P.odds)) synth(P.fm_bass, b.note, { dur: 0.3, amp: 0.36 * b.vel })
+    sleep(b.dur)
+  }
+})

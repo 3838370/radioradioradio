@@ -1,0 +1,24 @@
+// nome: machine
+// família: machine
+{
+  "osc": [
+    {
+      "type": "square",
+      "fm": {
+        "ratio": 0.5,
+        "index": 2,
+        "decay": 5
+      }
+    }
+  ],
+  "attack": 0.02,
+  "release": 0.2,
+  "cutoff": 800,
+  "res": 6,
+  "trem": {
+    "rate": 8,
+    "depth": 0.7
+  },
+  "drive": 0.4,
+  "gain": 0.2
+}

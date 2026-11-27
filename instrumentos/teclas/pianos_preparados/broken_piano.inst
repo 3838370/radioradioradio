@@ -1,0 +1,44 @@
+// nome: broken_piano
+// família: prepared
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "detune": -22
+    },
+    {
+      "type": "triangle",
+      "detune": 19,
+      "level": 0.8
+    },
+    {
+      "type": "sine",
+      "ratio": 2.71,
+      "level": 0.2,
+      "decay": 0.4
+    },
+    {
+      "type": "noise",
+      "level": 0.2,
+      "decay": 0.03
+    }
+  ],
+  "attack": 0.002,
+  "dur": 1.4,
+  "decay": 3,
+  "sustain": 0,
+  "release": 1.2,
+  "cutoff": 1500,
+  "res": 1.5,
+  "fenv": 1.6,
+  "fdecay": 0.3,
+  "veltrack": 0.6,
+  "keytrack": 0.4,
+  "vibrato": {
+    "rate": 0.4,
+    "depth": 14,
+    "delay": 0.3
+  },
+  "gain": 0.34,
+  "drift": 18
+}

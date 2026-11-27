@@ -1,0 +1,31 @@
+// nome: dread_pad
+// família: pad_dark
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -15,
+      "level": 0.5
+    },
+    {
+      "type": "sawtooth",
+      "detune": 15,
+      "level": 0.5
+    },
+    {
+      "type": "noise",
+      "level": 0.05
+    }
+  ],
+  "attack": 2,
+  "release": 4,
+  "cutoff": 450,
+  "res": 3,
+  "drive": 0.3,
+  "flfo": {
+    "rate": 0.06,
+    "depth": 400
+  },
+  "gain": 0.12,
+  "drift": 10
+}

@@ -1,0 +1,22 @@
+// nome: gl_blip
+// família: gl_ping
+{
+  "osc": [
+    {
+      "type": "square",
+      "fm": {
+        "ratio": 2.01,
+        "index": 3,
+        "decay": 0.03
+      }
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "decay": 0.08,
+  "sustain": 0,
+  "release": 0.04,
+  "cutoff": 7000,
+  "res": 2,
+  "gain": 0.18
+}

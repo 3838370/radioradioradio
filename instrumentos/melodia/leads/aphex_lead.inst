@@ -1,0 +1,34 @@
+// nome: aphex_lead
+// família: lead
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "detune": -12,
+      "level": 0.45
+    },
+    {
+      "type": "sawtooth",
+      "detune": 12,
+      "level": 0.45
+    },
+    {
+      "type": "square",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 0.01,
+  "release": 0.5,
+  "cutoff": 2200,
+  "res": 1.5,
+  "fenv": 1.4,
+  "fdecay": 0.3,
+  "gain": 0.14,
+  "vibrato": {
+    "rate": 6,
+    "depth": 15,
+    "delay": 0.2
+  },
+  "drift": 14
+}

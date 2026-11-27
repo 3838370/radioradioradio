@@ -1,0 +1,61 @@
+// nome: hihat jungle · 0
+// família: hihats
+// substitui: jungle:0
+// origem: Dirt-Samples jungle/jungle4closedhh.wav · refeito em código (distância 7.69)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 2.08,
+          "level": 0.105,
+          "decay": 0.137
+        },
+        {
+          "type": "square",
+          "ratio": 1.96,
+          "level": 0.00944,
+          "decay": 0.0372
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.265,
+      "decay": 0.0694,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2060.0,
+      "res": 0.564,
+      "pitch": {
+        "from": 3.18,
+        "time": 0.011
+      },
+      "drive": 0.146,
+      "gain": 0.1854,
+      "transpose": 49.97
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.0012,
+      "dur": 0.265,
+      "decay": 0.158,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 204.0,
+      "res": 0.917,
+      "fenv": 1.6,
+      "fdecay": 0.00201,
+      "gain": 1.727,
+      "transpose": 49.97
+    }
+  ]
+}

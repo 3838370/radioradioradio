@@ -1,0 +1,11 @@
+// role: perc
+// genres: acid 0.5
+// energy: 0.4-1
+params({ pluck: 'ae_blip' })
+fx({ delay: 0.15, lpf: 8000 })
+loop('blips', (i) => {
+  for (const n of melody('p', { style: 'probability', octave: 3 })) {
+    if (n.note) synth(P.pluck, n.note, { amp: 0.12 * n.vel, detune: n.detune, pan: rrand(-0.5, 0.5) })
+    sleep(n.dur)
+  }
+})

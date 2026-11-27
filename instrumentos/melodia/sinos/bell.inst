@@ -1,0 +1,21 @@
+// nome: bell
+// família: bell
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 3.5,
+        "index": 2,
+        "decay": 0.5
+      }
+    }
+  ],
+  "attack": 0.002,
+  "release": 1.8,
+  "dur": 0,
+  "cutoff": 8000,
+  "res": 0.5,
+  "gain": 0.26,
+  "drift": 3
+}

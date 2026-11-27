@@ -1,0 +1,52 @@
+// nome: hihat hh27 · 6
+// família: hihats
+// substitui: hh27:6
+// origem: Dirt-Samples hh27/006_hh27kick2.wav · refeito em código (distância 7.56)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.234,
+          "decay": 0.158
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.292,
+          "decay": 0.158
+        },
+        {
+          "type": "sine",
+          "ratio": 7.32,
+          "level": 0.816,
+          "decay": 0.00338
+        },
+        {
+          "type": "noise",
+          "level": 0.0502,
+          "decay": 0.00307
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.241,
+      "decay": 0.0488,
+      "sustain": 0.00878,
+      "release": 0.054,
+      "cutoff": 2720.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 1.28,
+        "time": 0.0391
+      },
+      "drive": 0.0592,
+      "gain": 0.7472,
+      "transpose": -23.17
+    }
+  ]
+}

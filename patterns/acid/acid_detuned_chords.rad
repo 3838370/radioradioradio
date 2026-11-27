@@ -1,5 +1,5 @@
 // role: keys
-// genres: acid 1, saw 0.6
+// genres: acid 1
 // energy: 0.3-1
 params({ lead: 'aphex_lead' })
 fx({ rev: 0.3, lpf: 3000 })

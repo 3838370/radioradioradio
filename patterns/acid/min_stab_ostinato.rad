@@ -1,0 +1,11 @@
+// role: lead
+// genres: acid 0.5
+// energy: 0.3-1
+params({ organ: 'efd_stab' })
+fx({ delay: 0.3, lpf: 3500 })
+loop('stab', (i) => {
+  for (const n of melody('o', { style: 'ostinato', octave: 2 })) {
+    if (n.note) synth(P.organ, n.note, { amp: 0.18 * n.vel })
+    sleep(n.dur)
+  }
+})

@@ -1,0 +1,28 @@
+// nome: sh_lead
+// família: lead
+{
+  "osc": [
+    {
+      "type": "square",
+      "level": 0.6
+    },
+    {
+      "type": "sawtooth",
+      "detune": 5,
+      "level": 0.4
+    }
+  ],
+  "attack": 0.005,
+  "release": 0.25,
+  "cutoff": 1800,
+  "res": 3,
+  "fenv": 2.5,
+  "fdecay": 0.3,
+  "gain": 0.2,
+  "vibrato": {
+    "rate": 5.5,
+    "depth": 8,
+    "delay": 0.35
+  },
+  "drift": 5
+}

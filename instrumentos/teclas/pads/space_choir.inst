@@ -1,0 +1,30 @@
+// nome: space_choir
+// família: pad
+{
+  "osc": [
+    {
+      "type": "triangle",
+      "detune": -8
+    },
+    {
+      "type": "triangle",
+      "detune": 8
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.3
+    }
+  ],
+  "attack": 4,
+  "release": 6,
+  "cutoff": 1800,
+  "res": 0.4,
+  "vibrato": {
+    "rate": 0.2,
+    "depth": 14,
+    "delay": 0
+  },
+  "gain": 0.12,
+  "drift": 8
+}

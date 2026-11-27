@@ -1,0 +1,20 @@
+// nome: metal_lead
+// família: lead_harsh
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 1.41,
+        "index": 5,
+        "decay": 0.8
+      }
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.6,
+  "cutoff": 6000,
+  "res": 0.5,
+  "drive": 0.3,
+  "gain": 0.2
+}

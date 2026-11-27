@@ -1,0 +1,22 @@
+// nome: hum_bed
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.3
+    }
+  ],
+  "attack": 2,
+  "release": 3,
+  "cutoff": 220,
+  "res": 1,
+  "trem": {
+    "rate": 0.2,
+    "depth": 0.3
+  },
+  "gain": 0.06
+}

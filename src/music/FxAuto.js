@@ -24,7 +24,7 @@ export class FxAuto {
     const bars = id === 'stutter' || id === 'tapestop' ? 1 : rng.int(1, 4);
     fx.pulse(id, bars * 4 * clock.spb());
     const pad = FxRack.PADS.find((x) => x.id === id);
-    logger.add(`bar ${bar}: fx ${pad.label.toLowerCase()} (${bars} bar${bars > 1 ? 's' : ''})`);
+    logger.add(`compasso ${bar}: fx ${pad.label.toLowerCase()} (${bars} compasso${bars > 1 ? 's' : ''})`);
   }
 
   // Aphex-style: sometimes jump the delay to another note value; the glide bends the echoes.
@@ -34,7 +34,7 @@ export class FxAuto {
     const current = settings.get('delayBeats');
     const [name, beats] = rng.pick(FxRack.DELAY_NOTES.filter(([, b]) => Math.abs(b - current) > 0.01));
     fx.setDelayBeats(beats);
-    logger.add(`bar ${bar}: delay → ${name}`);
+    logger.add(`compasso ${bar}: delay → ${name}`);
   }
 
   // The last bar before the arc moves on: a break (the beat drops for half a bar) or an
@@ -47,13 +47,13 @@ export class FxAuto {
       const spb = clock.spb();
       bus.fade(0, 0.1 * spb, Math.max(audio.ac.currentTime, clock.timeOf(bar * 4 + 2)));
       scheduler.at((bar + 1) * 4, (t) => { if (deck.get(beat.role) === beat) bus.fade(1, 0.05, t); }, null);
-      logger.add(`bar ${bar}: break`);
+      logger.add(`compasso ${bar}: break`);
       return 'break';
     }
     if (fx) {
       const id = rng.pick(['stutter', 'throw', 'sweep']);
       fx.pulse(id, 4 * clock.spb());
-      logger.add(`bar ${bar}: fill (${id})`);
+      logger.add(`compasso ${bar}: fill (${id})`);
       return 'fill';
     }
     return null;

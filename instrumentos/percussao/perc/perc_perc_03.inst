@@ -1,0 +1,61 @@
+// nome: perc perc · 3
+// família: perc
+// substitui: perc:3
+// origem: Dirt-Samples perc/003_perc3.wav · refeito em código (distância 3.32)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.9,
+          "level": 0.913,
+          "decay": 0.105
+        },
+        {
+          "type": "sine",
+          "ratio": 2.38,
+          "level": 0.269,
+          "decay": 0.0277
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.06,
+      "decay": 0.005,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 3210.0,
+      "res": 1.47,
+      "pitch": {
+        "from": 23.8,
+        "time": 0.00719
+      },
+      "drive": 0.0758,
+      "gain": 0.3657,
+      "transpose": 6.77
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00189,
+      "dur": 0.06,
+      "decay": 0.0112,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 4180.0,
+      "res": 1.04,
+      "fenv": 2.34,
+      "fdecay": 0.0358,
+      "gain": 0.005,
+      "transpose": 6.77
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+// nome: dub_rim
+{
+  "osc": [
+    {
+      "type": "square",
+      "level": 0.6
+    },
+    {
+      "type": "noise",
+      "level": 0.5,
+      "decay": 0.01
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0.01,
+  "release": 0.05,
+  "ftype": "bandpass",
+  "cutoff": 1700,
+  "res": 4,
+  "pitch": {
+    "from": 3,
+    "time": 0.01
+  },
+  "gain": 0.3
+}

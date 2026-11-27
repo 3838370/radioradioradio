@@ -1,0 +1,24 @@
+// nome: glass_drone
+// família: drone
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 2.01,
+        "index": 0.8
+      }
+    },
+    {
+      "type": "sine",
+      "octave": 1,
+      "level": 0.2
+    }
+  ],
+  "attack": 4,
+  "release": 6,
+  "cutoff": 5000,
+  "res": 0.3,
+  "gain": 0.1,
+  "drift": 4
+}

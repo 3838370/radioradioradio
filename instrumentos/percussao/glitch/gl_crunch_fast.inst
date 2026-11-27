@@ -1,0 +1,29 @@
+// nome: gl_crunch_fast
+// família: gl_crunch
+{
+  "osc": [
+    {
+      "type": "noise",
+      "level": 0.8
+    },
+    {
+      "type": "square",
+      "level": 0.3
+    }
+  ],
+  "attack": 0.001,
+  "release": 0.04,
+  "ftype": "highpass",
+  "cutoff": 3500,
+  "res": 2,
+  "trem": {
+    "rate": 83,
+    "depth": 1
+  },
+  "flfo": {
+    "rate": 13,
+    "depth": 1500
+  },
+  "drive": 0.85,
+  "gain": 0.33
+}

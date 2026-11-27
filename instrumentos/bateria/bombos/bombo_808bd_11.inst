@@ -1,0 +1,52 @@
+// nome: bombo 808bd · 11
+// família: bombos
+// substitui: 808bd:11
+// origem: Dirt-Samples 808bd/BD2510.WAV · refeito em código (distância 3.03)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.1,
+          "decay": 0.208
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.0642,
+          "decay": 0.208
+        },
+        {
+          "type": "sine",
+          "ratio": 8.25,
+          "level": 0.576,
+          "decay": 0.00342
+        },
+        {
+          "type": "noise",
+          "level": 0.012,
+          "decay": 0.00247
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 1.49,
+      "sustain": 0.00214,
+      "release": 0.0868,
+      "cutoff": 8710.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 5.32,
+        "time": 0.206
+      },
+      "drive": 0.0,
+      "gain": 1.796,
+      "transpose": -28.79
+    }
+  ]
+}

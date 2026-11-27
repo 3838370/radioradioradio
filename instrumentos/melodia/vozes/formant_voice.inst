@@ -1,0 +1,24 @@
+// nome: formant_voice
+// família: voice
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    }
+  ],
+  "attack": 0.4,
+  "release": 1.2,
+  "ftype": "bandpass",
+  "cutoff": 800,
+  "res": 6,
+  "flfo": {
+    "rate": 0.3,
+    "depth": 600
+  },
+  "vibrato": {
+    "rate": 5,
+    "depth": 12,
+    "delay": 0.3
+  },
+  "gain": 0.16
+}

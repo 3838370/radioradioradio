@@ -1,0 +1,45 @@
+// nome: grand
+// família: keys
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.35,
+      "decay": 1.2
+    },
+    {
+      "type": "triangle",
+      "level": 0.8
+    },
+    {
+      "type": "sine",
+      "ratio": 2.004,
+      "level": 0.4,
+      "decay": 1.5
+    },
+    {
+      "type": "sine",
+      "ratio": 5.03,
+      "level": 0.12,
+      "decay": 0.25
+    },
+    {
+      "type": "noise",
+      "level": 0.18,
+      "decay": 0.01
+    }
+  ],
+  "attack": 0.001,
+  "dur": 1.4,
+  "decay": 5,
+  "sustain": 0,
+  "release": 0.9,
+  "cutoff": 3200,
+  "res": 0.4,
+  "fenv": 2.2,
+  "fdecay": 0.6,
+  "veltrack": 0.8,
+  "keytrack": 0.6,
+  "gain": 0.3,
+  "drift": 2
+}

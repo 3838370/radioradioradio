@@ -1,4 +1,4 @@
-import { SynthPresets } from '../audio/SynthPresets.js';
+import { PatternBank } from './PatternBank.js';
 import { CodeTools } from '../lang/CodeTools.js';
 import { Layer } from '../lang/Layer.js';
 import { Memory } from './Memory.js';
@@ -14,10 +14,11 @@ export class Layers {
     this.map = new Map();
     this.serial = 0;
     this.recent = [];              // last pattern ids heard, avoided when choosing
+    this.solos = new Set();        // roles on solo [S]: when any is on, only they are heard
     this.memory = new Memory(); // everything heard this session (fatigue, versions)
     this.variation = new Variation({
       rng: c.rng,
-      synthExists: (n) => (c.instruments ? c.instruments.has(n) : !!SynthPresets[n]),
+      synthExists: (n) => (c.instruments ? c.instruments.has(n) : true),
       sampleCount: (f) => c.samples.count(f),
     });
   }
@@ -26,7 +27,8 @@ export class Layers {
   get(role) { return this.map.get(role); }
   has(role) { return this.map.has(role); }
   values() { return this.map.values(); }
-  free() { return [...this.map.values()].filter((l) => !l.locked); }
+  // the layers the composer may swap or drop: not locked, not added by hand (+)
+  free() { return [...this.map.values()].filter((l) => !l.locked && !l.keep); }
   find(id) { return [...this.map.values()].find((l) => l.id === id) || null; }
 
   // A layer's code carries everything that makes its sound: the inst(...) definitions of
@@ -59,7 +61,7 @@ export class Layers {
     samples.preload(probe.samples);
     if (!coder.load(layer, this.fullCode(code)).ok) return false;
     emitter.emit('layer:change', { layer, desc });
-    logger.add(`bar ${bar}: ~ ${layer.role}: ${desc}`);
+    logger.add(`compasso ${bar}: ~ ${PatternBank.roleLabel(layer.role)}: ${desc}`);
     return true;
   }
 
@@ -70,29 +72,31 @@ export class Layers {
 
   // A pattern comes in as a fresh version of itself (roll()); if that version doesn't run,
   // as written. It fades in as Transitions says for its role.
-  enter(role, pattern, startBar) {
+  // asIs: exactly the pattern's code, no new version (a pasted program).
+  enter(role, pattern, startBar, { asIs = false } = {}) {
     const { coder, samples, audio, clock, logger, emitter } = this.c;
-    const r = this.roll(pattern);
+    const r = asIs ? { code: pattern.code, changes: [], sig: pattern.id } : this.roll(pattern);
     let base = r.code;
-    let code = this.fullCode(base);
+    let code = asIs ? base : this.fullCode(base); // a pasted program keeps its own inst(...) lines
     let probe = coder.probe(code);
     if (!probe.ok && base !== pattern.code) {
       base = pattern.code;
       code = this.fullCode(base);
       probe = coder.probe(code);
     }
-    if (!probe.ok) { logger.add(`skipped ${pattern.id}: ${probe.error}`, 'err'); return null; }
+    if (!probe.ok) { logger.add(`saltei ${pattern.id}: ${probe.error}`, 'err'); return null; }
     samples.preload(probe.samples);
     const layer = new Layer({ id: `${role}-${++this.serial}`, role, pattern });
     const startBeat = startBar * 4;
     const res = coder.load(layer, code, startBeat);
-    if (!res.ok) { logger.add(`skipped ${pattern.id}: ${res.error}`, 'err'); return null; }
+    if (!res.ok) { logger.add(`saltei ${pattern.id}: ${res.error}`, 'err'); return null; }
     layer.base = base;
     layer.enteredBar = startBar;
     layer.changes = base === r.code ? r.changes : [];
     this.memory.note(pattern.id, base === r.code ? r.sig : null, startBar);
     const at = Math.max(audio.ac.currentTime, clock.timeOf(startBeat));
     audio.bus(layer.id).fade(1, this.c.transitions.fadeIn(role, startBar), at);
+    this.applySilence(layer); // quiet if another role is on solo
     this.map.set(role, layer);
     this.remember(pattern.id);
     emitter.emit('layer:add', { layer });
@@ -109,6 +113,11 @@ export class Layers {
     scheduler.at(startBeat + Math.ceil(seconds / clock.spb()) + 1, () => {
       coder.remove(layer);
       audio.dropBus(layer.id);
+      // a role on solo that left for good: its solo goes, or everything would stay quiet
+      if (this.solos.has(layer.role) && !this.map.has(layer.role)) {
+        this.solos.delete(layer.role);
+        for (const l of this.map.values()) { this.applySilence(l); emitter.emit('layer:state', { layer: l }); }
+      }
     });
     emitter.emit('layer:remove', { layer });
   }
@@ -129,17 +138,37 @@ export class Layers {
   // Back to the version it came in with, before any tweaks or timbre moves.
   reset(layer, bar) {
     if (!this.c.coder.load(layer, this.fullCode(layer.base || layer.pattern.code)).ok) return;
-    this.c.emitter.emit('layer:change', { layer, desc: 'back to original' });
-    this.c.logger.add(`bar ${bar}: ${layer.role} back to its original code`);
+    this.c.emitter.emit('layer:change', { layer, desc: 'de volta ao original' });
+    this.c.logger.add(`compasso ${bar}: ${PatternBank.roleLabel(layer.role)} de volta ao código original`);
   }
 
   // ───── the listener's actions ─────
 
   setMuted(layer, muted) {
     layer.muted = muted;
-    const bus = this.c.audio.bus(layer.id);
-    if (bus) bus.setMuted(muted);
+    this.applySilence(layer);
     this.c.emitter.emit('layer:state', { layer });
+  }
+
+  // Heard or not: muted [M], or another role is on solo [S] and this one isn't.
+  applySilence(layer) {
+    layer.soloed = this.solos.has(layer.role);
+    layer.silenced = layer.muted || (this.solos.size > 0 && !layer.soloed);
+    const bus = this.c.audio.bus(layer.id);
+    if (bus) bus.setMuted(layer.silenced);
+  }
+
+  // Solo follows the role (a new pattern in that role stays on solo); several can be on.
+  toggleSolo(id) {
+    const layer = this.find(id);
+    if (!layer) return;
+    if (this.solos.has(layer.role)) this.solos.delete(layer.role); else this.solos.add(layer.role);
+    for (const l of this.map.values()) {
+      this.applySilence(l);
+      this.c.emitter.emit('layer:state', { layer: l });
+    }
+    const names = [...this.solos].map((r) => PatternBank.roleLabel(r)).join(', ');
+    this.c.logger.add(names ? `solo: ${names}` : 'solo desligado');
   }
 
   toggleMute(id) {
@@ -151,7 +180,7 @@ export class Layers {
     const layer = this.find(id);
     if (!layer) return;
     layer.locked = !layer.locked;
-    this.c.logger.add(`${layer.role} ${layer.locked ? 'locked' : 'unlocked'}`);
+    this.c.logger.add(`${PatternBank.roleLabel(layer.role)} ${layer.locked ? 'bloqueada' : 'desbloqueada'}`);
     this.c.emitter.emit('layer:state', { layer });
   }
 
@@ -172,7 +201,7 @@ export class Layers {
 
   // Code typed in the editor: heard from the next bar.
   applyCode(id, code) {
-    return this.liveEdit(id, code, { desc: 'edited by you', final: true, restart: true });
+    return this.liveEdit(id, code, { desc: 'editado por ti', final: true, restart: true });
   }
 
   // Code changed by the listener (editor, dragged numbers, sound panel). The layer is
@@ -180,10 +209,10 @@ export class Layers {
   // code is the new original that resets and tweaks follow.
   //   final:   the gesture ended (log it, save the pattern, make long loops pick it up soon)
   //   restart: restart the loops at the next bar even if they're short
-  liveEdit(id, code, { desc = 'edited by you', final = false, restart = false } = {}) {
+  liveEdit(id, code, { desc = 'editado por ti', final = false, restart = false } = {}) {
     const { coder, samples, clock, emitter, logger } = this.c;
     const layer = this.find(id);
-    if (!layer) return { ok: false, error: 'this layer is gone' };
+    if (!layer) return { ok: false, error: 'esta camada já saiu' };
     const probe = coder.probe(code, final ? 8 : 2);
     if (!probe.ok) return probe;
     samples.preload(probe.samples);
@@ -201,7 +230,7 @@ export class Layers {
     emitter.emit('layer:state', { layer });
     if (final) {
       emitter.emit('pattern:user', { pattern: layer.pattern });
-      logger.add(`bar ${this.c.bar}: ${layer.role}: ${desc} (by you, locked)`);
+      logger.add(`compasso ${this.c.bar}: ${PatternBank.roleLabel(layer.role)}: ${desc} (por ti, bloqueada)`);
     }
     return { ok: true };
   }

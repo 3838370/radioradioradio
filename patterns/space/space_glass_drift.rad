@@ -1,5 +1,5 @@
 // role: lead
-// genres: space 1, boc 0.5
+// genres: space 1
 // energy: 0-1
 params({ bell: 'fm_glass' })
 fx({ rev: 0.55, delay: 0.4 })

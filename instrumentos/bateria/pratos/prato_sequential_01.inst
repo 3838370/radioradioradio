@@ -1,0 +1,61 @@
+// nome: prato sequential · 1
+// família: pratos
+// substitui: sequential:1
+// origem: Dirt-Samples sequential/001_Tom Crash.wav · refeito em código (distância 11.21)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 1.36,
+          "level": 0.187,
+          "decay": 2.0
+        },
+        {
+          "type": "square",
+          "ratio": 2.69,
+          "level": 0.0937,
+          "decay": 0.0739
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.24,
+      "decay": 0.0621,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 209.0,
+      "res": 0.39,
+      "pitch": {
+        "from": 4.97,
+        "time": 0.0394
+      },
+      "drive": 0.338,
+      "gain": 1.319,
+      "transpose": 17.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00232,
+      "dur": 1.24,
+      "decay": 1.48,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1770.0,
+      "res": 0.724,
+      "fenv": 0.3,
+      "fdecay": 0.242,
+      "gain": 4.69,
+      "transpose": 17.15
+    }
+  ]
+}

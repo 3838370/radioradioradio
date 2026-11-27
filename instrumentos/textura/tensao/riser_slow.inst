@@ -1,0 +1,23 @@
+// nome: riser_slow
+// família: tension
+{
+  "osc": [
+    {
+      "type": "sawtooth",
+      "level": 0.6
+    },
+    {
+      "type": "noise",
+      "level": 0.3
+    }
+  ],
+  "attack": 6,
+  "release": 2,
+  "cutoff": 2000,
+  "res": 3,
+  "pitch": {
+    "from": -24,
+    "time": 8
+  },
+  "gain": 0.1
+}

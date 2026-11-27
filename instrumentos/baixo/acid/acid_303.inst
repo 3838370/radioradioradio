@@ -1,0 +1,19 @@
+// nome: acid_303
+// família: acid
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    }
+  ],
+  "attack": 0.002,
+  "dur": 0.08,
+  "release": 0.1,
+  "cutoff": 420,
+  "res": 13,
+  "fenv": 7,
+  "fdecay": 0.16,
+  "veltrack": 1,
+  "drive": 0.55,
+  "gain": 0.15
+}

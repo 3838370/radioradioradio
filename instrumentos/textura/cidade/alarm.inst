@@ -1,0 +1,22 @@
+// nome: alarm
+{
+  "osc": [
+    {
+      "type": "square"
+    },
+    {
+      "type": "sawtooth",
+      "level": 0.4
+    }
+  ],
+  "attack": 0.02,
+  "release": 0.1,
+  "cutoff": 2500,
+  "res": 2,
+  "vibrato": {
+    "rate": 5,
+    "depth": 350,
+    "delay": 0
+  },
+  "gain": 0.07
+}

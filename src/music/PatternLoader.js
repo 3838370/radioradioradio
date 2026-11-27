@@ -53,7 +53,7 @@ export class PatternLoader {
         try {
           out[k] = PatternLoader.parse(await (await fetch(base + files[k])).text(), files[k]);
         } catch (e) {
-          if (logger) logger.add(`pattern ${files[k]}: ${e.message}`, 'err'); else console.warn(files[k], e);
+          if (logger) logger.add(`padrão ${files[k]}: ${e.message}`, 'err'); else console.warn(files[k], e);
         }
         if (onProgress) onProgress(++done, files.length);
       }

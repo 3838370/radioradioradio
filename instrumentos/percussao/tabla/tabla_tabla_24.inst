@@ -1,0 +1,52 @@
+// nome: tabla tabla · 24
+// família: tabla
+// substitui: tabla:24
+// origem: Dirt-Samples tabla/024_lower6_hit.wav · refeito em código (distância 13.19)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2,
+          "level": 0.412,
+          "decay": 0.136
+        },
+        {
+          "type": "sine",
+          "ratio": 3,
+          "level": 0.00678,
+          "decay": 0.136
+        },
+        {
+          "type": "sine",
+          "ratio": 2.72,
+          "level": 0.0514,
+          "decay": 0.00185
+        },
+        {
+          "type": "noise",
+          "level": 0.0871,
+          "decay": 0.0101
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.0915,
+      "decay": 0.86,
+      "sustain": 0.00402,
+      "release": 0.0548,
+      "cutoff": 3880.0,
+      "res": 0.5,
+      "pitch": {
+        "from": 1.56,
+        "time": 0.0112
+      },
+      "drive": 0.0072,
+      "gain": 1.298,
+      "transpose": -7.49
+    }
+  ]
+}

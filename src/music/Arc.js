@@ -49,6 +49,11 @@ export class Arc {
   };
 
   static TENSE = ['tension', 'surge', 'peak', 'dread', 'suspense'];
+
+  // what each section is called on screen
+  static LABELS = { sparse: 'esparso', drift: 'deriva', build: 'subida', tension: 'tensão', surge: 'ímpeto', peak: 'pico', dread: 'pavor', suspense: 'suspense', release: 'alívio', collapse: 'colapso' };
+
+  static label(name) { return Arc.LABELS[name] || name; }
   static KEYS = ['level', 'tempo', 'delay', 'feedback', 'wow', 'space', 'boost'];
 
   constructor(rng, { scale = 1 } = {}) {
@@ -125,10 +130,31 @@ export class Arc {
 
   // Once per bar (`seconds`: the bar's length, for the lean's fade; `weights`: the genres
   // now). Returns the new section's name when it changes.
+  // A maestro grid sets the section bar by bar; it holds while the grid keeps conducting (a
+  // bar ahead), then the arc carries on from there.
+  conduct(bar, name) {
+    if (!Arc.SECTIONS[name]) return;
+    if (!this.conducted) this.conducted = new Map();
+    this.conducted.set(bar, name);
+    this.conductedUntil = Math.max(this.conductedUntil == null ? -1 : this.conductedUntil, bar + 1);
+    if (this.conducted.size > 64) for (const b of [...this.conducted.keys()].sort((x, y) => x - y).slice(0, 32)) this.conducted.delete(b);
+  }
+
+  conductedAt(bar) {
+    if (!this.conducted || this.conductedUntil == null || bar > this.conductedUntil) return null;
+    let best = null;
+    for (const [b, n] of this.conducted) if (b <= bar && (!best || b > best[0])) best = [b, n];
+    return best ? best[1] : null;
+  }
+
   advanceBar(bar, seconds = 0, weights = null) {
     let changed = null;
     if (!this.held && this.lean && (this.lean.strength -= seconds / Arc.LEAN_SECONDS) <= 0) this.lean = null;
-    if (!this.held && bar >= this.start + this.length) {
+    const conducted = this.conductedAt(bar);
+    if (conducted) {
+      if (conducted !== this.section) { this.enter(conducted, bar); changed = conducted; }
+      else this.length = Math.max(this.length, bar - this.start + 2); // stays while conducted
+    } else if (!this.held && bar >= this.start + this.length) {
       this.enter(this.next(weights), bar);
       changed = this.section;
     }

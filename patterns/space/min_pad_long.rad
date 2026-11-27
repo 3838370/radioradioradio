@@ -1,0 +1,11 @@
+// role: keys
+// genres: space 0.5
+// energy: 0-1
+params({ pad: 'efd_pad' })
+fx({ rev: 0.4, lpf: 1800 })
+loop('pad', (i) => {
+  for (const c of chords('c', { voicing: 'sus2', rhythm: 'long', octave: 1 })) {
+    if (c.notes) synth(P.pad, c.notes, { dur: c.len, amp: 0.2 * c.vel })
+    sleep(c.dur)
+  }
+})

@@ -1,0 +1,61 @@
+// nome: tabla tabla2 · 34
+// família: tabla
+// substitui: tabla2:34
+// origem: Dirt-Samples tabla2/23679_loofa_bahia007.wav · refeito em código (distância 6.71)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 1.95,
+          "level": 0.696,
+          "decay": 0.702
+        },
+        {
+          "type": "sine",
+          "ratio": 2.24,
+          "level": 0.0597,
+          "decay": 0.35
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 2.01,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 3350.0,
+      "res": 0.637,
+      "pitch": {
+        "from": 0.148,
+        "time": 0.0777
+      },
+      "drive": 0.0452,
+      "gain": 0.5135,
+      "transpose": -20.15
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 0.0926,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 208.0,
+      "res": 0.674,
+      "fenv": 4.0,
+      "fdecay": 0.0175,
+      "gain": 0.8665,
+      "transpose": -20.15
+    }
+  ]
+}

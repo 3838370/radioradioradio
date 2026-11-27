@@ -1,5 +1,5 @@
 // role: keys
-// genres: acid 1, minimal 0.5
+// genres: acid 1
 // energy: 0.35-1
 params({ pad: 'dx_pad' })
 fx({ delay: 0.3, rev: 0.2 })

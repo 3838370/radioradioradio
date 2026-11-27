@@ -1,0 +1,61 @@
+// nome: metal metal · 1
+// família: metal
+// substitui: metal:1
+// origem: Dirt-Samples metal/001_1.wav · refeito em código (distância 11.18)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "square"
+        },
+        {
+          "type": "square",
+          "ratio": 2.11,
+          "level": 0.6,
+          "decay": 0.0733
+        },
+        {
+          "type": "square",
+          "ratio": 2.94,
+          "level": 0.0811,
+          "decay": 0.321
+        }
+      ],
+      "attack": 0.001,
+      "dur": 0.415,
+      "decay": 0.225,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 2110.0,
+      "res": 1.24,
+      "pitch": {
+        "from": 1.98,
+        "time": 0.0349
+      },
+      "drive": 0.0,
+      "gain": 0.7925,
+      "transpose": 32.92
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00102,
+      "dur": 0.415,
+      "decay": 0.298,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 1400.0,
+      "res": 0.685,
+      "fenv": 1.19,
+      "fdecay": 0.0235,
+      "gain": 0.1617,
+      "transpose": 32.92
+    }
+  ]
+}

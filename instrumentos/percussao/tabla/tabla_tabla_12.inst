@@ -1,0 +1,61 @@
+// nome: tabla tabla · 12
+// família: tabla
+// substitui: tabla:12
+// origem: Dirt-Samples tabla/012_hi_hit3.wav · refeito em código (distância 7.64)
+{
+  "layers": [
+    {
+      "osc": [
+        {
+          "type": "sine"
+        },
+        {
+          "type": "sine",
+          "ratio": 2.44,
+          "level": 0.228,
+          "decay": 0.168
+        },
+        {
+          "type": "sine",
+          "ratio": 1.69,
+          "level": 0.0422,
+          "decay": 0.457
+        }
+      ],
+      "attack": 0.001,
+      "dur": 1.5,
+      "decay": 1.06,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "lowpass",
+      "cutoff": 5840.0,
+      "res": 1.19,
+      "pitch": {
+        "from": 2.6,
+        "time": 0.0185
+      },
+      "drive": 0.0118,
+      "gain": 0.5865,
+      "transpose": 4.85
+    },
+    {
+      "osc": [
+        {
+          "type": "noise"
+        }
+      ],
+      "attack": 0.00127,
+      "dur": 1.5,
+      "decay": 1.09,
+      "sustain": 0,
+      "release": 0.03,
+      "ftype": "bandpass",
+      "cutoff": 441.0,
+      "res": 1.37,
+      "fenv": 2.16,
+      "fdecay": 0.0571,
+      "gain": 0.06948,
+      "transpose": 4.85
+    }
+  ]
+}

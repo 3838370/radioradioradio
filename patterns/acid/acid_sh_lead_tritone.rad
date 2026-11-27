@@ -1,5 +1,5 @@
 // role: lead
-// genres: acid 1, drill 0.5
+// genres: acid 1
 // energy: 0.35-1
 params({ lead: 'sh_lead' })
 fx({ delay: 0.3, rev: 0.25 })

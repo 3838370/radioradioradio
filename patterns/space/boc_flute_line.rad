@@ -1,0 +1,11 @@
+// role: lead
+// genres: space 0.5
+// energy: 0-1
+params({ boc_lead: 'boc_flute' })
+fx({ rev: 0.45, delay: 0.25, wobble: 0.2 })
+loop('flute', (i) => {
+  for (const n of melody('f', { style: 'drift', octave: 2 })) {
+    if (n.note) synth(P.boc_lead, n.note, { dur: n.len, amp: 0.22 * n.vel, detune: n.detune })
+    sleep(n.dur)
+  }
+})

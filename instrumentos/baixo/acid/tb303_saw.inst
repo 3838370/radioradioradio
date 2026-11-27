@@ -1,0 +1,18 @@
+// nome: tb303_saw
+// família: acid
+{
+  "osc": [
+    {
+      "type": "sawtooth"
+    }
+  ],
+  "attack": 0.002,
+  "release": 0.05,
+  "cutoff": 300,
+  "res": 16,
+  "fenv": 6,
+  "fdecay": 0.18,
+  "drive": 0.35,
+  "gain": 0.24,
+  "drift": 2
+}

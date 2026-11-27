@@ -1,0 +1,27 @@
+// nome: ae_bass
+// família: fm_bass
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 0.5,
+        "index": 3,
+        "decay": 0.2
+      }
+    },
+    {
+      "type": "sine",
+      "level": 0.6
+    }
+  ],
+  "attack": 0.003,
+  "release": 0.15,
+  "cutoff": 900,
+  "res": 5,
+  "fenv": 3,
+  "fdecay": 0.12,
+  "drive": 0.3,
+  "gain": 0.4,
+  "drift": 3
+}

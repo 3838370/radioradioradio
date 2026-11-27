@@ -1,0 +1,32 @@
+// nome: gl_ping
+// família: gl_ping
+{
+  "osc": [
+    {
+      "type": "sine",
+      "fm": {
+        "ratio": 3.73,
+        "index": 6,
+        "decay": 0.06
+      }
+    },
+    {
+      "type": "square",
+      "ratio": 1.5,
+      "level": 0.2,
+      "decay": 0.05
+    }
+  ],
+  "attack": 0.001,
+  "dur": 0,
+  "decay": 0.15,
+  "sustain": 0,
+  "release": 0.08,
+  "cutoff": 9000,
+  "res": 1,
+  "pitch": {
+    "from": 7,
+    "time": 0.03
+  },
+  "gain": 0.25
+}

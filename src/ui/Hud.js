@@ -1,3 +1,4 @@
+import { Arc } from '../music/Arc.js';
 import { App } from '../App.js';
 import { Genres } from '../music/Genres.js';
 import { Theme } from './Theme.js';
@@ -53,7 +54,7 @@ export class Hud {
       x = this.meter(p, x + lw + 6, 13, on ? wgt : 0, 5) + 14;
     }
     // The arc section; MANUAL while the listener steers it (layers or tempo on manual).
-    const sec = `· ${s.section.toUpperCase()}`;
+    const sec = `· ${Arc.label(s.section).toUpperCase()}`;
     p.fill(T.text);
     p.text(sec, x, 21);
     let sectionEnd = x + p.textWidth(sec);
@@ -63,7 +64,7 @@ export class Hud {
       sectionEnd += p.textWidth(' MANUAL');
     }
 
-    const refresh = '[↻ REFRESH]';
+    const refresh = '[↻ RENOVAR]';
     const rw = p.textWidth(refresh);
     if (w - 14 - rw > sectionEnd + 18) {
       p.fill(s.hover === 'refresh' ? T.bright : T.dim);
@@ -75,10 +76,10 @@ export class Hud {
       `${s.keyName.toUpperCase()} · ${s.chord}`,
       `${s.bpm.toFixed(1)} BPM`,
       // the cycle lengths playing, in 16th steps: 16 = a bar; 12 · 16 · 20 = polyrhythm
-      ...(s.steps && s.steps.length ? [`${s.steps.join(' · ')} STEPS`] : []),
-      `BAR ${s.bar}`,
+      ...(s.steps && s.steps.length ? [`${s.steps.join(' · ')} PASSOS`] : []),
+      `COMPASSO ${s.bar}`,
       // LOCK (the freeze setting) holds the code; the layer count still follows a manual density
-      s.freeze ? 'CODE LOCKED' : `NEXT ${s.nextMove}`,
+      s.freeze ? 'CÓDIGO BLOQUEADO' : `PRÓXIMA ${s.nextMove}`,
     ];
     x = 14;
     for (const part of parts) {
@@ -86,8 +87,8 @@ export class Hud {
       p.text(part, x, 41);
       x += p.textWidth(part) + 18;
     }
-    p.text('ENERGY', x, 41);
-    const end = this.meter(p, x + p.textWidth('ENERGY') + 6, 33, s.energy, 10);
+    p.text('ENERGIA', x, 41);
+    const end = this.meter(p, x + p.textWidth('ENERGIA') + 6, 33, s.energy, 10);
     if (w - 14 - p.textWidth(s.stats) > end + 18) {
       p.fill(T.dim);
       p.textAlign(p.RIGHT);

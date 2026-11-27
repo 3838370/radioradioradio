@@ -1,0 +1,11 @@
+// role: bass
+// genres: acid 0.5
+// energy: 0.2-1
+params({ sub: 'sub808' })
+fx({ lpf: 700 })
+loop('bass', (i) => {
+  for (const n of melody('b', { style: 'ostinato', octave: 0 })) {
+    if (n.note) synth(P.sub, n.note, { dur: n.len * 0.9, amp: 0.45 * n.vel })
+    sleep(n.dur)
+  }
+})
